@@ -105,7 +105,9 @@ noiseOctaves    = 12.0;
 
     // Global albedo variations
 //RODRIGO - modify albedo noise
-    noiseOctaves = 14.0;
+    noiseOctaves = 8.0;
+    noiseLacunarity = 2.3;
+    noiseH = 0.3;
     distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
     
 

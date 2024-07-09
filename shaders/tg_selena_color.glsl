@@ -117,12 +117,12 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
     // Global albedo variations
 //RODRIGO - MODIFIED ALBEDO NOISE
     vec3 zz = (point + Randomize) * (0.5 * hillsFreq / (hillsMagn * hillsMagn));
-    noiseOctaves = 2.0;
+    noiseOctaves = 8.0;
     noiseLacunarity = 2.3;
     noiseH = 0.3;
-    vec3 albedoVaryDistort = Fbm3D((point + Randomize) * 9.7) * (1.5 + venusMagn);
+    float albedoVaryDistort = RidgedMultifractal((point + Randomize) * 9.7, 8.0) * (1.5 + venusMagn);
 
-    vary = 1.0 - Fbm((point + albedoVaryDistort) + (9.5 - Fbm(zz) + Fbm(zz * 0.999)));
+    vary = 1.0 - Fbm((point + albedoVaryDistort) + (9.5 - RidgedMultifractal(zz, 8.0) + RidgedMultifractal(zz * 0.999, 8.0)));
 
     vary *= 0.5 * vary * vary;
 
