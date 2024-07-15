@@ -477,11 +477,26 @@ float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp,     
     // Equatorial ridge
     if (eqridgeMagn > 0.0)
     {
-        noiseOctaves = 4.0;
+        float prevHeight = height;
+
+        noiseOctaves = 5.0;
         float x = point.y / eqridgeWidth;
         float ridgeHeight = exp(-0.5 * x*x);
-        float ridgeModulate = saturate(1.0 - eqridgeModMagn * (Fbm(point * eqridgeModFreq - Randomize) * 0.5 + 0.5));
+        float ridgeModulate = 1.0;
+        for (int i=0; i < 5; i++)
+        {
+            ridgeModulate -= eqridgeModMagn * (Fbm(point * eqridgeModFreq - Randomize) * 0.5);
+        }
         height += eqridgeMagn * ridgeHeight * ridgeModulate;
+
+        noiseOctaves = 10.0;
+        ridgeModulate = 1.0;
+        for (int i=0; i < 5; i++)
+        {
+            ridgeModulate -= eqridgeModMagn * (Fbm(point * eqridgeModFreq - Randomize) * 0.5);
+        }
+        height += eqridgeMagn * ridgeHeight * ridgeModulate * 0.1;
+        height = max(height, prevHeight);
     }
 
     float drivenMaterial = 0.0;
