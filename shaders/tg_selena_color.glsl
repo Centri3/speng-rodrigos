@@ -1,7 +1,31 @@
 #include "tg_common.glh"  
-#include "height_map_selena.glh"
 
 #ifdef _FRAGMENT_
+
+//-----------------------------------------------------------------------------
+
+void ModifySurfaceByPlantsWithOffset(inout Surface prevSurf, vec2 detUV, float climate, float fade, float transFractal, int plantsBiomeOffsetAdjusted) {
+    Surface plants;
+    float transition;
+
+    transition = PlantsBlendCoeff(climateSteppeMin, climateSteppeMax, climate, fade, transFractal);
+    if(transition > 0.0) {
+        plants = DetailTextureMulti(detUV, plantsBiomeOffsetAdjusted); // plantsBiomeOffset is BIOME_*_STEPPE
+        prevSurf = BlendMaterials(prevSurf, plants, transition);
+    }
+
+    transition = PlantsBlendCoeff(climateForestMin, climateForestMax, climate, fade, transFractal);
+    if(transition > 0.0) {
+        plants = DetailTextureMulti(detUV, plantsBiomeOffsetAdjusted + 1); // plantsBiomeOffset is BIOME_*_FOREST
+        prevSurf = BlendMaterials(prevSurf, plants, transition);
+    }
+
+    transition = PlantsBlendCoeff(climateGrassMin, climateGrassMax, climate, fade, transFractal);
+    if(transition > 0.0) {
+        plants = DetailTextureMulti(detUV, plantsBiomeOffsetAdjusted + 2); // plantsBiomeOffset is BIOME_*_GRASS
+        prevSurf = BlendMaterials(prevSurf, plants, transition);
+    }
+}
 
 //-----------------------------------------------------------------------------
 
@@ -171,24 +195,28 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
     }
 
     // Vegetation
-    if(plantsBiomeOffset > 0.0) {
-        noiseH = 0.5;
-        noiseLacunarity = 2.218281828459;
-        noiseOffset = 0.8;
-        noiseOctaves = 2.0;
-        float plantsTransFractal = abs(0.125 * Fbm(point * 3.0e5) + 0.125 * Fbm(point * 1.0e3));
+    int plantsBiomeOffsetAdjusted = int(plantsBiomeOffset);
 
-        // Modulate by humidity
-        noiseOctaves = 8.0;
-        float humidityMod = Fbm((point + albedoVaryDistort) * 1.73) - 1.0 + humidity * 2.0;
-
-        float plantsFade = smoothstep(beachWidth, beachWidth * 2.0, biomeData.height - seaLevel) *
-            smoothstep(0.750, 0.650, biomeData.slope) *
-            smoothstep(-0.5, 0.5, humidityMod);
-
-        // Interpolate previous surface to the vegetation surface
-        ModifySurfaceByPlants(surf, detUV, climate, plantsFade, plantsTransFractal);
+    if(plantsBiomeOffset == 0.0) {
+        plantsBiomeOffsetAdjusted = 9;
     }
+
+    noiseH = 0.5;
+    noiseLacunarity = 2.218281828459;
+    noiseOffset = 0.8;
+    noiseOctaves = 2.0;
+    float plantsTransFractal = abs(0.125 * Fbm(point * 3.0e5) + 0.125 * Fbm(point * 1.0e3));
+
+    // Modulate by humidity
+    noiseOctaves = 8.0;
+    float humidityMod = Fbm((point + albedoVaryDistort) * 1.73) - 1.0 + humidity * 2.0;
+
+    float plantsFade = smoothstep(beachWidth, beachWidth * 2.0, biomeData.height - seaLevel) *
+        smoothstep(0.750, 0.650, biomeData.slope) *
+        smoothstep(-0.5, 0.5, humidityMod);
+
+    // Interpolate previous surface to the vegetation surface
+    ModifySurfaceByPlantsWithOffset(surf, detUV, climate, plantsFade, plantsTransFractal, plantsBiomeOffsetAdjusted);
 
     // Make driven hemisphere darker
     float z = -point.z * sign(drivenDarkening);
