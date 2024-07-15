@@ -5,11 +5,7 @@
 
 //-----------------------------------------------------------------------------
 
-float slopedIceCaps() {
-    float height = 0.0;
-    float slope = 0.0;
-    GetSurfaceHeightAndSlope(height, slope);
-
+float slopedIceCaps(float slope) {
     if(slope > 0.03 * (2.0 - icecapHeight)) {
         return 1.0;
     }
@@ -222,10 +218,15 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
 
     // Ice caps - thin frost
 
-    float slopedFactor = slopedIceCaps();
+    float height = 0.0;
+    float slope = 0.0;
+    GetSurfaceHeightAndSlope(height, slope);
 
+    float slopedFactor = slopedIceCaps(slope);
     float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
-    surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.8 * iceCap);
+    float snow = float(slope * 1 > (snowLevel + 1.1) * 0.3);
+
+    surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.8 * iceCap + snow);
 
     return surf.color;
 }
