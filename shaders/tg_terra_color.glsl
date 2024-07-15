@@ -4,21 +4,6 @@
 
 //-----------------------------------------------------------------------------
 
-float slopedIceCaps()
-{
-    float height = 0.0;
-    float slope = 0.0;
-    GetSurfaceHeightAndSlope(height, slope);
-
-    if (slope > 0.0003 * (2.0 - colorDistMagn)) {
-        return 1.0;
-    }
-
-    return 0.0;
-}
-
-//-----------------------------------------------------------------------------
-
 void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 {
     Surface surf;
@@ -86,7 +71,7 @@ noiseOctaves    = 12.0;
     vary = Fbm(p) * 0.35 + 0.245;
     climate += 2.8*vary * saturate(1.0 - 3.0 * biomeData.slope) * saturate(1.0 - 1.333 * climate);
 
-
+    float height = GetSurfaceHeight();
     // Shield volcano lava
     vec2 volcMask = vec2(0.0);
     if (volcanoOctaves > 0)
@@ -100,8 +85,8 @@ noiseOctaves    = 12.0;
     }
 
     // Model lava as rocks texture
-	//climate = mix(climate, 0.375, volcMask.x);
-	//biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
+	climate = mix(climate, 0.375, volcMask.x);
+	biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
 
     // Global albedo variations
 //RODRIGO - modify albedo noise
@@ -155,7 +140,7 @@ vary *= 0.5*vary*vary;
     }*/
 
     // Mountain/winter snow
-    if (climate > 0.9)
+    if (climate > 0.9 && latitude > latTropic)
     {
         float snowTransition = smoothstep(0.9, 0.92, climate);
         Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);

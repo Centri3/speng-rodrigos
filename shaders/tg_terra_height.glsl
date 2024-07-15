@@ -4,6 +4,62 @@
 
 //-----------------------------------------------------------------------------
 
+float   VolcanoNoiseFixed(vec3 point, float globalLand, float localLand)
+{
+    noiseLacunarity = 2.218281828459;
+    noiseH          = 0.5;
+    noiseOffset     = 0.8;
+
+    float  frequency = 150.0 * volcanoFreq;
+    float  density   = volcanoDensity;
+    float  size      = volcanoRadius;
+    float  newLand   = localLand;
+    float  globLand  = globalLand - 1.0;
+    float  amplitude = 2.0 * volcanoMagn;
+	vec2   cell;
+    vec3   cellCenter = vec3(0.0);
+    vec3   rotVec   = normalize(Randomize);
+    vec3   binormal = normalize(vec3(-point.z, 0.0, point.x)); // = normalize(cross(point, vec3(0, 1, 0)));
+    float  distFreq = 18.361 * volcanoFreq;
+    float  distMagn = 0.003;
+
+    for (int i=0; i<volcanoOctaves; i++)
+    {
+        noiseOctaves = 4;
+        vec3 p = point + distMagn * Fbm3D(point * distFreq);
+
+        cell = inverseSF(p, frequency, cellCenter);
+
+        float h = hash1(cell.x);
+        float r = 40.0 * cell.y;
+        if ((h < density) && (r < 1.0))
+        {
+            float rnd = 48.3 * dot(cellCenter, Randomize);
+            vec3  cen = normalize(cellCenter - p);
+            float a   = dot(p, cross(cen, binormal));
+            float b   = dot(cen, binormal);
+            float fi1 = atan( a,  b) / pi;
+            float fi2 = atan(-a, -b) / pi;
+
+            float volcano = globLand + amplitude * VolcanoHeightFunc(r, fi1, fi2, rnd, size);
+            newLand = softPolyMax(newLand, volcano, 0.3);
+        }
+
+        if (volcanoOctaves > 1)
+        {
+            point = Rotate(pi2 * hash1(float(i)), rotVec, point);
+            frequency *= 2.0;
+            size      *= 0.5;
+            distFreq  *= 2.0;
+            distMagn  *= 0.5;
+        }
+    }
+
+    return newLand;
+}
+
+//-----------------------------------------------------------------------------
+
 //	RODRIGO - SMALL CHANGES TO RIVERS AND RIFTS
 // Modified Rodrigo's rivers
 
@@ -396,8 +452,8 @@ damping =    (smoothstep(1.0, 0.1, height - seaLevel)) *
 
 
     // Shield volcano
-    if (volcanoOctaves > 0)
-        height = VolcanoNoise(point, global, height);
+    if (volcanoOctaves > 0 && (height > seaLevel + 0.1 || oceanType == 0) && iceCap == 0.0)
+        height = VolcanoNoiseFixed(point, global, height);
 
     // Mountain glaciers
     /*noiseOctaves = 5.0;
