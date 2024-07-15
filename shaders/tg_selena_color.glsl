@@ -140,7 +140,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
     noiseOctaves = 10.0;
     vec3 albedoVaryDistort = Fbm3D((point + Randomize) * 9.7) * (1.5 + venusMagn);
 
-    vary = 1.0 - Fbm((point + albedoVaryDistort) + (9.5 - RidgedMultifractal(zz, 8.0) + RidgedMultifractal(zz * 0.999, 8.0)));
+    vary = 1.0 - Fbm((point + albedoVaryDistort) + (9.5 - Fbm(zz) + Fbm(zz * 0.999)));
 
     vary *= 0.5 * vary * vary;
 

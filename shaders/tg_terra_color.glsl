@@ -85,9 +85,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
     // Global albedo variations
 //RODRIGO - modify albedo noise
-    noiseOctaves = 8.0;
-    noiseLacunarity = 2.3;
-    noiseH = 0.3;
+    noiseOctaves = 14.0;
     distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 
     vary = 1.0 - Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) + RidgedMultifractal(pp * 0.999, 8.0)));
