@@ -9,7 +9,7 @@ void main() {
     OutColor = pow(GetGasGiantCloudsColor(height), vec4(height));
     OutColor.a *= 0.5;
 
-    if (OutColor.a == 0.0) {
+    if(OutColor.a == 0.0) {
         OutColor.a = 1.0;
     }
 
