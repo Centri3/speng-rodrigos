@@ -67,8 +67,13 @@ float HeightMapCloudsTerraAli(vec3 point) {
 //-----------------------------------------------------------------------------
 
 float HeightMapCloudsTerraAli2(vec3 point) {
+	float minimumStripeTwist = 0.14;
+	if(cloudsCoverage == 1.0) {
+		minimumStripeTwist = 1.0;
+	}
+
 	float zones = cos(stripeZones * point.y * 1.75);
-	float ang = zones * pow(max(abs(stripeTwist), 1.0), 0.6);
+	float ang = zones * pow(max(abs(stripeTwist), minimumStripeTwist), 0.6);
 	vec3 twistedPoint = point;
 	float coverage = cloudsCoverage;
 	float weight = 0.1;
