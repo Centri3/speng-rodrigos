@@ -122,9 +122,103 @@ float HeightMapCloudsTerraAli2(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
+float HeightMapCloudsTerraAli3(vec3 point) {
+	float zones = cos(stripeZones * point.y * 0.35);
+	float ang = zones * pow(max(abs(stripeTwist), 1.0), 0.6);
+	vec3 twistedPoint = point;
+	float coverage = 0.1;
+	float weight = 1.0;
+	noiseH = 0.75;
+
+	// Compute the Coriolis effect
+	float sina = sin(ang);
+	float cosa = cos(ang + 15);
+	twistedPoint = vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y, sina * twistedPoint.x + cosa * twistedPoint.z);
+	twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+	// Compute the flow-like distortion
+	noiseLacunarity = 6.6;
+	noiseOctaves = cloudsOctaves;
+
+	vec3 distort = Fbm3D(twistedPoint) * 2;
+
+	vec3 p = twistedPoint * cloudsFreq * 10.0;
+	vec3 q = p + Fbm3D(p);
+	vec3 r = p + Fbm3D(q);
+	float f = Fbm(r) * 4 + coverage;
+	float global = saturate(f) * weight * (Fbm(twistedPoint + distort) + cloudsCoverage);
+
+	return saturate(global - (0.65 + cloudsCoverage * 0.5));
+}
+
+float HeightMapCloudsTerraAli4(vec3 point) {
+	float zones = cos(stripeZones * point.y * 0.35);
+	float ang = zones * pow(max(abs(stripeTwist), 1.0), 0.6);
+	vec3 twistedPoint = point;
+	float coverage = 0.1;
+	float weight = 0.1;
+	noiseH = 0.75;
+
+	// Compute the Coriolis effect
+	float sina = sin(ang);
+	float cosa = cos(ang + 15);
+	twistedPoint = vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y, sina * twistedPoint.x + cosa * twistedPoint.z);
+	twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+	// Compute the flow-like distortion
+	noiseLacunarity = 6.6;
+	noiseOctaves = cloudsOctaves;
+
+	vec3 distort = Fbm3D(twistedPoint) * 2;
+
+	vec3 p = twistedPoint * cloudsFreq * 50.0;
+	vec3 q = p + Fbm3D(p);
+	vec3 r = p + Fbm3D(q);
+	float f = Fbm(r) * 4 + coverage;
+	float global = saturate(f) * weight * (Fbm(twistedPoint + distort) + cloudsCoverage);
+
+	return saturate(global - (0.65 + cloudsCoverage * 0.5));
+}
+
+float HeightMapCloudsTerraAli5(vec3 point) {
+	float zones = cos(stripeZones * point.y * 0.35);
+	float ang = zones * pow(max(abs(stripeTwist), 1.0), 0.6);
+	vec3 twistedPoint = point;
+	float coverage = cloudsCoverage * 0.1;
+	float weight = 0.079;
+	noiseH = 0.75;
+
+	// Compute the Coriolis effect
+	float sina = sin(ang);
+	float cosa = cos(ang + 15);
+	twistedPoint = vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y, sina * twistedPoint.x + cosa * twistedPoint.z);
+	twistedPoint = twistedPoint * cloudsFreq * 0.2 + Randomize;
+
+	// Compute the flow-like distortion
+	noiseLacunarity = 6.6;
+	noiseOctaves = 0.0;
+
+	vec3 distort = FbmClouds3D(twistedPoint) * 2;
+
+	vec3 p = twistedPoint * cloudsFreq * 5.0;
+	vec3 q = p + FbmClouds3D(p);
+	vec3 r = p + FbmClouds3D(q);
+	float f = Fbm(r) * 4 + coverage;
+	float global = saturate(f) * weight * (FbmClouds(twistedPoint + distort) + cloudsCoverage);
+
+	return saturate(pow(global, 1.2)) * 2.0;
+}
+
+//-----------------------------------------------------------------------------
+
 void main() {
 	vec3 point = GetSurfacePoint();
-	float height = 3.0 * (HeightMapCloudsTerraAli(point) + HeightMapCloudsTerraAli2(point));
+	float height = 3.0;
+	if(cloudsLayer == 0) {
+		height *= HeightMapCloudsTerraAli(point) + HeightMapCloudsTerraAli2(point);
+	} else {
+		height *= HeightMapCloudsTerraAli3(point) + HeightMapCloudsTerraAli4(point) + HeightMapCloudsTerraAli5(point);
+	}
 	OutColor = vec4(height);
 }
 

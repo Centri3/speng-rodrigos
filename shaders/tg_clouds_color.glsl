@@ -18,7 +18,7 @@ void main() {
         float latitude = abs(GetSurfacePoint().y);
         // Drown out poles
         // TODO: Occasionally make the equator drowned out, like Titan
-        OutColor.rgb = pow(OutColor.rgb, 1.0 - vec3(saturate(latitude - 0.7 + 0.3)));
+        OutColor.rgb = pow(OutColor.rgb, 1.0 - vec3(saturate(latitude - 0.4)));
     } else {
         float modulate = pow(height * 15.0, 0.8);
 
