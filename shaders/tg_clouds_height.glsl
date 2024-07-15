@@ -44,7 +44,7 @@ float HeightMapCloudsTerraAli(vec3 point) {
 	// Compute the flow-like distortion
 	noiseLacunarity = 6.6;
 
-	if(sign(stripeFluct) != -1.0 || cloudsCoverage != 1.0) {
+	if(sign(stripeFluct) != -1.0 || cloudsCoverage < 0.99) {
 		noiseOctaves = cloudsOctaves;
 	} else {
 		noiseOctaves = 0.0;
@@ -68,7 +68,7 @@ float HeightMapCloudsTerraAli(vec3 point) {
 
 float HeightMapCloudsTerraAli2(vec3 point) {
 	float minimumStripeTwist = 0.14;
-	if(cloudsCoverage == 1.0) {
+	if(cloudsCoverage > 0.99) {
 		minimumStripeTwist = 1.0;
 	}
 
@@ -104,7 +104,7 @@ float HeightMapCloudsTerraAli2(vec3 point) {
 	twistedPoint = twistedPoint * cloudsFreq + Randomize;
 
 	float octaves = 0.0;
-	if(sign(stripeFluct) != -1.0 || cloudsCoverage != 1.0) {
+	if(sign(stripeFluct) != -1.0 || cloudsCoverage < 0.99) {
 		octaves = cloudsOctaves;
 	}
 
@@ -151,9 +151,9 @@ float HeightMapCloudsTerraAli3(vec3 point) {
 	vec3 q = p + Fbm3D(p);
 	vec3 r = p + Fbm3D(q);
 	float f = Fbm(r) * 4 + coverage;
-	float global = saturate(f) * weight * (Fbm(twistedPoint + distort) + cloudsCoverage);
+	float global = saturate(f) * weight * (Fbm(twistedPoint + distort) + min(cloudsCoverage, 0.6));
 
-	return saturate(global - (0.65 + cloudsCoverage * 0.5));
+	return saturate(global - (0.65 + min(cloudsCoverage, 0.0) * 0.6));
 }
 
 float HeightMapCloudsTerraAli4(vec3 point) {
@@ -180,9 +180,9 @@ float HeightMapCloudsTerraAli4(vec3 point) {
 	vec3 q = p + Fbm3D(p);
 	vec3 r = p + Fbm3D(q);
 	float f = Fbm(r) * 4 + coverage;
-	float global = saturate(f) * weight * (Fbm(twistedPoint + distort) + cloudsCoverage);
+	float global = saturate(f) * weight * (Fbm(twistedPoint + distort) + min(cloudsCoverage, 0.6));
 
-	return saturate(global - (0.65 + cloudsCoverage * 0.5));
+	return saturate(global - (0.65 + min(cloudsCoverage, 0.6) * 0.6));
 }
 
 float HeightMapCloudsTerraAli5(vec3 point) {
@@ -209,20 +209,20 @@ float HeightMapCloudsTerraAli5(vec3 point) {
 	vec3 q = p + FbmClouds3D(p);
 	vec3 r = p + FbmClouds3D(q);
 	float f = Fbm(r) * 4 + coverage;
-	float global = saturate(f) * weight * (FbmClouds(twistedPoint + distort) + cloudsCoverage);
+	float global = saturate(f) * weight * (FbmClouds(twistedPoint + distort) + min(cloudsCoverage, 0.2));
 
-	return saturate(pow(global, 1.2)) * 2.0;
+	return saturate(pow(global, 1.2)) * 20.0;
 }
 
 //-----------------------------------------------------------------------------
 
 void main() {
 	vec3 point = GetSurfacePoint();
-	float height = 3.0;
+	float height = 0.0;
 	if(cloudsLayer == 0) {
-		height *= HeightMapCloudsTerraAli(point) + HeightMapCloudsTerraAli2(point);
-	} else {
-		height *= HeightMapCloudsTerraAli3(point) + HeightMapCloudsTerraAli4(point) + HeightMapCloudsTerraAli5(point);
+		height = 3.0 * HeightMapCloudsTerraAli(point) + HeightMapCloudsTerraAli2(point);
+	} else if(sign(stripeFluct) != -1.0 || cloudsCoverage < 0.99) {
+		height = HeightMapCloudsTerraAli3(point) + HeightMapCloudsTerraAli4(point) + HeightMapCloudsTerraAli5(point);
 	}
 	OutColor = vec4(height);
 }

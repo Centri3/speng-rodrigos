@@ -12,7 +12,11 @@ void main() {
     float modulate = height * height * 3.5 + height * 4.5;
     if(cloudsCoverage == 1.0) {
         OutColor.rgb = pow(OutColor.rgb, vec3(modulate));
-        OutColor.a = 1.0;
+        if(cloudsLayer == 0) {
+            OutColor.a = 1.0;
+        } else {
+            OutColor.a *= modulate;
+        }
 
         float latitude = abs(GetSurfacePoint().y);
         // Drown out poles
