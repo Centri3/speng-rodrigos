@@ -36,8 +36,8 @@ float HeightMapCloudsTerraAli(vec3 point) {
 
 	// Compute the Coriolis effect
 	float sina = sin(ang);
-	float cosa = cos(ang);
-	twistedPoint = -vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y, sina * twistedPoint.x + cosa * twistedPoint.z);
+	float cosa = cos(ang + 15);
+	twistedPoint = vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y, sina * twistedPoint.x + cosa * twistedPoint.z);
 	twistedPoint = twistedPoint * cloudsFreq + Randomize;
 
 	// Compute the flow-like distortion
@@ -196,7 +196,7 @@ float HeightMapCloudsTerraAli5(vec3 point) {
 	float sina = sin(ang);
 	float cosa = cos(ang + 15);
 	twistedPoint = vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y, sina * twistedPoint.x + cosa * twistedPoint.z);
-	twistedPoint = twistedPoint * cloudsFreq * 0.2 + Randomize;
+	twistedPoint = twistedPoint * cloudsFreq + Randomize;
 
 	// Compute the flow-like distortion
 	noiseLacunarity = 6.6;
