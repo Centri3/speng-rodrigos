@@ -244,25 +244,39 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
         landform = (0.0002 * desert + dunes) * pow(biomeScale, 3);
         heightD += dunesMagn * landform;
     } else if(biome < hillsFraction) {
-     // "Eroded" hills
-        //	RODRIGO  - Edited hills
-        noiseOctaves = 10.0;
-        noiseH = 1.0;
-        noiseLacunarity = 2.3;
-        noiseOffset = montesSpiky;
-        height = ((0.5 + 0.25 * iqTurbulence(point * 0.4 * montesFreq + Randomize, 0.45)) * (0.15 * RidgedMultifractalDetail(point * montesFreq * 0.8 + venus + Randomize, 1.0, montBiomeScale)));
-
+		// Mountains
+		if (oceanType > 0)
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 1.0;
+			noiseLacunarity = 2.0;
+			noiseOffset  = montesSpiky * 1.2;
+			height = hillsMagn * 2.4 * ((1.25 + iqTurbulence(point * 0.5 * hillsFreq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * hillsFreq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
+		}
+		else
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 1.0;
+			noiseLacunarity = 2.0;
+			noiseOffset  = montesSpiky * 1.2;
+			height = hillsMagn * 7.5 * ((1.25 + iqTurbulence(point * 0.5 * (hillsFreq / 2) * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * (hillsFreq / 2) * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
+		}
     } else if(biome < hills2Fraction) {
-        // "Eroded" hills 2
-        //	RODRIGO  - Edited hills2
-
-        noiseOctaves = 10.0;
-        noiseH = 1.0;
-        noiseLacunarity = 2.0;
-        noiseOffset = montesSpiky;
-        landform = (0.1 * iqTurbulence(point * 0.4 * montesFreq + Randomize, 0.35)) * 5 * RidgedMultifractalErodedDetail(point * montesFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale) * (0.3 * JordanTurbulence(point * hillsFreq * 0.5 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0));
-        height = montesMagn * montRange * landform;
-
+		// "Eroded" hills
+		if (oceanType > 0)
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 1.0;
+			noiseOffset  = venusFreq;
+			noiseLacunarity = 2.1;
+			height = (0.5 + 0.4 * iqTurbulence(point * 0.5 * hillsFreq *  + Randomize, 0.55)) * (biomeScale * hillsMagn * (0.05 - (0.4 * RidgedMultifractalDetail(point * hillsFreq + Randomize, 2.0, venus)) + 0.3 * RidgedMultifractalErodedDetail(point * hillsFreq + Randomize, 2.0, 1.1 * erosion, montBiomeScale)));
+		}
+		else
+		{
+			noiseOctaves = 8.0; // Decrease the number of octaves for smoother terrain
+			noiseLacunarity = 2.0; // Slightly increase lacunarity for more variation in frequency
+			height = biomeScale * hillsMagn * JordanTurbulence(point * hillsFreq + Randomize, 0.7, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+		}
     } else if(biome < canyonsFraction) {
         // Canyons
         //	RODRIGO  - Edited canyons
@@ -279,27 +293,24 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
             height = (floor(h) + smoothstep(0.5, 0.6, fract(h))) / (terraceLayers * 5.0);
         }
     } else {
-        // Mountains
-        //	RODRIGO  - Edited mountains. Different mountains whithout erosion in deserts. No terraces
-
-        if(riversMagn > 0.0) {
-
-            noiseOctaves = 10.0;
-            noiseH = 1.0;
-            noiseLacunarity = 2.1;
-            noiseOffset = montesSpiky;
-            height = (0.5 + 0.02 * iqTurbulence(point * 0.8 * montesFreq + Randomize, 0.35)) * (1.4 * montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * 1.4 + Randomize, 2.0, erosion, montBiomeScale));
-
-        } else {
-
-            noiseOctaves = 8.0;
-            noiseH = 1.0;
-            noiseLacunarity = 2.3;
-            noiseOffset = montesSpiky;
-            height = ((0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55)) * (0.25 * RidgedMultifractalDetail(point * montesFreq + venus + Randomize, 1.0, montBiomeScale)));
-
-        }
-
+		// Mountains
+		if (oceanType > 0)
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 1.0;
+			noiseLacunarity = 2.1;
+			noiseOffset  = montesSpiky;
+			// height = montesMagn * 5.0 * (0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55))* 0.7* montesMagn * montRage * RidgedMultifractalErodedDetail(point * montesFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale)+ 0.6 * biomeScale * hillsMagn * JordanTurbulence(point/4 * hillsFreq/4 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+			height = (0.5 + 0.4 * iqTurbulence(point * 0.5 * (montesFreq * 3) + Randomize, 0.55)) * 0.4 * montesMagn * montRage * RidgedMultifractalErodedDetail(point * (montesFreq * 3) * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale);
+		}
+		else
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 1.0;
+			noiseLacunarity = 2.3;
+			noiseOffset  = montesSpiky;
+			height = montesMagn * 5.0 * ((0.5 + 0.8 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55)) * (0.1 * RidgedMultifractalDetail(point *  montesFreq + venus + Randomize, 1.0, montBiomeScale)));
+		}
     }
 
     // Mare
