@@ -319,8 +319,9 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     float mareFloor = global;
     float mareSuppress = 1.0;
 
+	// Use mares as ocean basins.
     if(riversMagn > 0.0) {
-        mare = global;
+        mare = smoothstep(0.0, 1.0, shore * mare);
     } else {
 
         if(mareSqrtDensity > 0.05) {
