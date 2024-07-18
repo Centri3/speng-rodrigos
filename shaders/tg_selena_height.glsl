@@ -87,7 +87,10 @@ float HeightMapSelena(vec3 point) {
 
     noiseOctaves = 8;
 
-    global = (global + 0.8 * venus + (0.000006 * ((hillsFreq + 1500) / hillsMagn)) * fr - seaLevel) * 0.5 + seaLevel;
+    global += venus;
+
+    // This breaks default Dysnomia!
+    // global = (global + 0.8 * venus + (0.000006 * ((hillsFreq + 1500) / hillsMagn)) * fr - seaLevel) * 0.5 + seaLevel;
 
     float mr = 1.0 + 2 * Fbm(point + distort) + 7 * (1.5 - RidgedMultifractalEroded(pp * 0.8, 8.0, erosion)) -
         6 * (1.5 - RidgedMultifractalEroded(pp * 0.1, 8.0, erosion));
