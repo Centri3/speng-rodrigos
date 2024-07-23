@@ -5,14 +5,22 @@
 //-----------------------------------------------------------------------------
 
 void main() {
+    // GlobalModifier // Convert height to color
     float height = GetSurfaceHeight();
     OutColor = pow(GetGasGiantCloudsColor(height), vec4(height));
-    OutColor.a *= 0.5;
+	
+	
+	// GlobalModifier // Change cloud alpha channel
+	   // Changed lowest cloud layer to be full alpha // by Sp_ce
+	if (cloudsLayer == 0) {
+		OutColor.a = 1.0; 
+	}
+	else {
+		OutColor.a *= 0.5;
+	}
 
-    if(OutColor.a == 0.0) {
-        OutColor.a = 1.0;
-    }
 
+	// GlobalModifier // Output color
     OutColor.rgb = pow(OutColor.rgb, colorGamma);
 }
 
