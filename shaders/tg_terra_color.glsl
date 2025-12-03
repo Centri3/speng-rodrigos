@@ -1,34 +1,41 @@
 #include "tg_common.glh"  
-
+ 
 #ifdef _FRAGMENT_
+
 
 //-----------------------------------------------------------------------------
 
-void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
+
+// Function // Construct Color Map
+void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
+{
     Surface surf;
 
-    // Assign a climate type
-//RODRIGO
-    vec3 p = point * mainFreq + Randomize;
-    noiseOctaves = 5;
-    vec3 distort = 0.35 * Fbm3D(p * 0.73);
-    noiseOctaves = 12.0;
 
-    noiseH = 0.5;
+    // GlobalModifier // Assign climate
+	vec3 p = point * mainFreq + Randomize;
+	noiseOctaves = 5;
+	vec3 distort = 0.35 * Fbm3D(p * 0.73);
+	noiseOctaves    = 12.0;
+
+    noiseH          = 0.5;
     noiseLacunarity = 2.218281828459;
-    noiseOffset = 0.8;
+    noiseOffset     = 0.8;
     float climate, latitude, dist;
-    if(tidalLock <= 0.0) {
+    if (tidalLock <= 0.0)
+    {
         latitude = abs(point.y);
         latitude += 0.15 * (Fbm(point * 0.7 + Randomize) - 1.0);
         latitude = saturate(latitude);
-        if(latitude < latTropic - tropicWidth)
+        if (latitude < latTropic - tropicWidth)
             climate = mix(climateTropic, climateEquator, saturate((latTropic - latitude - tropicWidth) / latTropic));
-        else if(latitude > latTropic + tropicWidth)
+        else if (latitude > latTropic + tropicWidth)
             climate = mix(climateTropic, climatePole, saturate((latitude - latTropic - tropicWidth) / (1.0 - latTropic)));
         else
             climate = climateTropic;
-    } else {
+    }
+    else
+    {
         latitude = 1.0 - point.x;
         latitude += 0.15 * (Fbm(point * 0.7 + Randomize) - 1.0);
         climate = mix(climateTropic, climatePole, saturate(latitude));
@@ -38,16 +45,16 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     //float lithoCells = LithoCellsNoise(point, climate, 1.5);
 
     // Change climate with elevation
-    noiseOctaves = 5.0;
+    noiseOctaves    = 5.0;
     noiseLacunarity = 3.5;
     float vary = Fbm(point * 1700.0 + Randomize);
-    float snowLine = biomeData.height + 0.25 * vary * biomeData.slope;
+    float snowLine   = biomeData.height + 0.25 * vary * biomeData.slope;
     float montHeight = saturate((biomeData.height - seaLevel) / (snowLevel - seaLevel));
     climate = min(climate + heightTempGrad * montHeight, climatePole - 0.125);
     climate = mix(climate, climatePole, saturate((snowLine - snowLevel) * 100.0));
-
-    // Ice caps
-    float iceCap = saturate((latitude / latIceCaps - 0.984) * 50.0);
+	
+	// Ice caps
+    float iceCap = saturate((latitude / latIceCaps - 0.984) * 50.0); // 0.984 -> 1.0 old
     climate = mix(climate, climatePole, iceCap);
 
     // Surpress vegetation in deserts
@@ -57,39 +64,42 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     // Flatland climate distortion
 
 //RODRIGO - small changes 
-    noiseOctaves = 14.0;
+    noiseOctaves    = 14.0;
     noiseLacunarity = 2.218281828459;
-    vec3 pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
-    float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0)) +
-        0.05 * (1.5 - RidgedMultifractal(pp * 10.0, 2.0)) +
-        0.02 * (1.5 - RidgedMultifractal(pp * 100.0, 2.0));
-    p += Fbm3D(p * 0.38) * 1.2;
+	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
+    float fr = 0.20 * (1.5 - RidgedMultifractal(pp,         2.0)) +
+               0.05 * (1.5 - RidgedMultifractal(pp * 10.0,  2.0)) +
+               0.02 * (1.5 - RidgedMultifractal(pp * 100.0, 2.0));
+   p += Fbm3D(p * 0.38) * 1.2;
     vary = Fbm(p) * 0.35 + 0.245;
-    climate += 2.8 * vary * saturate(1.0 - 3.0 * biomeData.slope) * saturate(1.0 - 1.333 * climate);
+    climate += 2.8*vary * saturate(1.0 - 3.0 * biomeData.slope) * saturate(1.0 - 1.333 * climate);
 
-    float height = GetSurfaceHeight();
+
     // Shield volcano lava
     vec2 volcMask = vec2(0.0);
-    if(volcanoOctaves > 0) {
+    if (volcanoOctaves > 0)
+    {
         // Global volcano activity mask
         noiseOctaves = 3.0;
         float volcActivity = saturate((Fbm(point * 1.37 + Randomize) - 1.0 + volcanoActivity) * 5.0);
         // Lava in volcano caldera and flows
-        volcMask = VolcanoGlowNoise(point);
+	    volcMask = VolcanoGlowNoise(point);
         volcMask.x *= volcActivity;
     }
 
     // Model lava as rocks texture
-    climate = mix(climate, 0.375, volcMask.x);
-    biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
+	//climate = mix(climate, 0.375, volcMask.x);
+	//biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
 
     // Global albedo variations
 //RODRIGO - modify albedo noise
     noiseOctaves = 14.0;
     distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
+    
 
-    vary = 1.0 - Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) + RidgedMultifractal(pp * 0.999, 8.0)));
-    vary *= 0.5 * vary * vary;
+    vary = 1.0 - Fbm((point + distort) * (1.5 - RidgedMultifractal(pp,         8.0)+ RidgedMultifractal(pp*0.999,         8.0)));
+vary *= 0.5*vary*vary;
+
 
     // Scale detail texture UV and add a small distortion to it to fix pixelization
     vec2 detUV = (TexCoord.xy * faceParams.z + faceParams.xy) * texScale;
@@ -100,11 +110,12 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     surf = GetBaseSurface(biomeData.height, detUV);
 
     // Vegetation
-    if(plantsBiomeOffset > 0.0) {
-        noiseH = 0.5;
+    if (plantsBiomeOffset > 0.0)
+    {
+        noiseH          = 0.5;
         noiseLacunarity = 2.218281828459;
-        noiseOffset = 0.8;
-        noiseOctaves = 2.0;
+        noiseOffset     = 0.8;
+        noiseOctaves    = 2.0;
         float plantsTransFractal = abs(0.125 * Fbm(point * 3.0e5) + 0.125 * Fbm(point * 1.0e3));
 
         // Modulate by humidity
@@ -115,8 +126,8 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
         float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0;
 
         float plantsFade = smoothstep(beachWidth, beachWidth * 2.0, biomeData.height - seaLevel) *
-            smoothstep(0.750, 0.650, biomeData.slope) *
-            smoothstep(-0.5, 0.5, humidityMod);
+                           smoothstep(0.750, 0.650, biomeData.slope) *
+                           smoothstep(-0.5, 0.5, humidityMod);
 
         // Interpolate previous surface to the vegetation surface
         ModifySurfaceByPlants(surf, detUV, climate, plantsFade, plantsTransFractal);
@@ -130,8 +141,9 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     }*/
 
     // Mountain/winter snow
-    if(climate > 0.9 && latitude > latTropic) {
-        float snowTransition = smoothstep(0.9, 0.92, climate);
+    if (climate > 0.9)
+    {
+        float snowTransition = smoothstep(0.9, 0.92, climate);// * smoothstep(0.75, 0.65, biomeData.slope);
         Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
         surf = BlendMaterials(surf, snow, snowTransition);
     }
@@ -139,7 +151,8 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     // Sedimentary layers
     #define CLIFF_TRANSITION_BEGIN 0.35 // 0.50
     #define CLIFF_TRANSITION_END   0.65 // 0.55
-    if((iceCap == 0.0) && (biomeData.slope > CLIFF_TRANSITION_BEGIN)) {
+    if ((iceCap == 0.0) && (biomeData.slope > CLIFF_TRANSITION_BEGIN))
+    {
         // Generate layers pattern
         p = point * 378.3 + NoiseVec3(point * 967.7) * 10.0;
         noiseOctaves = 5.0;
@@ -149,7 +162,10 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
         // Get a steep cliff surface and modulate its color by the layer pattern
         Surface cliff = DetailTextureMulti(detUV, BIOME_ROCK);
-        cliff.color.rgb *= vec3(1.0) - vec3(0.0, 0.25, 0.5) * layers;
+		//cliff.color.rgb *= vec3(1.0) + 0.5*colorVary * layers;
+		cliff.color.rgb *= vec3(1.0) - vec3(0.0, 0.25, 0.5) * layers; //washed red
+		//cliff.color.rgb *= vec3(1.0) - vec3(0.45, 0.6, 0.75) * layers; //grey
+		//cliff.color.rgb *= vec3(1.0) - vec3(0.0, 0.5, 1.0) * layers; //bright red original
 
         // Interpolate previous surface to the cliff surface
         float cliffTransition = smoothstep(CLIFF_TRANSITION_BEGIN, CLIFF_TRANSITION_END, biomeData.slope);
@@ -159,17 +175,18 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     // Ice cracks
 //RODRIGO -Change albedovary to vary
     float mask = 1.0;
-    if(cracksOctaves > 0.0)
+    if (cracksOctaves > 0.0)
         vary *= mix(1.0, CrackColorNoise(point, mask), iceCap);
-    vary += iceCap * 0.7;
+        vary += iceCap * 0.7f;
 
     // Apply albedo variations
     surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
 
+
     // water mask for planets with oceans (oceanType == 0 on dry planets)
 
 //RODRIGO - chage surf.color.a to surf.color 
-    if(oceanType != 0.0)
+    if (oceanType != 0.0)
         surf.color += saturate((seaLevel - biomeData.height) * 200.0);
 
     ColorMap = surf.color;
@@ -191,43 +208,29 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
 //#define VISUALIZE_BIOMES
 #ifdef VISUALIZE_BIOMES
-    const vec4 BiomeDebugColor[BIOME_SURF_LAYERS] = vec4[BIOME_SURF_LAYERS](vec4(0.5, 0.1, 0.5, 0.0),   // BIOME_BOTTOM
-    vec4(0.0, 0.4, 0.8, 0.0),   // BIOME_SHELF
-    vec4(0.2, 0.2, 0.2, 0.0),   // BIOME_BEACH
-    vec4(0.2, 0.4, 0.2, 0.0),   // BIOME_LOWLAND
-    vec4(0.0, 0.4, 1.0, 0.0),   // BIOME_UPLAND
-    vec4(0.3, 0.2, 0.1, 0.0),   // BIOME_ROCK
-    vec4(0.9, 1.0, 1.0, 1.0),   // BIOME_SNOW
-    vec4(0.8, 0.8, 1.0, 1.0),   // BIOME_ICE
-    vec4(0.1, 0.1, 0.1, 0.0),   // BIOME_LAVA
-    vec4(0.8, 0.7, 0.0, 0.0),   // BIOME_ORG_M_STEPPE
-    vec4(0.1, 1.0, 0.1, 0.0),   // BIOME_ORG_M_FOREST
-    vec4(0.6, 0.7, 0.2, 0.0),   // BIOME_ORG_M_GRASS
-    vec4(0.8, 0.7, 0.0, 0.0),   // BIOME_ORG_U_STEPPE
-    vec4(0.1, 1.0, 0.1, 0.0),   // BIOME_ORG_U_FOREST
-    vec4(0.6, 0.7, 0.2, 0.0),   // BIOME_ORG_U_GRASS
-    vec4(0.8, 0.7, 0.0, 0.0),   // BIOME_EXO_M_STEPPE
-    vec4(0.1, 1.0, 0.1, 0.0),   // BIOME_EXO_M_FOREST
-    vec4(0.6, 0.7, 0.2, 0.0),   // BIOME_EXO_M_GRASS
-    vec4(0.8, 0.7, 0.0, 0.0),   // BIOME_EXO_U_STEPPE
-    vec4(0.1, 1.0, 0.1, 0.0),   // BIOME_EXO_U_FOREST
-    vec4(0.6, 0.7, 0.2, 0.0)    // BIOME_EXO_U_GRASS
+    const vec4    BiomeDebugColor[BIOME_SURF_LAYERS] = vec4[BIOME_SURF_LAYERS](
+        vec4(0.5, 0.1, 0.5, 0.0),   // BIOME_BOTTOM
+        vec4(0.0, 0.4, 0.8, 0.0),   // BIOME_SHELF
+        vec4(0.2, 0.2, 0.2, 0.0),   // BIOME_BEACH
+        vec4(0.2, 0.4, 0.2, 0.0),   // BIOME_LOWLAND
+        vec4(0.0, 0.4, 1.0, 0.0),   // BIOME_UPLAND
+        vec4(0.3, 0.2, 0.1, 0.0),   // BIOME_ROCK
+        vec4(0.9, 1.0, 1.0, 1.0),   // BIOME_SNOW
+        vec4(0.8, 0.8, 1.0, 1.0),   // BIOME_ICE
+        vec4(0.1, 0.1, 0.1, 0.0),   // BIOME_LAVA
+        vec4(0.8, 0.7, 0.0, 0.0),   // BIOME_ORG_M_STEPPE
+        vec4(0.1, 1.0, 0.1, 0.0),   // BIOME_ORG_M_FOREST
+        vec4(0.6, 0.7, 0.2, 0.0),   // BIOME_ORG_M_GRASS
+        vec4(0.8, 0.7, 0.0, 0.0),   // BIOME_ORG_U_STEPPE
+        vec4(0.1, 1.0, 0.1, 0.0),   // BIOME_ORG_U_FOREST
+        vec4(0.6, 0.7, 0.2, 0.0),   // BIOME_ORG_U_GRASS
+        vec4(0.8, 0.7, 0.0, 0.0),   // BIOME_EXO_M_STEPPE
+        vec4(0.1, 1.0, 0.1, 0.0),   // BIOME_EXO_M_FOREST
+        vec4(0.6, 0.7, 0.2, 0.0),   // BIOME_EXO_M_GRASS
+        vec4(0.8, 0.7, 0.0, 0.0),   // BIOME_EXO_U_STEPPE
+        vec4(0.1, 1.0, 0.1, 0.0),   // BIOME_EXO_U_FOREST
+        vec4(0.6, 0.7, 0.2, 0.0)    // BIOME_EXO_U_GRASS
     );
-
-    // Make driven hemisphere darker
-    float z = -point.z * sign(drivenDarkening);
-    if(drivenDarkening != 0.0) {
-        noiseOctaves = 3;
-        z += 0.2 * Fbm(point * 1.63);
-        z = saturate(1.0 - z);
-        z *= z;
-
-        if(drivenDarkening < 0.55) {
-            surf.color.rgb *= mix(vec3(1.0 - 0.75 * 0.65 * abs(drivenDarkening), 1.0 - 0.75 * 0.67 * abs(drivenDarkening), 1.0 - 0.75 * 0.65 * abs(drivenDarkening)), vec3(1.0), z);
-        } else {
-            surf.color.rgb *= mix(vec3(1.0 - 0.75 * 0.65 * 0.55, 1.0 - 0.75 * 0.67 * 0.55, 1.0 - 0.75 * 0.65 * 0.55), vec3(1.0), z);
-        }
-    }
 
     //vec4 col0 = BiomeDebugColor[int(surf.matIDs.x)];
     //vec4 col1 = BiomeDebugColor[int(surf.matIDs.y)];
@@ -239,8 +242,9 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
 //-----------------------------------------------------------------------------
 
-void main() {
-    vec3 point = GetSurfacePoint();
+void main()
+{
+    vec3  point = GetSurfacePoint();
     BiomeData biomeData = GetSurfaceBiomeData();
     ColorMapTerra(point, biomeData, OutColor);
 
