@@ -125,7 +125,7 @@ vary *= 0.5*vary*vary;
         noiseOctaves = 8.0;
         float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0;
 
-        float plantsFade = smoothstep(beachWidth, beachWidth * 2.0, biomeData.height - seaLevel) *
+        float plantsFade = smoothstep(beachWidth, beachWidth * 50.0, biomeData.height - seaLevel) *
                            smoothstep(0.750, 0.650, biomeData.slope) *
                            smoothstep(-0.5, 0.5, humidityMod);
 

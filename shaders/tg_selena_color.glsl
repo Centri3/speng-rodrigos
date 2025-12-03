@@ -1,5 +1,4 @@
 #include "tg_common.glh"  
-#include "height_map_selena.glh"
 
 #ifdef _FRAGMENT_
 
