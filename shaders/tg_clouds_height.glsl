@@ -83,7 +83,7 @@ float   HeightMapCloudsTerraTPE(vec3 point)
 		vec3  cycloneCenter = vec3(0.0, 1.0, 0.0);
 		float r = length(cycloneCenter - point);
 		float mag = -tidalLock * cycloneMagn;
-		if (r < 1.0)
+		if (r < 5.0)
 		{
 			float dist = 1.0 - r;
 			float fi = mix(log(r), dist*dist*dist, r);
@@ -145,7 +145,7 @@ float   HeightMapCloudsTerraTPE2(vec3 point)
 		vec3  cycloneCenter = vec3(0.0, 1.0, 0.0);
 		float r = length(cycloneCenter - point * 0.75);
 		float mag = 0;
-		if (r < 1.0)
+		if (r < 5.0)
 		{
 			float dist = 1.0 - r;
 			float fi = mix(log(r), dist*dist*dist, r);
