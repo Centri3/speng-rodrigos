@@ -22,6 +22,10 @@ void main() {
         // Drown out poles
         // TODO: Occasionally make the equator drowned out, like Titan
         OutColor.rgb = pow(OutColor.rgb, 1.0 - vec3(saturate(latitude - 0.4)));
+
+        if(cloudsLayer == 0.0 && cloudsNLayers != 1) {
+            OutColor.a = 0.0;
+        }
     } else {
         OutColor.rgb = pow(OutColor.rgb, 1.0 / vec3(modulate));
         OutColor.a *= modulate;
