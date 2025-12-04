@@ -38,38 +38,32 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
     float iceCap = saturate((latitude / latIceCaps - 1.0) * 50.0);
     climate = mix(climate, climatePole, iceCap);
 
-/*
-    // Thermal glow variations
-    noiseOctaves = 5;
-    vec3 p = point * 600.0 + Randomize;
-    dist = 10.0 * colorDistMagn * Fbm3D(p * 0.2);
-    //vec2 cell = Cell3Noise2(p + dist);
-    ////float varyTemp = 0.5 * smoothstep(0.0, 0.4, cell.y - cell.x);
-    ////float varyTemp = 0.5 * sqrt(abs(cell.y - cell.x));
-    //float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
-    //float flow  = saturate(varyTemp * 0.2 * lavaCoverage);
-    noiseOctaves = 8;
-	float varyTemp = abs(Fbm(p + dist));
 	// Thermal emission temperature (in thousand Kelvins)
-	float surfTemp = 0.0;
-*/
-	// Thermal emission temperature (in thousand Kelvins)
-    vec3 p = point * 600.0 + Randomize;
+    vec3 p = point * 6.0 + Randomize;
     noiseOctaves = 5;
+    noiseH = 0.3;
     dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
-    /*vec2 cell = Cell3Noise2(p + dist);
     //float varyTemp = 0.5 * smoothstep(0.0, 0.4, cell.y - cell.x);
     //float varyTemp = 0.5 * sqrt(abs(cell.y - cell.x));
-    float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
-    float flow  = saturate(varyTemp * 0.2 * lavaCoverage);*/
+    float varyTemp = 1.0 - 5.0 * RidgedMultifractal(p, 16.0);
     noiseOctaves = 3;
     float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
     noiseOctaves = 8;
-    float varyTemp = abs(Fbm(p + dist));
+    // float varyTemp = abs(Fbm(p + dist));
     //globTemp *= 1.0 - lithoCells;
 
+    // Copied from height shader, for extra detail
+    float venus = 0.0;
+    
+    noiseOctaves = 4;
+    noiseH = 0.9;
+    vec3 distort = Fbm3D(point * 0.3) * 1.5;
+    noiseOctaves = 6;
+    venus = Fbm((point + distort) * 1.0) * (0.3);
+    
+
     float surfTemp = surfTemperature *
-        (globTemp + varyTemp * 0.08) *
+        (globTemp + venus * varyTemp * 0.04) *
         saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * height)) *
         saturate((lavaCoverage - 0.01) * 25.0) *
         saturate((0.875 - climate) * 50.0);
