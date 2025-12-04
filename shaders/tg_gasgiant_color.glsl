@@ -4,10 +4,11 @@
 
 //-----------------------------------------------------------------------------
 
+
 void main() {
 	// GlobalModifier // Convert height to color
     float height = GetSurfaceHeight();
-    OutColor = pow(GetGasGiantCloudsColor(height), vec4(height));
+    OutColor = GetGasGiantCloudsColor(height);
 	
 	
 	// GlobalModifier // Change cloud alpha channel
