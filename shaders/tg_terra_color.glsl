@@ -112,7 +112,7 @@ vary *= 0.5*vary*vary;
     // Vegetation
     if (plantsBiomeOffset > 0.0)
     {
-        noiseH          = 0.5;
+        noiseH          = 4.0;
         noiseLacunarity = 2.218281828459;
         noiseOffset     = 0.8;
         noiseOctaves    = 2.0;
