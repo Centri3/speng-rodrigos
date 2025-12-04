@@ -380,7 +380,7 @@ float damping;
 
 if (riversMagn > 0.0)
     {
-        damping = (smoothstep(0.145, 0.135, rodrigoDamping)) *    // disable rivers inside continents
+        damping = (smoothstep(0.195, 0.135, rodrigoDamping)) *    // disable rivers inside continents
                         (smoothstep(-0.0016, -0.018, seaLevel - height));  // disable rivers inside oceans
         _PseudoRivers(point, global, damping, height);
     }
