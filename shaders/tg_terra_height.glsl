@@ -22,12 +22,12 @@ void    _PseudoRivers(vec3 point, float global, float damping, inout float heigh
 
     vec2 cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
         
-    float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
+    float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn * 0.2));
     valleys = smoothstep(0.0, 1.0, valleys) * damping;
     height = mix(height, seaLevel + 0.03, valleys);
 
 
-    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn));
+    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn * 0.2));
     rivers = smoothstep(0.0, 1.0, rivers) * damping;
     height = mix(height, seaLevel+0.015, rivers);
 }
