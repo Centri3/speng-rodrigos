@@ -420,8 +420,12 @@ distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp,         8.0)+ RidgedMultifractal(pp*0.999,         8.0))));
 
 height = mix(height ,height +0.0001,vary);
-
-
+// height = max(height, seaLevel + 0.057);
+// ocean basins
+height = min(smoothstep(seaLevel - 0.03, seaLevel + 0.084, height), height);
+// reduce ocean depth near shore
+float h = smoothstep(seaLevel - 0.23, seaLevel + 0.08, height);
+height = mix(height, max(height, seaLevel + 0.0595), h);
 
     // smoothly limit the height
     height = softPolyMin(height, 0.99, 0.3);
