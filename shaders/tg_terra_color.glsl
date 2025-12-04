@@ -134,11 +134,11 @@ vary *= 0.5*vary*vary;
     }
 
     // Polar cap ice
-    if (iceCap > 0)
-    {
-        Surface ice = DetailTextureMulti(detUV, BIOME_SNOW);
-        surf = BlendMaterials(surf, ice, iceCap);
-    }
+    // if (iceCap > 0)
+    // {
+    //     Surface ice = DetailTextureMulti(detUV, BIOME_SNOW);
+    //     surf = BlendMaterials(surf, ice, iceCap);
+    // }
 
     // Mountain/winter snow
     if (climate > 0.93)
