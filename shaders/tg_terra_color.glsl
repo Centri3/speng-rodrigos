@@ -134,16 +134,16 @@ vary *= 0.5*vary*vary;
     }
 
     // Polar cap ice
-    /*if (iceCap > 0)
+    if (iceCap > 0)
     {
         Surface ice = DetailTextureMulti(detUV, BIOME_SNOW);
         surf = BlendMaterials(surf, ice, iceCap);
-    }*/
+    }
 
     // Mountain/winter snow
-    if (climate > 0.9)
+    if (climate > 0.93)
     {
-        float snowTransition = smoothstep(0.9, 0.92, climate);// * smoothstep(0.75, 0.65, biomeData.slope);
+        float snowTransition = smoothstep(0.93, 0.96, climate);// * smoothstep(0.75, 0.65, biomeData.slope);
         Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
         surf = BlendMaterials(surf, snow, snowTransition);
     }
