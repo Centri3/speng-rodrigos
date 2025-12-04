@@ -190,6 +190,9 @@ float   HeightMapCloudsTerraA(vec3 point)
 	float ang = zones * 2; 
 	vec3  twistedPoint = point;
 	float coverage = cloudsCoverage;
+	if(cloudsOctaves == 0) {
+		coverage = 0.0;
+	}
 	float weight = 0.8;
 	noiseH       = 0.75;
 
