@@ -136,7 +136,11 @@ float   HeightMapCloudsTerraTPE2(vec3 point)
 	vec3  twistedPoint = point;
 	float coverage = cloudsCoverage;
 	float weight = 0.3;
-	noiseH       = 0.75;
+	if(cloudsOctaves == 0) {
+		noiseH   = 1.0;
+	} else {
+		noiseH   = 0.75;
+	}
 
 	// Compute the cyclons
 	if (tidalLock > 0.0)
