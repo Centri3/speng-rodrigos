@@ -186,8 +186,8 @@ vary *= 0.5*vary*vary;
     // water mask for planets with oceans (oceanType == 0 on dry planets)
 
 //RODRIGO - chage surf.color.a to surf.color 
-    if (oceanType != 0.0)
-        surf.color += saturate((seaLevel - biomeData.height) * 200.0);
+    // if (oceanType != 0.0)
+    //     surf.color += saturate((seaLevel - biomeData.height) * 200.0);
 
     ColorMap = surf.color;
 
