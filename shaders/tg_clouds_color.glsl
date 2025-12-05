@@ -7,11 +7,11 @@
 void main() {
     float height = GetSurfaceHeight();
 
+    float modulate = saturate(height * height * 3.5 + height * 4.5);
     OutColor = GetCloudsColor(height);
 
-    float modulate = height * height * 3.5 + height * 4.5;
+    // Venus-like clouds
     if(cloudsCoverage == 1.0) {
-        OutColor.rgb = pow(OutColor.rgb, vec3(modulate));
         if(cloudsLayer == 0) {
             OutColor.a = 1.0;
         } else {
@@ -27,8 +27,7 @@ void main() {
             OutColor.a = 0.0;
         }
     } else {
-        OutColor.rgb = pow(OutColor.rgb, 1.0 / vec3(modulate));
-        OutColor.a *= modulate;
+        OutColor *= modulate;
     }
 
     OutColor.rgb = pow(OutColor.rgb, colorGamma);

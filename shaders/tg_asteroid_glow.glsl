@@ -31,7 +31,7 @@ vec4    GlowMapAsteroid(vec3 point, float height, float slope)
     
 
     float surfTemp = surfTemperature *
-        (globTemp + venus * varyTemp * 0.04) *
+        (globTemp + venus * varyTemp * 0.08) *
 		saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * height));
 
     surfTemp = EncodeTemperature(surfTemp); // encode to [0...1] range
