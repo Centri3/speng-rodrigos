@@ -220,7 +220,7 @@ float   HeightMapCloudsTerraA(vec3 point)
 	}
 	float _distort = Fbm(twistedPoint + distort);
 	noiseH = 1.0;
-	float global = max(saturate(f) * weight * (_distort + cloudsCoverage), pow(abs(point.y + Fbm(point)), 2.0) * 0.08);
+	float global = max(saturate(f) * weight * (_distort + cloudsCoverage), pow(abs(point.y + Fbm(point)), 2.0) * 0.04);
 
 	return global;
 }
@@ -350,7 +350,7 @@ void main()
 	float height = 0.0;
 	if (cloudsNLayers == 1 || cloudsLayer != 0)
 	{
-		height = 3 * (HeightMapCloudsTerraTPE(point) + HeightMapCloudsTerraTPE2(point));
+		height = 0.75 * (HeightMapCloudsTerraTPE(point) + HeightMapCloudsTerraTPE2(point));
 	}
 	else
 	{
