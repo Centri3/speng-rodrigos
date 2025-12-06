@@ -139,8 +139,8 @@ float   _MareHeightFunc(vec3 point, float lastLand, float lastlastLand, float he
         mareFloor = 1.0;
 		
 		noiseOctaves     = 6.0;
-		noiseLacunarity  = 2.218281828459;
-		noiseH           = 0.9;
+		//noiseLacunarity  = 2.218281828459;       //Caused offset
+		//noiseH           = 0.9;                 // Also caused offset
 		noiseOffset      = 0.5;
 		vec3 p = point * mainFreq + Randomize;
 		vec3 distort = 3.5 * Fbm3D(point * 0.1) + 6.5 * Fbm3D(point * 0.1) + 12.5 * Fbm3D(point * 0.1);
@@ -362,7 +362,7 @@ float   HeightMapSelena(vec3 point)
     distort = 0.35 * Fbm3D(p * 0.73);
     noiseOctaves = 10.0;
     noiseH = 1.0;
-    noiseLacunarity = 2.3;
+    //noiseLacunarity = 2.3; // Caused offset
     noiseOffset = montesSpiky;
 	float rocks = iqTurbulence(point * 80, 1); 
 
