@@ -270,11 +270,11 @@ noiseOctaves = 10.0;
 if (riversMagn > 0.0)
     {
 
-        noiseOctaves = 10.0;
-        noiseH       = 1.0;
-        noiseLacunarity = 2.1;
-        noiseOffset  = montesSpiky;
-        height = (0.5+ 0.02 * iqTurbulence(point * 0.8 * montesFreq + Randomize, 0.35))*  (1.4*montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * 1.4+ Randomize, 2.0, erosion, montBiomeScale));
+            noiseOctaves = 10.0;
+            noiseH = 1.0;
+            noiseLacunarity = 2.1;
+            // noiseOffset = montesSpiky;
+            height = (0.5 + 0.02 * iqTurbulence(point * 0.8 * montesFreq + Randomize, 0.35)) * (1.4 * montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * 1.4 + Randomize, 2.0, erosion, montBiomeScale));
 
 
 
@@ -284,12 +284,12 @@ else
 {
 
 
-        
-        noiseOctaves = 8.0;
-        noiseH       = 1.0;
-        noiseLacunarity = 2.3;
-        noiseOffset  = montesSpiky;
-        height = ((0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq +Randomize, 0.55)) * (0.25 * RidgedMultifractalDetail(point *  montesFreq + venus + Randomize, 1.0, montBiomeScale)));
+
+            noiseOctaves = 8.0;
+            noiseH = 1.0;
+            noiseLacunarity = 2.3;
+            // noiseOffset = montesSpiky;
+            height = ((0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55)) * (0.25 * RidgedMultifractalDetail(point * montesFreq + venus + Randomize, 1.0, montBiomeScale)));
 
 
 
