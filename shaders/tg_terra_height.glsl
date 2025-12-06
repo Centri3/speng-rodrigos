@@ -75,6 +75,12 @@ void    _Rifts(vec3 point, float damping, inout float height)
 
 void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 {
+    float _hillsMagn = hillsMagn;
+    if (hillsMagn < 0.05)
+    {
+        _hillsMagn = 0.05;
+    }
+
     // Assign a climate type
     noiseOctaves    = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 1)
     noiseH          = 0.5;
@@ -154,7 +160,7 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 
 
 noiseOctaves = 8;
-vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
+vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
 
 noiseOctaves = 12.0;
 distort = Fbm3D((point + Randomize) * 0.07) * 1.5;

@@ -11,6 +11,11 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 {
     Surface surf;
 
+    float _hillsMagn = hillsMagn;
+    if (hillsMagn < 0.05)
+    {
+        _hillsMagn = 0.05;
+    }
 
     // GlobalModifier // Assign climate
 	vec3 p = point * mainFreq + Randomize;
@@ -66,7 +71,7 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 //RODRIGO - small changes 
     noiseOctaves    = 14.0;
     noiseLacunarity = 2.218281828459;
-	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
+	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
     float fr = 0.20 * (1.5 - RidgedMultifractal(pp,         2.0)) +
                0.05 * (1.5 - RidgedMultifractal(pp * 10.0,  2.0)) +
                0.02 * (1.5 - RidgedMultifractal(pp * 100.0, 2.0));
