@@ -2,7 +2,7 @@
 
 #ifdef _FRAGMENT_
 
-//-----------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------
 
 vec3 TurbulenceGasGiantGmail(vec3 point) {
     const float scale = 1.7;
@@ -16,16 +16,16 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
     float size = 14.0 * scale;
     float dens = 0.8;
 
-    for(int i = 0; i < 5; i++) {
+    for(int i = 0;i < 5;i + + ) {
         vec2 cell = inverseSF(point, freq, cellCenter);
         rnd = hash1(cell.x);
         r = size * cell.y;
 
-        if((rnd < dens) && (r < 1.0)) {
+        if((rnd < dens) & & (r < 1.0)) {
             dir = sign(0.5 * dens - rnd);
             dist = saturate(1.0 - r);
             dist2 = saturate(0.5 - r);
-            fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
+            fi = pow(dist, strength) * (exp( - 6.0 * dist2) + 0.25);
             twistedPoint = Rotate(dir * stripeTwist * sign(cellCenter.y) * fi, cellCenter.xyz, point);
         }
 
@@ -38,7 +38,7 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
     return twistedPoint;
 }
 
-//-----------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------
 
 vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
     vec3 rotVec = normalize(Randomize);
@@ -53,18 +53,18 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
     float dens = cycloneDensity * 0.02;
     float size = 1.3 * pow(cloudsLayer + 1.0, 5.0);
 
-    for(int i = 0; i < cycloneOctaves; i++) {
+    for(int i = 0;i < cycloneOctaves;i + + ) {
         cell = inverseSF(vec3(point.x, point.y * squeeze, point.z), freq + cloudsLayer, cellCenter);
         rnd = hash1(cell.x);
         r = size * cell.y;
 
-        if((rnd < dens) && (r < 1.0)) {
+        if((rnd < dens) & & (r < 1.0)) {
             dir = sign(0.7 * dens - rnd);
             dist = saturate(1.0 - r);
             dist2 = saturate(0.3 - r);
-            fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.5);
+            fi = pow(dist, strength) * (exp( - 6.0 * dist2) + 0.5);
             twistedPoint = Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi, cellCenter.xyz, point);
-            offset += offs * fi * dir;
+            offset + = offs * fi * dir;
         }
 
         freq = min(freq * 2.0, 6400.0);
@@ -79,83 +79,83 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
     return twistedPoint;
 }
 
-//-----------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------
 
 float HeightMapCloudsGasGiantGmail(vec3 point) {
     vec3 twistedPoint = point;
 
-    // Compute zones
+     // Compute zones
     float zones = Noise(vec3(0.0, twistedPoint.y * stripeZones * 0.6 + cloudsLayer, 0.35)) * 0.8 + 0.20;
     float offset = 0.0;
 
-    // Compute cyclons
+     // Compute cyclons
     if(cycloneOctaves > 0.0)
-        twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
+    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
 
-    // Compute turbulence
+     // Compute turbulence
     twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
 
-    // Compute stripes
+     // Compute stripes
     noiseOctaves = cloudsOctaves;
     float turbulence = Fbm(twistedPoint * 0.03);
     twistedPoint = twistedPoint * (0.43 * cloudsFreq) + Randomize + cloudsLayer;
-    twistedPoint.y *= 9.0 + turbulence;
+    twistedPoint.y * = 9.0 + turbulence;
     float height = stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
 
     return zones + height + offset;
 }
-//-----------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------
 
 float HeightMapCloudsGasGiantGmail2(vec3 point) {
     vec3 twistedPoint = point;
 
-    // Compute zones
+     // Compute zones
     float zones = Noise(vec3(0.0, twistedPoint.y * stripeZones * 0.5 + cloudsLayer, 0.3)) * 0.5 + 0.10;
     float offset = 0.1;
 
-    // Compute cyclons
+     // Compute cyclons
     if(cycloneOctaves > 0.0)
-        twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
+    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
 
-    // Compute turbulence
+     // Compute turbulence
     twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
 
-    // Compute stripes
+     // Compute stripes
     noiseOctaves = cloudsOctaves;
     float turbulence = Fbm(twistedPoint * 0.01);
     twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
-    twistedPoint.y *= 30.0 + turbulence;
+    twistedPoint.y * = 30.0 + turbulence;
     float height = stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
     return zones + height + offset;
 }
-//-----------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------
 
 float HeightMapCloudsGasGiantGmail3(vec3 point) {
     vec3 twistedPoint = point;
 
-    // Compute zones
+     // Compute zones
     float zones = Noise(vec3(0.0, twistedPoint.y * stripeZones * 0.9 + cloudsLayer, 0.3)) * 0.4 + 0.08865;
     float offset = 0.0;
 
-    // Compute cyclons
+     // Compute cyclons
     if(cycloneOctaves > 0.0)
-        twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
+    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
 
-    // Compute turbulence
+     // Compute turbulence
     twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
 
-    // Compute stripes
+     // Compute stripes
     noiseOctaves = cloudsOctaves;
     float turbulence = Fbm(twistedPoint * 8.86);
     twistedPoint = twistedPoint * (1.12 * cloudsFreq) + Randomize + cloudsLayer;
-    twistedPoint.y *= 80.0 + turbulence;
+    twistedPoint.y * = 80.0 + turbulence;
     float height = stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
     return zones + height + offset;
 }
 
-//-----------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------
 
 void main() {
     vec3 point = GetSurfacePoint();
@@ -163,6 +163,6 @@ void main() {
     OutColor = vec4(height);
 }
 
-//-----------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------
 
 #endif
