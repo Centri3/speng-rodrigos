@@ -189,11 +189,11 @@ float   HeightMapCloudsTerraA(vec3 point)
 	float zones = -cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
 	float ang = zones * 2; 
 	vec3  twistedPoint = point;
-	float coverage = cloudsCoverage;
+	float coverage = cloudsCoverage * 0.8;
 	if(cloudsOctaves == 0) {
 		coverage = 0.0;
 	}
-	float weight = 0.8;
+	float weight = 0.2;
 	noiseH       = 0.75;
 
 	// Compute turbulence

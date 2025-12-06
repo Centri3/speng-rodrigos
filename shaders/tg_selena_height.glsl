@@ -232,8 +232,6 @@ float   _CraterHeightFunc(float lastlastLand, float lastLand, float height, floa
     float halo = 0.05 * distHeight * t;
 
     return mix(lastlastLand + height * heightFloor + peak + innerRim, lastLand + outerRim + halo, inoutMask);
-  //return mix(lastlastLand + height * heightFloor + peak + innerRim, lastLand + outerRim + halo, mareSuppress * (1 - (i / cratOctaves)) * inoutMask);
-  //return mix(lastlastLand + height * heightFloor + peak + innerRim, lastLand + outerRim + halo, 1 + mareSuppress * ((i/cratOctaves) - 1) * inoutMask); // NEW SUPPRESS
 }
 
 
@@ -256,7 +254,7 @@ float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtD
     float  radFactor = 1.0 / cratSqrtDensity;
 
     // Craters roundness distortion
-    noiseH           = 0.5;
+    noiseH           = 0.1 + smoothstep(0.0, 0.1, colorDistMagn) * 0.9;
     noiseLacunarity  = 2.218281828459;
     noiseOffset      = 0.8;
     noiseOctaves     = 3;
@@ -285,6 +283,7 @@ float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtD
         //newLand = CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y * radFactor / rad);
         //fibFreq   *= craterFreqPower;
         //radFactor *= craterRadFactorPower;
+		*/
 
         if (cratOctaves > 1)
         {
@@ -394,8 +393,7 @@ float   HeightMapSelena(vec3 point)
 	mr = 0.1*hillsFreq* smoothstep(0.0, 1.0, mr);
 	global =  mix(global,global+0.0003,mr);
 	float mask = 1.0;
-	
-	
+
 	
 	// GlobalModifier // Set global height
 	float height = global;

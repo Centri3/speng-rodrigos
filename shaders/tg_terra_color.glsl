@@ -23,7 +23,7 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 	vec3 distort = 0.35 * Fbm3D(p * 0.73);
 	noiseOctaves    = 12.0;
 
-    noiseH          = 0.5;
+    noiseH          = 0.9;
     noiseLacunarity = 2.218281828459;
     noiseOffset     = 0.8;
     float climate, latitude, dist;
@@ -52,6 +52,7 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
     // Change climate with elevation
     noiseOctaves    = 5.0;
     noiseLacunarity = 3.5;
+    noiseH = 0.9;
     float vary = Fbm(point * 1700.0 + Randomize);
     float snowLine   = biomeData.height + 0.25 * vary * biomeData.slope;
     float montHeight = saturate((biomeData.height - seaLevel) / (snowLevel - seaLevel));
@@ -96,15 +97,14 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 	//climate = mix(climate, 0.375, volcMask.x);
 	//biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
 
-    // Global albedo variations
-//RODRIGO - modify albedo noise
-    noiseOctaves = 14.0;
-    distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
-    
+    // GlobalModifier // ColorVary setup
+    vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
+	noiseOctaves = 14.0;
+    noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.7;
+	vec3 albedoVaryDistort = Fbm3D((point + Randomize) * 1.07) * (1.5 + venusMagn);
 
-    vary = 1.0 - Fbm((point + distort) * (1.5 - RidgedMultifractal(pp,         8.0)+ RidgedMultifractal(pp*0.999,         8.0)));
-vary *= 0.5*vary*vary;
-
+    vary = 1.0 - Fbm((point + albedoVaryDistort) * (1.5 - RidgedMultifractal(zz, 8.0)+ RidgedMultifractal(zz*0.999, 8.0)));
+	vary *= 0.5 * vary;
 
     // Scale detail texture UV and add a small distortion to it to fix pixelization
     vec2 detUV = (TexCoord.xy * faceParams.z + faceParams.xy) * texScale;
@@ -184,8 +184,8 @@ vary *= 0.5*vary*vary;
         vary *= mix(1.0, CrackColorNoise(point, mask), iceCap);
         vary += iceCap * 0.7f;
 
-    // Apply albedo variations
-    surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
+    // GlobalModifier // ColorVary apply
+	surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
 
 
     // water mask for planets with oceans (oceanType == 0 on dry planets)
