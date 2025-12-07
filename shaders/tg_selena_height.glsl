@@ -283,7 +283,6 @@ float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtD
         //newLand = CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y * radFactor / rad);
         //fibFreq   *= craterFreqPower;
         //radFactor *= craterRadFactorPower;
-		*/
 
         if (cratOctaves > 1)
         {
@@ -427,23 +426,23 @@ float   HeightMapSelena(vec3 point)
 
 
     // TerrainFeature // Craters (old)
-		// 25-10-2024 by Sp_ce // Crater density is reduced for high europaLikeness
-		// 25-10-2024 by Sp_ce // Altered crater density function, high densities can now appear on high europaLikeness, but rarely
+        // 25-10-2024 by Sp_ce // Crater density is reduced for high europaLikeness
+        // 25-10-2024 by Sp_ce // Altered crater density function, high densities can now appear on high europaLikeness, but rarely
     float crater = 0.0;
     if (craterSqrtDensity > 0.05)
     {
-		float craterSqrtDensityAltered = max(craterSqrtDensity * (0.2 + 0.8 * (1.0 - europaLikeness)), 10 * (craterSqrtDensity - 0.9));
-	
+        float craterSqrtDensityAltered = max(craterSqrtDensity * (0.2 + 0.8 * (1.0 - europaLikeness)), 10 * (craterSqrtDensity - 0.9));
+    
         heightFloor = -0.1;
         heightPeak  =  0.6;
         heightRim   =  1.0;
         //crater = _CraterNoise(point, craterMagn, craterFreq, craterSqrtDensity, craterOctaves, mareSuppress); // NEW SUPPRESS
-		crater = saturate(mareSuppress + Fbm(10*point)) * CraterNoise(point, craterMagn, craterFreq, craterSqrtDensityAltered, craterOctaves);
+        crater = saturate(mareSuppress + Fbm(10*point)) * CraterNoise(point, craterMagn, craterFreq, (craterSqrtDensityAltered * (1 - (volcanoActivity / 2.5))), craterOctaves);  // Supress craters on volcanic worlds
         noiseOctaves    = 10.0;
         noiseLacunarity = 2.0;
         crater = 0.25 * crater + 0.05 * crater * iqTurbulence(point * montesFreq + Randomize, 0.55);
 
-		// Suppress Young Craters
+        // Suppress Young Craters
         noiseOctaves = 4.0;
         vec3 youngDistort = Fbm3D((point - Randomize) * 0.07) * 1.1;
         noiseOctaves = 8.0;

@@ -193,7 +193,7 @@ float   HeightMapCloudsTerraA(vec3 point)
 	if(cloudsOctaves == 0) {
 		coverage = 0.0;
 	}
-	float weight = 0.2;
+	float weight = 0.5;
 	noiseH       = 0.75;
 
 	// Compute turbulence
@@ -220,7 +220,7 @@ float   HeightMapCloudsTerraA(vec3 point)
 	}
 	float _distort = Fbm(twistedPoint + distort);
 	noiseH = 1.0;
-	float global = max(saturate(f) * weight * (_distort + cloudsCoverage), pow(abs(point.y + Fbm(point)), 2.0) * 0.04);
+	float global = max(saturate(f) * weight * (_distort + cloudsCoverage), pow(abs(point.y + Fbm(point)), 2.0) * 0.02);
 
 	return global;
 }
@@ -354,7 +354,7 @@ void main()
 	}
 	else
 	{
-		height = 3 * (HeightMapCloudsTerraA(point));
+		height = 3.0 * (HeightMapCloudsTerraA(point));
 	}
 	OutColor = vec4(height);
 }
