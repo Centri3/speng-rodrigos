@@ -79,53 +79,6 @@ void    _RiftsNoise(vec3 point, float damping, inout float height)
     }
 }
 
-
-//-----------------------------------------------------------------------------
-
-
-// Function // Europa Cracks Noise
-	// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
-	// 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
-	// 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
-float   EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask)
-{
-    point = (point + Randomize) * cracksFreq;
-	point.x *= 0.3;
-
-    float  newLand = 0.0;
-    float  lastLand = 0.0;
-    float  lastlastLand = 0.0;
-    vec2   cell;
-    float  r;
-    float  ampl = 0.4 * cracksMagn;
-    mask = 1.0;
-
-    // Rim shape and height distortion
-    noiseH          = 0.5;
-    noiseLacunarity = 2.218281828459;
-    noiseOffset     = 0.8;
-    noiseOctaves    = 5.0;
-
-    for (int i=0; i<europaCracksOctaves; i++)
-    {
-		for (int j=0; j<2; j++)
-		{
-			cell = Cell2Noise2(point + 0.02 * Fbm3D(1.8 * point));
-			r    = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
-			lastlastLand = lastLand;
-			lastLand = newLand;
-			newLand = CrackHeightFunc(lastlastLand, lastLand, ampl, r, point);
-			point += Randomize;
-			mask *= smoothstep(0.6, 1.0, r);
-		}
-		point = point * 1.2 + Randomize;
-		ampl *= 0.8333;
-    }
-
-    return newLand;
-}
-
-
 //-----------------------------------------------------------------------------
 
 
@@ -505,15 +458,6 @@ float   HeightMapSelena(vec3 point)
             height += mareSuppress * montesMagn * montBiomeScale * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.45);
         }
     }
-
-
-
-	// TerrainFeature // Ice cracks
-		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
-    if (cracksOctaves > 0.0)
-	{
-		height += 0.5*CrackNoise(point, mask);
-	}
 	
 	
 	
@@ -563,27 +507,6 @@ float   HeightMapSelena(vec3 point)
 		distort = Fbm3D(point * 0.1) * 3.5;
 		float venus2 = (Fbm(point + distort)*1.5)*0.5;
 		height = mix(height, height-0.2, venus2);
-	}
-
-
-
-	// PlanetTypes // Europalike terrain
-		// 8-10-2024 by Sp_ce // Changed cracksOctaves to +2 instead of +3
-		// 21-10-2024 by Sp_ce // Low europaLikeness keeps original height
-		// 22-10-2024 by Sp_ce // Reverted europaLikeness, added white cracks
-		// 21-10-2024 by Sp_ce // 1.0 europaLikeness 30% height, 0.0 europaLikeness 60% height
-		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
-	else if (europaLike)
-	{
-		float europaCracksOctaves = cracksOctaves + 2;
-		height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
-		height += 0.5*EuropaCrackNoise(point, europaCracksOctaves + 1, mask);
-		height += 0.2*EuropaCrackNoise(point*2, europaCracksOctaves, mask)
-				+ 0.2*EuropaCrackNoise(point*4, europaCracksOctaves, mask)
-				+ 0.1*EuropaCrackNoise(point*32, europaCracksOctaves, mask)
-				+ 0.05*EuropaCrackNoise(point*64, europaCracksOctaves, mask);
-				
-		height += 0.3*EuropaCrackNoise(point*2, cracksOctaves, mask);
 	}
 	
 	
