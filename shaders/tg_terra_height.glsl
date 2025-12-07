@@ -342,7 +342,7 @@ else
     // Ice caps
     // Make more steep slope on oceanic planets (oceanType == 0.1) and shallower on earth-like planets (oceanType == 1.0)
     float oceaniaFade = (oceanType == 1.0) ? 0.2 : 1.0;
-    float iceCap = smoothstep(0.0, 1.0, saturate((latitude / latIceCaps - 1.0) * 50.0 * oceaniaFade));
+    float iceCap = smoothstep(0.0, 1.0, saturate((latitude / latIceCaps - 0.8) * 50.0 * oceaniaFade));
 
     // Ice cracks
     float mask = 1.0;

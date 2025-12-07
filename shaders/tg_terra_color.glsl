@@ -23,7 +23,7 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 	vec3 distort = 0.35 * Fbm3D(p * 0.73);
 	noiseOctaves    = 12.0;
 
-    noiseH          = 0.9;
+    noiseH          = 0.5;
     noiseLacunarity = 2.218281828459;
     noiseOffset     = 0.8;
     float climate, latitude, dist;
@@ -60,7 +60,7 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
     climate = mix(climate, climatePole, saturate((snowLine - snowLevel) * 100.0));
 	
 	// Ice caps
-    float iceCap = saturate((latitude / latIceCaps - 0.984) * 50.0); // 0.984 -> 1.0 old
+    float iceCap = saturate((latitude / latIceCaps - 0.8) * 50.0); // 0.984 -> 1.0 old
     climate = mix(climate, climatePole, iceCap);
 
     // Surpress vegetation in deserts
@@ -139,11 +139,11 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
     }
 
     // Polar cap ice
-    // if (iceCap > 0)
-    // {
-    //     Surface ice = DetailTextureMulti(detUV, BIOME_SNOW);
-    //     surf = BlendMaterials(surf, ice, iceCap);
-    // }
+    if (iceCap > 0)
+    {
+        Surface ice = DetailTextureMulti(detUV, BIOME_SNOW);
+        surf = BlendMaterials(surf, ice, iceCap);
+    }
 
     // Mountain/winter snow
     if (climate > 0.93)
