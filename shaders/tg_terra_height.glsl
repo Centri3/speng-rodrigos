@@ -112,6 +112,7 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
     // Global landscape
     vec3 p = point * mainFreq + Randomize;
     noiseOctaves = 5;
+    noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.8;
     vec3  distort = 0.35 * Fbm3D(p * 0.73);
     noiseOctaves = 4;
     distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
