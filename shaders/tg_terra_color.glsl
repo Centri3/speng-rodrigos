@@ -11,11 +11,6 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 {
     Surface surf;
 
-    float _hillsMagn = hillsMagn;
-    if (hillsMagn < 0.05)
-    {
-        _hillsMagn = 0.05;
-    }
 
     // GlobalModifier // Assign climate
 	vec3 p = point * mainFreq + Randomize;
@@ -71,7 +66,7 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 //RODRIGO - small changes 
     noiseOctaves    = 14.0;
     noiseLacunarity = 2.218281828459;
-	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
+	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
     float fr = 0.20 * (1.5 - RidgedMultifractal(pp,         2.0)) +
                0.05 * (1.5 - RidgedMultifractal(pp * 10.0,  2.0)) +
                0.02 * (1.5 - RidgedMultifractal(pp * 100.0, 2.0));
@@ -117,7 +112,7 @@ vary *= 0.5*vary*vary;
     // Vegetation
     if (plantsBiomeOffset > 0.0)
     {
-        noiseH          = 4.0;
+        noiseH          = 0.5;
         noiseLacunarity = 2.218281828459;
         noiseOffset     = 0.8;
         noiseOctaves    = 2.0;
@@ -130,7 +125,7 @@ vary *= 0.5*vary*vary;
         noiseOctaves = 8.0;
         float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0;
 
-        float plantsFade = smoothstep(beachWidth, beachWidth * 50.0, biomeData.height - seaLevel) *
+        float plantsFade = smoothstep(beachWidth, beachWidth * 2.0, biomeData.height - seaLevel) *
                            smoothstep(0.750, 0.650, biomeData.slope) *
                            smoothstep(-0.5, 0.5, humidityMod);
 
@@ -139,16 +134,16 @@ vary *= 0.5*vary*vary;
     }
 
     // Polar cap ice
-    // if (iceCap > 0)
-    // {
-    //     Surface ice = DetailTextureMulti(detUV, BIOME_SNOW);
-    //     surf = BlendMaterials(surf, ice, iceCap);
-    // }
+    /*if (iceCap > 0)
+    {
+        Surface ice = DetailTextureMulti(detUV, BIOME_SNOW);
+        surf = BlendMaterials(surf, ice, iceCap);
+    }*/
 
     // Mountain/winter snow
-    if (climate > 0.93)
+    if (climate > 0.9)
     {
-        float snowTransition = smoothstep(0.93, 0.96, climate);// * smoothstep(0.75, 0.65, biomeData.slope);
+        float snowTransition = smoothstep(0.9, 0.92, climate);// * smoothstep(0.75, 0.65, biomeData.slope);
         Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
         surf = BlendMaterials(surf, snow, snowTransition);
     }
@@ -191,8 +186,8 @@ vary *= 0.5*vary*vary;
     // water mask for planets with oceans (oceanType == 0 on dry planets)
 
 //RODRIGO - chage surf.color.a to surf.color 
-    // if (oceanType != 0.0)
-    //     surf.color += saturate((seaLevel - biomeData.height) * 200.0);
+    if (oceanType != 0.0)
+        surf.color += saturate((seaLevel - biomeData.height) * 200.0);
 
     ColorMap = surf.color;
 

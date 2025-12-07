@@ -5,6 +5,7 @@
 
 //-----------------------------------------------------------------------------
 
+
 float   HeightMapCloudsTerraR(vec3 point)
 {
 	float zones = cos(point.y *stripeZones* 0.25);
@@ -68,8 +69,8 @@ float   HeightMapCloudsTerraR(vec3 point)
 
 float   HeightMapCloudsTerraTPE(vec3 point)
 {
-	float zones = -cos(point.y * 1.75 * (pow(abs(stripeTwist), 0.5) + 0.2) * stripeZones * 0.3);
-	float ang = zones * 2; 
+	float zones = cos(point.y *stripeZones* 0.45);
+	float ang = -zones * (stripeTwist + 0.03/(stripeTwist + 0.1)) * stripeTwist / 3;
 	vec3  twistedPoint = point;
 	float coverage = cloudsCoverage * 0.1;
 	float weight = 0.3;
@@ -82,7 +83,7 @@ float   HeightMapCloudsTerraTPE(vec3 point)
 		vec3  cycloneCenter = vec3(0.0, 1.0, 0.0);
 		float r = length(cycloneCenter - point);
 		float mag = -tidalLock * cycloneMagn;
-		if (r < 5.0)
+		if (r < 1.0)
 		{
 			float dist = 1.0 - r;
 			float fi = mix(log(r), dist*dist*dist, r);
@@ -97,7 +98,7 @@ float   HeightMapCloudsTerraTPE(vec3 point)
 		twistedPoint = CycloneNoiseTerra(point, weight, coverage);
 
 	// Compute turbulence
-	// twistedPoint = TurbulenceTerra(twistedPoint);
+	twistedPoint = TurbulenceTerra(twistedPoint);
 
 	// Compute the Coriolis effect
 	float sina = sin(ang);
@@ -131,16 +132,12 @@ float   HeightMapCloudsTerraTPE(vec3 point)
 
 float   HeightMapCloudsTerraTPE2(vec3 point)
 {
-	float zones = -cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
+	float zones = cos(point.y * 1.75);
 	float ang = zones * 2; 
 	vec3  twistedPoint = point;
 	float coverage = cloudsCoverage;
 	float weight = 0.3;
-	if(cloudsOctaves == 0) {
-		noiseH   = 1.0;
-	} else {
-		noiseH   = 0.75;
-	}
+	noiseH       = 1;
 
 	// Compute the cyclons
 	if (tidalLock > 0.0)
@@ -148,7 +145,7 @@ float   HeightMapCloudsTerraTPE2(vec3 point)
 		vec3  cycloneCenter = vec3(0.0, 1.0, 0.0);
 		float r = length(cycloneCenter - point * 0.75);
 		float mag = 0;
-		if (r < 5.0)
+		if (r < 1.0)
 		{
 			float dist = 1.0 - r;
 			float fi = mix(log(r), dist*dist*dist, r);
@@ -160,11 +157,11 @@ float   HeightMapCloudsTerraTPE2(vec3 point)
 	}
 
 	// Compute turbulence
-	// twistedPoint = TurbulenceTerra(twistedPoint);
+	twistedPoint = TurbulenceTerra(twistedPoint);
 
 	// Compute the Coriolis effect
 	float sina = sin(ang);
-	float cosa = cos(ang);
+	float cosa = cos(ang+15);
 	twistedPoint = vec3(cosa*twistedPoint.x - sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x + cosa*twistedPoint.z);
 	twistedPoint = twistedPoint * cloudsFreq + Randomize;
 
@@ -180,47 +177,6 @@ float   HeightMapCloudsTerraTPE2(vec3 point)
 		f = coverage - 0.1;
 	}
 	float global = saturate(f) * weight * (Fbm(twistedPoint + distort)+ cloudsCoverage);
-
-	return global;
-}
-
-float   HeightMapCloudsTerraA(vec3 point)
-{
-	float zones = -cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
-	float ang = zones * 2; 
-	vec3  twistedPoint = point;
-	float coverage = cloudsCoverage;
-	if(cloudsOctaves == 0) {
-		coverage = 0.0;
-	}
-	float weight = 0.8;
-	noiseH       = 0.75;
-
-	// Compute turbulence
-	// twistedPoint = TurbulenceTerra(twistedPoint);
-
-	// Compute the Coriolis effect
-	float sina = sin(ang);
-	float cosa = cos(ang);
-	twistedPoint = vec3(cosa*twistedPoint.x - sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x + cosa*twistedPoint.z);
-	twistedPoint = twistedPoint * cloudsFreq + Randomize;
-
-	// Compute the flow-like distortion
-	noiseLacunarity = 9.9;
-	noiseOctaves = 12;
-	vec3 distort = Fbm3D(twistedPoint) * 2;
-	vec3 p = twistedPoint * cloudsFreq * 6.5;
-	noiseOctaves = 0;
-	vec3 q = p + Fbm3D(p);
-	vec3 r = p + Fbm3D(q);
-	float f = Fbm(r) * 4 + coverage;
-	noiseOctaves = 12;
-	if (cloudsCoverage == 1.0) {
-		f = coverage - 0.1;
-	}
-	float _distort = Fbm(twistedPoint + distort);
-	noiseH = 1.0;
-	float global = max(saturate(f) * weight * (_distort + cloudsCoverage), pow(abs(point.y + Fbm(point)), 2.0) * 0.04);
 
 	return global;
 }
@@ -347,15 +303,7 @@ float   HeightMapCloudsTerraKham2(vec3 point)
 void main()
 {
 	vec3  point  = GetSurfacePoint();
-	float height = 0.0;
-	if (cloudsNLayers == 1 || cloudsLayer != 0)
-	{
-		height = 0.75 * (HeightMapCloudsTerraTPE(point) + HeightMapCloudsTerraTPE2(point));
-	}
-	else
-	{
-		height = 3 * (HeightMapCloudsTerraA(point));
-	}
+	float height = 3 * (HeightMapCloudsTerraTPE(point) + HeightMapCloudsTerraTPE2(point));
 	OutColor = vec4(height);
 }
 

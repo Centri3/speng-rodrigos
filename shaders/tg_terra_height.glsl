@@ -22,12 +22,12 @@ void    _PseudoRivers(vec3 point, float global, float damping, inout float heigh
 
     vec2 cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
         
-    float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn * 0.2));
+    float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
     valleys = smoothstep(0.0, 1.0, valleys) * damping;
     height = mix(height, seaLevel + 0.03, valleys);
 
 
-    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn * 0.2));
+    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn));
     rivers = smoothstep(0.0, 1.0, rivers) * damping;
     height = mix(height, seaLevel+0.015, rivers);
 }
@@ -75,12 +75,6 @@ void    _Rifts(vec3 point, float damping, inout float height)
 
 void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 {
-    float _hillsMagn = hillsMagn;
-    if (hillsMagn < 0.05)
-    {
-        _hillsMagn = 0.05;
-    }
-
     // Assign a climate type
     noiseOctaves    = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 1)
     noiseH          = 0.5;
@@ -160,7 +154,7 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 
 
 noiseOctaves = 8;
-vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
+vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
 
 noiseOctaves = 12.0;
 distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
@@ -386,7 +380,7 @@ float damping;
 
 if (riversMagn > 0.0)
     {
-        damping = (smoothstep(0.195, 0.135, rodrigoDamping)) *    // disable rivers inside continents
+        damping = (smoothstep(0.145, 0.135, rodrigoDamping)) *    // disable rivers inside continents
                         (smoothstep(-0.0016, -0.018, seaLevel - height));  // disable rivers inside oceans
         _PseudoRivers(point, global, damping, height);
     }
@@ -426,12 +420,8 @@ distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp,         8.0)+ RidgedMultifractal(pp*0.999,         8.0))));
 
 height = mix(height ,height +0.0001,vary);
-// height = max(height, seaLevel + 0.057);
-// ocean basins
-height = min(smoothstep(seaLevel - 0.03, seaLevel + 0.084, height), height);
-// reduce ocean depth near shore
-float h = smoothstep(seaLevel - 0.23, seaLevel + 0.08, height);
-height = mix(height, max(height, seaLevel + 0.0595), h);
+
+
 
     // smoothly limit the height
     height = softPolyMin(height, 0.99, 0.3);

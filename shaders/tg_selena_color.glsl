@@ -1,4 +1,5 @@
 #include "tg_common.glh"  
+#include "height_map_selena.glh"
 
 #ifdef _FRAGMENT_
 
@@ -306,11 +307,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 {
     Surface surf;
 	
-    float _hillsMagn = hillsMagn;
-    if (hillsMagn < 0.05)
-    {
-        _hillsMagn = 0.05;
-    }
+	
 	
 	// Fetch variables // Colors
 	vec4 iceColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_ICE), 0);
@@ -393,7 +390,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
     // Flatland climate distortion
     noiseOctaves    = 4.0;
     noiseLacunarity = 2.218281828459;
-	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
+	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
     float fr = 0.20 * (1.5 - RidgedMultifractal(pp,         2.0)) +
                0.05 * (1.5 - RidgedMultifractal(pp * 10.0,  2.0)) +
                0.02 * (1.5 - RidgedMultifractal(pp * 100.0, 2.0));
@@ -458,7 +455,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	
 	
     // GlobalModifier // ColorVary setup
-    vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
+    vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
 	noiseOctaves = 14.0;
 	vec3 albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * (1.5 + venusMagn);
 
@@ -637,9 +634,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
     float slopedFactor = SlopedIceCaps(slope);
     float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
 	float snow = float(slope * 1 > (snowLevel + 1.0) * 0.33); 
-    if(snowLevel == 2.0) {
-        snow = 0.0;
-    }
 
     surf.color.rgb = mix(surf.color.rgb, snowColor, 0.8 * iceCap + snow);
 	

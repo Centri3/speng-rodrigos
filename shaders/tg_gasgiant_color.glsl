@@ -4,21 +4,10 @@
 
 //-----------------------------------------------------------------------------
 
-float   HeightMapFogGasGiant(vec3 point)
-{
-    return 0.75 + 0.3 * Noise(point * vec3(0.2, stripeZones * 0.5, 0.2));
-}
-
 void main() {
 	// GlobalModifier // Convert height to color
     float height = GetSurfaceHeight();
-	if (cloudsLayer == 0.0) {
-    	OutColor = GetGasGiantCloudsColor(height);
-	} else {
-        float height = HeightMapFogGasGiant(GetSurfacePoint());
-        OutColor.rgb = height * GetGasGiantCloudsColor(1.0).rgb;
-        OutColor.a = 1.0;
-	}
+    OutColor = pow(GetGasGiantCloudsColor(height), vec4(height));
 	
 	
 	// GlobalModifier // Change cloud alpha channel
