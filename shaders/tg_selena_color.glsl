@@ -584,7 +584,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
         float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
         float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
         float crater = RayedCraterColorNoise(point, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
-        surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
+        surf.color.rgb = mix(surf.color.rgb, vec3(0.42), crater);
     }
 	
 	
