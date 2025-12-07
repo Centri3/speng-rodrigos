@@ -2,7 +2,9 @@
  
 #ifdef _FRAGMENT_
 
+
 //-----------------------------------------------------------------------------
+
 
 //	RODRIGO - SMALL CHANGES TO RIVERS AND RIFTS
 // Modified Rodrigo's rivers
@@ -32,8 +34,10 @@ void    _PseudoRivers(vec3 point, float global, float damping, inout float heigh
     height = mix(height, seaLevel+0.015, rivers);
 }
 
+
 //-----------------------------------------------------------------------------
 // Modified Rodrigo's rifts
+
 
 void    _Rifts(vec3 point, float damping, inout float height)
 {
@@ -71,7 +75,9 @@ void    _Rifts(vec3 point, float damping, inout float height)
     }
 }
 
+
 //-----------------------------------------------------------------------------
+
 
 void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 {
