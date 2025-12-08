@@ -68,8 +68,8 @@ float   HeightMapCloudsTerraR(vec3 point)
 
 float   HeightMapCloudsTerraTPE(vec3 point)
 {
-	float zones = -cos(point.y * 1.75 * (pow(abs(stripeTwist), 0.5) + 0.2) * stripeZones * 0.3);
-	float ang = zones * 2; 
+	float zones = cos(point.y * 1.75 * (pow(abs(stripeTwist), 0.5) + 0.2) * stripeZones * 0.3);
+	float ang = -zones * 2; 
 	vec3  twistedPoint = point;
 	float coverage = cloudsCoverage * 0.1;
 	float weight = 0.3;
@@ -131,8 +131,8 @@ float   HeightMapCloudsTerraTPE(vec3 point)
 
 float   HeightMapCloudsTerraTPE2(vec3 point)
 {
-	float zones = -cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
-	float ang = zones * 2; 
+	float zones = cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
+	float ang = -zones * 2; 
 	vec3  twistedPoint = point;
 	float coverage = cloudsCoverage;
 	float weight = 0.3;
@@ -186,8 +186,8 @@ float   HeightMapCloudsTerraTPE2(vec3 point)
 
 float   HeightMapCloudsTerraA(vec3 point)
 {
-	float zones = -cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
-	float ang = zones * 2; 
+	float zones = cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
+	float ang = -zones * 2; 
 	vec3  twistedPoint = point;
 	float coverage = cloudsCoverage;
 	if(cloudsOctaves == 0) {
@@ -220,7 +220,7 @@ float   HeightMapCloudsTerraA(vec3 point)
 	}
 	float _distort = Fbm(twistedPoint + distort);
 	noiseH = 1.0;
-	float global = max(saturate(f) * weight * (_distort + cloudsCoverage), pow(abs(point.y + Fbm(point)), 2.0) * 0.04);
+	float global = max(saturate(f) * weight * (_distort + cloudsCoverage), pow(abs(point.y + Fbm(point)), 2.0) * 0.08);
 
 	return global;
 }
@@ -350,7 +350,7 @@ void main()
 	float height = 0.0;
 	if (cloudsNLayers == 1 || cloudsLayer != 0)
 	{
-		height = 0.75 * (HeightMapCloudsTerraTPE(point) + HeightMapCloudsTerraTPE2(point));
+		height = 3 * (HeightMapCloudsTerraTPE(point) + HeightMapCloudsTerraTPE2(point));
 	}
 	else
 	{

@@ -1,4 +1,5 @@
 #include "tg_common.glh"
+#include "tg_rodrigos.glh"
 
 #ifdef _FRAGMENT_
 
@@ -81,15 +82,15 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
 
 //-----------------------------------------------------------------------------
 
-float HeightMapCloudsGasGiantGmail(vec3 point) {
+float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones, float _stripeZones) {
     vec3 twistedPoint = point;
 
     // Compute zones
-    float zones = Noise(vec3(0.0, twistedPoint.y * stripeZones * 0.6 + cloudsLayer, 0.35)) * 0.8 + 0.20;
+    float zones = Noise(vec3(0.0, twistedPoint.y * _stripeZones * 0.6 + cloudsLayer, 0.35)) * 0.8 + 0.20;
     float offset = 0.0;
 
     // Compute cyclons
-    if(cycloneOctaves > 0.0)
+    if(cycloneOctaves > 0.0 && cyclones)
         twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
 
     // Compute turbulence
@@ -100,7 +101,7 @@ float HeightMapCloudsGasGiantGmail(vec3 point) {
     float turbulence = Fbm(twistedPoint * 0.03);
     twistedPoint = twistedPoint * (0.43 * cloudsFreq) + Randomize + cloudsLayer;
     twistedPoint.y *= 9.0 + turbulence;
-    float height = stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
+    float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
 
     return zones + height + offset;
 }
@@ -125,10 +126,11 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
     float turbulence = Fbm(twistedPoint * 0.01);
     twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
     twistedPoint.y *= 30.0 + turbulence;
-    float height = stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
+    float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
     return zones + height + offset;
 }
+
 //-----------------------------------------------------------------------------
 
 float HeightMapCloudsGasGiantGmail3(vec3 point) {
@@ -150,7 +152,7 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
     float turbulence = Fbm(twistedPoint * 8.86);
     twistedPoint = twistedPoint * (1.12 * cloudsFreq) + Randomize + cloudsLayer;
     twistedPoint.y *= 80.0 + turbulence;
-    float height = stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
+    float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
     return zones + height + offset;
 }
@@ -159,7 +161,14 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
 
 void main() {
     vec3 point = GetSurfacePoint();
-    float height = (HeightMapCloudsGasGiantGmail(point) + HeightMapCloudsGasGiantGmail2(point) + HeightMapCloudsGasGiantGmail3(point));
+    float height = 0.0;
+    if(volcanoActivity != 0.0) {
+        if(cloudsLayer == 0.0) {
+            height = 3.0 * stripeFluct * HeightMapCloudsTerraAli(point) + HeightMapCloudsTerraAli2(point);
+        }
+    } else {
+        height = (HeightMapCloudsGasGiantGmail(point, true, stripeZones) + HeightMapCloudsGasGiantGmail2(point) + HeightMapCloudsGasGiantGmail3(point));
+    }
     OutColor = vec4(height);
 }
 

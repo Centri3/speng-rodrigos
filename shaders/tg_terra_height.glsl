@@ -21,15 +21,17 @@ void    _PseudoRivers(vec3 point, float global, float damping, inout float heigh
 
 
     vec2 cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
-        
-    float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn * 0.2));
+     
+    float errorcor = pow(0.992, (1 / seaLevel));  //Correct Rivers on marine planets
+	 
+    float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
     valleys = smoothstep(0.0, 1.0, valleys) * damping;
-    height = mix(height, seaLevel + 0.03, valleys);
+    height = mix(height, seaLevel + 0.019 + errorcor*0.042, valleys);
 
 
-    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn * 0.2));
+    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn));
     rivers = smoothstep(0.0, 1.0, rivers) * damping;
-    height = mix(height, seaLevel+0.015, rivers);
+    height = mix(height, seaLevel + 0.004 + errorcor*0.052, rivers);
 }
 
 //-----------------------------------------------------------------------------
@@ -37,7 +39,7 @@ void    _PseudoRivers(vec3 point, float global, float damping, inout float heigh
 
 void    _Rifts(vec3 point, float damping, inout float height)
 {
-    float riftsBottom = seaLevel;
+    float riftsBottom = seaLevel;   //float riftsBottom = seaLevel;
 
     noiseOctaves    = 6.6;
     noiseH          = 1.0;
@@ -75,12 +77,6 @@ void    _Rifts(vec3 point, float damping, inout float height)
 
 void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 {
-    float _hillsMagn = hillsMagn;
-    if (hillsMagn < 0.05)
-    {
-        _hillsMagn = 0.05;
-    }
-
     // Assign a climate type
     noiseOctaves    = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 1)
     noiseH          = 0.5;
@@ -155,12 +151,32 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
     float height   = 0.0;
     float landform = 0.0;
     float dist;
-
 //	RODRIGO 
 
+float hillsFreqq = hillsFreq;
+
+if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)   // exclude icy and small planets
+	{
+		hillsFreqq = hillsFreq*5;
+	}
+	else
+		{
+			hillsFreqq = hillsFreq;
+		}
+
+float hillsMagnn = hillsMagn;
+
+if (hillsMagn < .03 && hillsMagn > 0)   // Fix to spiky terrain before planet melts
+	{
+		hillsMagnn = 0.05;
+	}
+	else
+		{
+			hillsMagnn = hillsMagn;
+		}
 
 noiseOctaves = 8;
-vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
+vec3  pp = (point + Randomize) * (0.0005 * hillsFreqq / (hillsMagnn * hillsMagnn));
 
 noiseOctaves = 12.0;
 distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
@@ -188,12 +204,11 @@ global =  mix(global,global+0.2,fr);
 
 
 //Mesas
-float zr = 1.0 + 2*Fbm(point + distort) + 7 * (1.5 - RidgedMultifractalEroded(pp *0.8,         8.0, erosion)) -
-               6 * (1.5 - RidgedMultifractalEroded(pp * 0.1,  8.0,erosion))- 0.01 * (1.5 - RidgedMultifractalEroded(pp * 4,  8.0,erosion));
+float zr = 1.0 + 2*Fbm(point + distort) + 7 * (1.5 - RidgedMultifractalEroded(pp * 0.8, 8.0, erosion)) - 6 * (1.5 - RidgedMultifractalEroded(pp * 0.1,  8.0,erosion))- 0.01 * (1.5 - RidgedMultifractalEroded(pp * 4,  8.0,erosion));
 
 zr = smoothstep(0.0, 1.0, 0.2*zr*zr);
 zr *= 1 - smoothstep(0.0, 0.02, seaLevel-global);
-zr = 0.1*hillsFreq* smoothstep(0.0, 1.0, zr);
+zr = 0.1*hillsFreqq* smoothstep(0.0, 1.0, zr);
 global =  mix(global,global+0.0006,zr);
 
 noiseOctaves = 10.0;
@@ -219,84 +234,96 @@ global += rr;
     }
     else if (biome < hillsFraction)
     {
-     // "Eroded" hills
-        //	RODRIGO  - Edited hills
-        noiseOctaves = 10.0;
-        noiseH       = 1.0;
-        noiseLacunarity = 2.3;
-        noiseOffset  = montesSpiky;
-        height = ((0.5 + 0.25 * iqTurbulence(point * 0.4 * montesFreq +Randomize, 0.45)) * (0.15 * RidgedMultifractalDetail(point *  montesFreq *0.8+ venus + Randomize, 1.0, montBiomeScale)));
-
+		// Mountains
+		if (erosion > 0.0)
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 0.90;  // Going to tweak some
+			noiseLacunarity = 2.0;
+			noiseOffset  = montesSpiky;    // Also caused offset
+			height = hillsMagnn * 2.88 * ((1.25 + iqTurbulence(point * 0.5 * hillsFreqq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * hillsFreqq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
+		}
+		else
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 1.0;
+			noiseLacunarity = 2.0;
+			noiseOffset  = montesSpiky;
+			height = hillsMagnn * 7.5 * ((1.25 + iqTurbulence(point * 0.5 * (hillsFreqq / 2) * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalDetail(point * 1.0 * (hillsFreqq / 2) * inv2montesSpiky * 1.5 + Randomize, 1.0, montBiomeScale)));
+		}
     }
     else if (biome < hills2Fraction)
     {
-        // "Eroded" hills 2
-        //	RODRIGO  - Edited hills2
-
-noiseOctaves = 10.0;
-        noiseH       = 1.0;
-        noiseLacunarity = 2.0;
-        noiseOffset  = montesSpiky;
-        landform = (0.1 * iqTurbulence(point * 0.4 * montesFreq +Randomize, 0.35)) * 5*RidgedMultifractalErodedDetail(point * montesFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale)*(0.3*JordanTurbulence(point * hillsFreq*0.5 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0));
-        height = montesMagn * montRange * landform;
-
+		// "Eroded" hills
+		if (erosion > 0.0)    // Causing break in terrain
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 0.90;
+			noiseOffset  = montesSpiky;   // you cause it ya little shit
+			noiseLacunarity = 2.1;
+			height = (0.5 + 0.4 * iqTurbulence(point * 1.12 * hillsFreqq + Randomize, 0.55)) * (montBiomeScale * hillsMagnn * (0.05 - (0.4 * RidgedMultifractalDetail(point * hillsFreqq + Randomize, 2.0, venus)) + 0.3 * RidgedMultifractalErodedDetail(point * hillsFreqq + Randomize, 2.0, 1.1 * erosion, montBiomeScale)));
+		}
+		else
+		{
+			noiseOctaves = 8.0; // Decrease the number of octaves for smoother terrain							//Think I'll add these back in
+			noiseLacunarity = 2.0; // Slightly increase lacunarity for more variation in frequency
+			//noiseOffset  = venusFreq;
+			height = montBiomeScale * hillsMagnn * JordanTurbulence(point * hillsFreqq + Randomize, 0.7, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+		}
     }
     else if (biome < canyonsFraction)
     {
-        // Canyons
-        //	RODRIGO  - Edited canyons
-
-        noiseOctaves = 8.0;
-        noiseH       = 0.9;
-        noiseLacunarity = 4.0;
-        noiseOffset  = montesSpiky;
-        height = -0.35*canyonsMagn * montRange* RidgedMultifractalErodedDetail(point * 1.2 * canyonsFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale);
-
-
-        //if (terrace < terraceProb)
-        {
-            float h = height * terraceLayers * 5.0;
-            height = (floor(h) + smoothstep(0.5, 0.6, fract(h))) / (terraceLayers * 5.0);
-        }
+		if (erosion > 0.0)
+		{
+			// TPE Canyons
+			noiseOctaves = 10.0;
+			noiseH       = 0.1;
+			noiseLacunarity = 2.1;
+			noiseOffset  = montesSpiky;
+			height = -canyonsMagn * 4 * ((0.5 + 0.8 * iqTurbulence(point * 0.5 * (canyonsFreq * 2) + Randomize, 0.55)) * (0.1 * RidgedMultifractalDetail(point * 0.7 * (canyonsFreq * 2) + Randomize, 1.0, montBiomeScale)));
+			// if (terrace < terraceProb)
+			{
+				terraceLayers *= 5.0;
+				float h = height * terraceLayers;
+				height = (floor(h) + smoothstep(0.1, 0.9, fract(h))) / terraceLayers;
+			}
+		}
+		else
+		{
+			// TPE Canyons
+			noiseOctaves = 8.0; // Reduced for smoother transitions
+			noiseH       = 0.2; // Increased for more variation
+			noiseLacunarity = 2.0; // Adjusted for smoother noise
+			noiseOffset  = montesSpiky;
+			height = -canyonsMagn * ((0.4 + 0.7 * iqTurbulence(point * 0.4 * (canyonsFreq * 2) + Randomize, 0.5)) * (0.08 * RidgedMultifractalDetail(point * 0.6 * (canyonsFreq * 2) + Randomize, 0.9, montBiomeScale)));
+			//if (terrace < terraceProb)
+			{
+ 			   //terraceLayers *= 4.0; // Adjusted for less abrupt terracing
+ 			   float h = height * terraceLayers;
+ 			   height = (floor(h) + smoothstep(0.05, 0.85, fract(h))) / terraceLayers; // Adjusted for smoother terracing
+			}
+		}
     }
     else
     {
-        // Mountains
-        //	RODRIGO  - Edited mountains. Different mountains whithout erosion in deserts. No terraces
-
-
-
-
-if (riversMagn > 0.0)
-    {
-
-        noiseOctaves = 10.0;
-        noiseH       = 1.0;
-        noiseLacunarity = 2.1;
-        noiseOffset  = montesSpiky;
-        height = (0.5+ 0.02 * iqTurbulence(point * 0.8 * montesFreq + Randomize, 0.35))*  (1.4*montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * 1.4+ Randomize, 2.0, erosion, montBiomeScale));
-
-
-
-
-        }
-else
-{
-
-
-        
-        noiseOctaves = 8.0;
-        noiseH       = 1.0;
-        noiseLacunarity = 2.3;
-        noiseOffset  = montesSpiky;
-        height = ((0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq +Randomize, 0.55)) * (0.25 * RidgedMultifractalDetail(point *  montesFreq + venus + Randomize, 1.0, montBiomeScale)));
-
-
-
-
-}
-
-        
+		// Mountains
+		if (erosion > 0.0)
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 1.0;
+			noiseLacunarity = 2.1;
+			noiseOffset  = montesSpiky;
+			// height = montesMagn * 5.0 * (0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55))* 0.7* montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale)+ 0.6 * biomeScale * hillsMagnn * JordanTurbulence(point/4 * hillsFreqq/4 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+			height = (0.5 + 0.4 * iqTurbulence(point * 0.5 * (montesFreq * 3) + Randomize, 0.55)) * 0.4 * montesMagn * montRange * RidgedMultifractalErodedDetail(point * (montesFreq * 3) * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale);
+		}
+		else
+		{
+			noiseOctaves = 10.0;
+			noiseH       = 1.0;
+			noiseLacunarity = 2.3;
+			noiseOffset  = montesSpiky;
+			height = montesMagn * 5.0 * ((0.5 + 0.8 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55)) * (0.1 * RidgedMultifractalDetail(point *  montesFreq + venus + Randomize, 1.0, montBiomeScale)));
+		}
     }
 
 
@@ -352,7 +379,7 @@ else
         heightFloor = -0.1;
         heightPeak  =  0.6;
         heightRim   =  1.0;
-        crater = CraterNoise(point, 0.5 * craterMagn, craterFreq, craterSqrtDensity, craterOctaves);
+        crater = CraterNoise(point, 0.5 * craterMagn, craterFreq, (craterSqrtDensity * (1 - (volcanoActivity / 2.5))), craterOctaves);  // reduce craters on volcanic worlds Donatelo200 11/16/2025
         noiseOctaves    = 10.0;
         noiseLacunarity = 2.0;
         crater = 0.25 * crater + 0.05 * crater * iqTurbulence(point * montesFreq + Randomize, 0.55);
@@ -386,10 +413,29 @@ float damping;
 
 if (riversMagn > 0.0)
     {
-        damping = (smoothstep(0.195, 0.135, rodrigoDamping)) *    // disable rivers inside continents
-                        (smoothstep(-0.0016, -0.018, seaLevel - height));  // disable rivers inside oceans
+		noiseOctaves = 12.0;
+		noiseH       = 0.8;
+		noiseLacunarity = 2.3;
+		p = point * 2.0* mainFreq + Randomize;
+		distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01* RidgedMultifractalErodedDetail(point * 0.3* (canyonsFreq+1000)*(0.5*(inv2montesSpiky+1))  + Randomize, 8.0, erosion, montBiomeScale*2);
+		cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
+		/*
+		float pseudoRivers2 = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
+			pseudoRivers2 = smoothstep(0.25, 0.99, pseudoRivers2); 
+			pseudoRivers2 *= 1.0 - smoothstep(0.135, 0.145, rodrigoDamping); // disable rivers inside continents
+			pseudoRivers2 *= 1.0 - smoothstep(0.000, 0.0001, seaLevel - height); // disable rivers inside oceans
+			height = mix(height, seaLevel+0.003, pseudoRivers2);
+			cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
+		float PseudoRivers = 1.0 - (saturate(2.8 * abs(cell.y - cell.x) * riversMagn));
+			PseudoRivers = smoothstep(0.0, 1.0, PseudoRivers); 
+			PseudoRivers *= 1.0 - smoothstep(0.055, 0.057, global-seaLevel);
+			PseudoRivers *= 1.0 - smoothstep(0.00, 0.005, seaLevel - height); // disable rivers inside oceans
+			height = mix(height, seaLevel-0.0035, PseudoRivers);
+		*/
+        damping = (smoothstep(0.145, 0.135, rodrigoDamping)) *    // disable rivers inside continents
+            (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09, seaLevel - height));  // disable rivers inside oceans
         _PseudoRivers(point, global, damping, height);
-    }
+	}
 
     // Rifts
     if (riftsMagn > 0.0)
@@ -423,15 +469,17 @@ damping =    (smoothstep(1.0, 0.1, height - seaLevel)) *
 noiseOctaves    = 14.0;
 noiseLacunarity = 2.218281828459;
 distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
+
+if (cracksOctaves == 0)
+	{
+		distort *= saturate(iqTurbulence(point, 0.55) * volcanoActivity);  //Io like on atmosphered planets
+	}
+
 float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp,         8.0)+ RidgedMultifractal(pp*0.999,         8.0))));
 
 height = mix(height ,height +0.0001,vary);
-// height = max(height, seaLevel + 0.057);
-// ocean basins
-height = min(smoothstep(seaLevel - 0.03, seaLevel + 0.084, height), height);
-// reduce ocean depth near shore
-float h = smoothstep(seaLevel - 0.23, seaLevel + 0.08, height);
-height = mix(height, max(height, seaLevel + 0.0595), h);
+
+
 
     // smoothly limit the height
     height = softPolyMin(height, 0.99, 0.3);
