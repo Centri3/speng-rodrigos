@@ -88,10 +88,13 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     noiseOctaves = 14.0;
     distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 	
-	if (cracksOctaves == 0)
+	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-	
-		distort *= saturate(iqTurbulence(point, 0.55) * volcanoActivity);  //Io like on atmosphered planets
+			distort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+	}
+	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+	{
+			distort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
 	}
 	
     vary = 1.0 - Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) + RidgedMultifractal(pp * 0.999, 8.0)));
