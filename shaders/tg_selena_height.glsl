@@ -563,7 +563,7 @@ float   HeightMapSelena(vec3 point)
 	// GlobalModifier // Terrain noise match colorvary
 	noiseOctaves    = 14.0;
 	noiseLacunarity = 2.218281828459;
-    noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.7;
+    noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 	float vary = (1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))))) * 0.0003;
     if (cracksOctaves == 0 && volcanoActivity >= 1.0)

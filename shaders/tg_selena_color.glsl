@@ -460,7 +460,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
     // GlobalModifier // ColorVary setup
     vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
 	noiseOctaves = 14.0;
-    noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.7;
+    noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
 	vec3 albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * (1.5 + venusMagn);
     if (cracksOctaves == 0 && volcanoActivity >= 1.0)
     {
