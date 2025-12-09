@@ -499,7 +499,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
     // TerrainFeature // Ice cracks
 		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
     float mask = 1.0;
-    if (cracksOctaves > 0.0)
+    if (cracksOctaves > 0.0 && !europaLike)
 	{
 		vary *= CrackColorNoise(point, mask);
 	}
