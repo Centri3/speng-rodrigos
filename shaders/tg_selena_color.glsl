@@ -462,9 +462,13 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	noiseOctaves = 14.0;
     noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.7;
 	vec3 albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * (1.5 + venusMagn);
-    if (cracksOctaves == 0)
+    if (cracksOctaves == 0 && volcanoActivity >= 1.0)
     {
-        albedoVaryDistort += iqTurbulence(point, 0.75 - volcanoActivity * 0.1) * volcanoActivity;
+        albedoVaryDistort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+    }
+    else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+    {
+        albedoVaryDistort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
     }
 
 	if (europaLike)

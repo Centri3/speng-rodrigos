@@ -566,9 +566,13 @@ float   HeightMapSelena(vec3 point)
     noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.7;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 	float vary = (1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))))) * 0.0003;
-    if (cracksOctaves == 0)
+    if (cracksOctaves == 0 && volcanoActivity >= 1.0)
     {
-        vary += iqTurbulence(point, 0.75 - volcanoActivity * 0.1) * volcanoActivity * 0.3;
+        distort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+    }
+    else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+    {
+        distort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
     }
     height += saturate(vary);
 	
