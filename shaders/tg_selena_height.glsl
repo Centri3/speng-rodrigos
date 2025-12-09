@@ -519,7 +519,7 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
 
 	// TerrainFeature // Ice cracks
 		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
-    if (cracksOctaves > 0.0)
+    if (cracksOctaves > 0.0 && !europaLike)
 	{
 		height += 0.5*CrackNoise(point, mask);
 	}
@@ -652,16 +652,19 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;   //Fbm3D((point + Randomize) * 0.07) * 1.5;  
 	float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
 	
-	if (cracksOctaves == 0)
+	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-	
-		distort *= saturate(iqTurbulence(point, 0.55) * volcanoActivity);
+			distort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+	}
+	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+	{
+			distort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on airless planets donatelo200 12/09/2025
 	}
 	
 		else if (cracksOctaves > 0)
 	{
 	
-		distort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
+		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
 	}
 	
 	height += saturate(0.0001*vary );

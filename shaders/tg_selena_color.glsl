@@ -464,16 +464,20 @@ if (hillsMagnn < .05)   // Fix to spiky terrain before planet melts
     vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagnn * hillsMagnn));
 	noiseOctaves = 14.0;
 	vec3 albedoVaryDistort = Fbm3D((point * 1 + Randomize) * .07) * (1.5 + venusMagn ); //Fbm3D((point + Randomize) * 0.07) * 1.5;
-	if (cracksOctaves == 0)
-	{
 	
-		albedoVaryDistort *= saturate(iqTurbulence(point, 0.55) * volcanoActivity);
+	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
+	{
+			albedoVaryDistort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+	}
+	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+	{
+			albedoVaryDistort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
 	}
 	
 	else if (cracksOctaves > 0)
 	{
 	
-		albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
+		albedoVaryDistort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
 	}
 
 	if (europaLike)
