@@ -139,8 +139,8 @@ float   _MareHeightFunc(vec3 point, float lastLand, float lastlastLand, float he
         mareFloor = 1.0;
 		
 		noiseOctaves     = 6.0;
-		noiseLacunarity  = 2.218281828459;
-		noiseH           = 0.9;
+		//noiseLacunarity  = 2.218281828459;      // Causes terrain height offset (cliffs)
+		//noiseH           = 0.9;                 // Causes terrain height offset (cliffs)
 		noiseOffset      = 0.5;
 		vec3 p = point * mainFreq + Randomize;
 		vec3 distort = 3.5 * Fbm3D(point * 0.1) + 6.5 * Fbm3D(point * 0.1) + 12.5 * Fbm3D(point * 0.1);
@@ -331,6 +331,15 @@ float   HeightMapSelena(vec3 point)
 	else {
 		europaLikeness = -(1.0/2.0)*riftsSin + 8.0/2.0;
 	}
+
+
+
+    // Fetch variables // Alter hillsMagn if it is very low (this results in bugs)
+    float hillsMagn_ = hillsMagn;
+    if ((hillsMagn < 0.05) && (hillsMagn > 0.0))
+    {
+        hillsMagn_ = 0.03 + (0.4 * hillsMagn);
+    }
 	
 	
 	
@@ -356,13 +365,13 @@ float   HeightMapSelena(vec3 point)
     distort = 0.35 * Fbm3D(p * 0.73);
     noiseOctaves = 10.0;
     noiseH = 1.0;
-    noiseLacunarity = 2.3;
+    //noiseLacunarity = 2.3;      // Causes terrain height offset (cliffs)
     noiseOffset = montesSpiky;
 	float rocks = iqTurbulence(point * 80, 1); 
 
     noiseOctaves = 4;
     distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
-	vec3 pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn * hillsMagn));
+	vec3 pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagn_ * hillsMagn_));
     float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
     float global = 1 - Cell3Noise(p + distort);
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
@@ -377,7 +386,7 @@ float   HeightMapSelena(vec3 point)
     venus = Fbm((point + distort) * venusFreq + 0.1) * (venusMagn + 0.1);
 
 	noiseOctaves = 8;
-	global = (global + 0.8 *venus+ (0.000006 * ((hillsFreq + 1500)/hillsMagn)) * fr - seaLevel)* 0.5 + seaLevel;
+	global = (global + 0.8 *venus+ (0.000006 * ((hillsFreq + 1500)/hillsMagn_)) * fr - seaLevel)* 0.5 + seaLevel;
 
 	float mr = 1.0 + 2*Fbm(point + distort) + 7 * (1.5 - RidgedMultifractalEroded(pp *0.8,         8.0, erosion)) -
 				   6 * (1.5 - RidgedMultifractalEroded(pp * 0.1,  8.0,erosion));
@@ -476,7 +485,7 @@ float   HeightMapSelena(vec3 point)
             // TerrainFeature // Europa freckles
             noiseOctaves    = 10.0;
             noiseLacunarity = 2.0;
-            height += 0.2 * hillsMagn * mask * biomeScale * JordanTurbulence(point * hillsFreq + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+            height += 0.2 * hillsMagn_ * mask * biomeScale * JordanTurbulence(point * hillsFreq + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
         }
         else if (biome < canyonsFraction)
         {
@@ -526,7 +535,7 @@ float   HeightMapSelena(vec3 point)
     {
         vec3 pp = (point + Randomize) * 220.25;
         float fr = 0.20 * (1.5 - RidgedMultifractal(0.3*pp, 2.0));
-        global += (0.00002 * (hillsFreq + 1500) / hillsMagn)*fr; 
+        global += (0.00002 * (hillsFreq + 1500) / hillsMagn_)*fr; 
         crater *= 1.0 - smoothstep(0.1, 0.05, global- seaLevel);
         height *= saturate(mare + crater);
         p = point *20 + Randomize;
