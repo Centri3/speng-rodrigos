@@ -28,7 +28,7 @@ void main() {
 	
 	// sp_ce
 	if (cloudsLayer == 0) {
-		OutColor.a = 1.0; 
+		OutColor.a = 1.0;
 	}
 	else {
 		OutColor.a *= 0.5;
