@@ -138,9 +138,6 @@ float   EuropaCrackColorFunc(float lastLand, float lastlastLand, float height, f
 
 
 // Function // Europa Cracks Noise
-	// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
-	// 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
-	// 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
 float   EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask)
 {
     point = (point + Randomize) * cracksFreq;
@@ -184,9 +181,6 @@ float   EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask)
 
 
 // Function // Europa Cracks Color Noise
-	// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
-	// 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
-	// 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
 float   EuropaCrackColorNoise(vec3 point, float europaCracksOctaves, out float mask)
 {
     point = (point + Randomize) * cracksFreq;
@@ -228,8 +222,6 @@ float   EuropaCrackColorNoise(vec3 point, float europaCracksOctaves, out float m
 
 
 // Function // Tholin Patch Formula
-	// 19-10-2024 by Sp_ce // Reworked color slopes
-	// 20-10-2024 by Sp_ce // Added height mod
 float   TholinPatchColorFunc(float r, float slopeFromCenter, float height)
 {
     float t;
@@ -270,8 +262,6 @@ float   TholinPatchColorFunc(float r, float slopeFromCenter, float height)
 
 
 // Function // Tholin Patch Noise
-	// 19-10-2024 by Sp_ce // Standardized freq and density
-	// 20-10-2024 by Sp_ce // Added height mod
 float   TholinPatchNoise(vec3 point, float height)
 {
 	float patchFreq = 1.0; //mareFreq;
@@ -324,7 +314,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 
 
 	// Fetch variables // Planet types
-		// 21-10-2024 by Sp_ce // Added europaLikeness
 	bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq < 0.6));
     bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6));
 	
@@ -485,7 +474,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 
 
     // TerrainFeature // Ice cracks
-		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
     float mask = 1.0;
     if (cracksOctaves > 0.0)
 	{
@@ -514,11 +502,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	
 	
 	// PlanetTypes // Europalike terrain
-		// 8-10-2024 by Sp_ce // Changed cracksOctaves to +2 instead of +3
-		// 21-10-2024 by Sp_ce // Low europaLikeness decreases white down to minimum 50%
-		// 22-10-2024 by Sp_ce // Reverted europaLikeness, added white cracks
-		// 23-10-2024 by Sp_ce // Changed vec3(1.0) to iceColor
-		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
 	else if (europaLike)
 	{
 		float europaCracksOctaves = cracksOctaves + 2;
@@ -593,10 +576,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	
 	
 	// TerrainFeature // Tholin patches
-		// 8-10-2024 by Sp_ce // Disabled at 0.5, 0.15
-		// 19-10-2024 by Sp_ce // Complete revamp and changing to *= mix color
-		// 20-10-2024 by Sp_ce // Added height mod
-		// 21-10-2024 by Sp_ce // Added aquaria requirement for altered tholinColor
 	float tholinPatch = saturate(TholinPatchNoise(point + Randomize, height));
 	vec3 tholinColor = vec3(0.513, 0.498, 0.363);
 	if (aquaria) {
@@ -607,7 +586,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	
 	
     // TerrainFeature // Driven darkening
-		// 8-10-2024 by Sp_ce // Changed to take Bottom color
     if (drivenDarkening != 0.0)
     {
         noiseOctaves = 3;
@@ -630,10 +608,13 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	
 	
     // TerrainFeature // Polar slope ice 
-		// 22-10-2024 by Sp_ce // Changed vec3(1.0) to snowColor
     float slopedFactor = SlopedIceCaps(slope);
     float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
 	float snow = float(slope * 1 > (snowLevel + 1.0) * 0.33); 
+    if (snowLevel == 2.0)
+    {
+        snow = 0.0;     // If snowLevel is maxed, no snow at all
+    }
 
     surf.color.rgb = mix(surf.color.rgb, snowColor, 0.8 * iceCap + snow);
 	
