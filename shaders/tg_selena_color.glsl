@@ -111,11 +111,13 @@ vec4   Cell2NoiseCenter(vec3 p)
 // Function // Polar Slope Ice
 float	SlopedIceCaps(float slope) 
 {
-    if (slope > 0.03 * (2.0 - icecapHeight)) 
-	{
-        return 1.0;
-    }
-    return 0.0;
+    // Has a linear factor for gradual slope threshold decrease
+    // and an exponential factor for extremely fast increase to high slope near 0.0 icecapHeight
+    float threshold = 0.1*exp(-150.0 * icecapHeight) + 0.04*(1 - icecapHeight/2);
+    // feeling cute might revert later
+    //float threshold = 0.06*(1 - icecapHeight/2);
+
+    return slope > threshold ? 1.0 : 0.0;
 }
 
 
@@ -609,14 +611,14 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	
     // TerrainFeature // Polar slope ice 
     float slopedFactor = SlopedIceCaps(slope);
-    float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
-	float snow = float(slope * 1 > (snowLevel + 1.0) * 0.33); 
-    if (snowLevel == 2.0)
+    float iceCap = saturate((latitude - latIceCaps + 0.1) * 2.0 * slopedFactor);
+	float snow = float(slope > (snowLevel + 1.0) * 0.33);
+    if (snowLevel == 2.0)       // Remove snow if snowLevel is 2.0, even from vertical slopes
     {
-        snow = 0.0;     // If snowLevel is maxed, no snow at all
+        snow = 0.0;
     }
 
-    surf.color.rgb = mix(surf.color.rgb, snowColor, 0.8 * iceCap + snow);
+    surf.color.rgb = mix(surf.color.rgb, snowColor, 0.8*iceCap + snow);
 	
 	
 	
