@@ -38,7 +38,7 @@ vec4    ColorMapAsteroid(vec3 point, in BiomeData biomeData)
     // GlobalModifier // ColorVary apply
 	surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
 
-    surf.color.rgb *= 0.5 + biomeData.slope;
+    surf.color.rgb *= 0.9 + biomeData.slope * 0.3;
     return surf.color;
 }
 
