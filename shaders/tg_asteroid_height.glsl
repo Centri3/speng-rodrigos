@@ -14,7 +14,9 @@ float   HeightMapAsteroid(vec3 point)
 
     // GlobalModifier // Global landscape
     vec3  p = point * venusFreq + Randomize;
-    float height = venusMagn * (0.5 - Noise(p) * 2.0);
+    noiseOctaves = 10.0;
+    noiseLacunarity = 3.0;
+    float height = venusMagn * (0.5 - Noise(p) - RidgedMultifractal(p * mainFreq, 2.0) * 0.3);
 
     noiseOctaves = 10;
     noiseLacunarity = 2.0;

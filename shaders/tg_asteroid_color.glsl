@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 
-vec4    ColorMapAsteroid(vec3 point, float height, float slope)
+vec4    ColorMapAsteroid(vec3 point, in BiomeData biomeData)
 {
     float _hillsMagn = hillsMagn;
     if (hillsMagn < 0.05)
@@ -14,7 +14,6 @@ vec4    ColorMapAsteroid(vec3 point, float height, float slope)
 
     noiseH = 0.1;
     noiseOctaves = 5.0;
-    height = DistFbm(point * 3.7 + Randomize, 1.5);
 
     noiseOctaves = 5.0;
     vec3 p = point * colorDistFreq * 2.3;
@@ -34,12 +33,12 @@ vec4    ColorMapAsteroid(vec3 point, float height, float slope)
     vec2 shatterUV = Fbm2D2(detUV * 16.0) * (16.0 / 512.0);
     detUV += shatterUV;
 
-    Surface surf = GetBaseSurface(height, detUV);
+    Surface surf = GetBaseSurface(biomeData.height, detUV);
 
     // GlobalModifier // ColorVary apply
 	surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
 
-    surf.color.rgb *= 0.5 + slope;
+    surf.color.rgb *= 0.5 + biomeData.slope;
     return surf.color;
 }
 
@@ -48,9 +47,8 @@ vec4    ColorMapAsteroid(vec3 point, float height, float slope)
 void main()
 {
     vec3  point = GetSurfacePoint();
-    float height = 0, slope = 0;
-    GetSurfaceHeightAndSlope(height, slope);
-    OutColor = ColorMapAsteroid(point, height, slope);
+    BiomeData biomeData = GetSurfaceBiomeData();
+    OutColor = ColorMapAsteroid(point, biomeData);
     OutColor.rgb = pow(OutColor.rgb, colorGamma);
     //OutColor2 = vec4(height, slope, 0.0, 1.0);
 }
