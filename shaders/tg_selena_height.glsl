@@ -553,9 +553,9 @@ float   HeightMapSelena(vec3 point)
         heightRim   =  1.0;
         float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
         float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
-        float craterRayedMagn = craterMagn * pow(0.92, craterOctaves - craterRayedOctaves);
+        float craterRayedMagn = craterMagn * 0.25;   // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned down rayed crater depth donatelo200 12/07/2025
         crater = RayedCraterNoise(point, craterRayedMagn, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
-        height += crater;
+        height += crater * (height + 0.2); // toned down rayed crater depth donatelo200 12/07/2025  (mostly works but some edge cases still break
     }
 
 
