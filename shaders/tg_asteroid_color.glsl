@@ -2,6 +2,11 @@
 
 #ifdef _FRAGMENT_
 
+
+//-----------------------------------------------------------------------------
+
+
+// Function // Fixed GetBaseSurface with default seaLevel with an on average increased amount of colors
 Surface _GetBaseSurface(float height, vec2 detUV)
 {
     float _seaLevel = seaLevel;
@@ -20,7 +25,9 @@ Surface _GetBaseSurface(float height, vec2 detUV)
     return BlendMaterials(surfH0, surfH1, dh);
 }
 
+
 //-----------------------------------------------------------------------------
+
 
 vec4    ColorMapAsteroid(vec3 point, in BiomeData biomeData)
 {
@@ -57,6 +64,7 @@ vec4    ColorMapAsteroid(vec3 point, in BiomeData biomeData)
     // GlobalModifier // ColorVary apply
 	surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
 
+    // GlobalModifier // Slope contrast
     surf.color.rgb *= 0.9 + biomeData.slope * 0.3;
     return surf.color;
 }
