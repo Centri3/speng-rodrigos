@@ -646,7 +646,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
     float slopedFactor = SlopedIceCaps(slope);
     float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
 	float snow = float(slope * 1 > (snowLevel + 1.0) * 0.33); 
-    if(snowLevel == 2.0 || latIceCaps >= 1.0) {
+    if(snowLevel == 2.0) {
         snow = 0.0;
     }
 
