@@ -2,6 +2,24 @@
 
 #ifdef _FRAGMENT_
 
+Surface _GetBaseSurface(float height, vec2 detUV)
+{
+    float _seaLevel = seaLevel;
+    if (seaLevel == -1e+38) {
+        _seaLevel = 0.6;
+    }
+
+    float h  = (height * 6.0 - _seaLevel) / (1.0 - _seaLevel) * float(BIOME_ROCK - BIOME_BEACH + 1) + float(BIOME_BEACH);
+    int   h0 = clamp(int(floor(h)), 0, BIOME_ROCK);
+    int   h1 = clamp(h0 + 1,        0, BIOME_ROCK);
+    float dh = fract(h);
+
+    // interpolate between two heights
+    Surface surfH0 = DetailTextureMulti(detUV, h0);
+    Surface surfH1 = DetailTextureMulti(detUV, h1);
+    return BlendMaterials(surfH0, surfH1, dh);
+}
+
 //-----------------------------------------------------------------------------
 
 vec4    ColorMapAsteroid(vec3 point, in BiomeData biomeData)
@@ -33,7 +51,8 @@ vec4    ColorMapAsteroid(vec3 point, in BiomeData biomeData)
     vec2 shatterUV = Fbm2D2(detUV * 16.0) * (16.0 / 512.0);
     detUV += shatterUV;
 
-    Surface surf = GetBaseSurface(biomeData.height, detUV);
+    float _height = biomeData.height;
+    Surface surf = _GetBaseSurface(_height, detUV);
 
     // GlobalModifier // ColorVary apply
 	surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
