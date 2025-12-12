@@ -315,7 +315,6 @@ float   HeightMapSelena(vec3 point)
 
 
 	// Fetch variables // Planet types
-		// 21-10-2024 by Sp_ce // Added europaLikeness
 	bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq < 0.6));
     bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6));
 	
@@ -432,8 +431,6 @@ float   HeightMapSelena(vec3 point)
 
 
     // TerrainFeature // Craters (old)
-		// 25-10-2024 by Sp_ce // Crater density is reduced for high europaLikeness
-		// 25-10-2024 by Sp_ce // Altered crater density function, high densities can now appear on high europaLikeness, but rarely
     float crater = 0.0;
     if (craterSqrtDensity > 0.05)
     {
@@ -514,7 +511,6 @@ float   HeightMapSelena(vec3 point)
 
 
 	// TerrainFeature // Ice cracks
-		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
     if (cracksOctaves > 0.0)
 	{
 		height += 0.5*CrackNoise(point, mask);
@@ -573,11 +569,6 @@ float   HeightMapSelena(vec3 point)
 
 
 	// PlanetTypes // Europalike terrain
-		// 8-10-2024 by Sp_ce // Changed cracksOctaves to +2 instead of +3
-		// 21-10-2024 by Sp_ce // Low europaLikeness keeps original height
-		// 22-10-2024 by Sp_ce // Reverted europaLikeness, added white cracks
-		// 21-10-2024 by Sp_ce // 1.0 europaLikeness 30% height, 0.0 europaLikeness 60% height
-		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
 	else if (europaLike)
 	{
 		float europaCracksOctaves = cracksOctaves + 2;
@@ -607,7 +598,6 @@ float   HeightMapSelena(vec3 point)
 	
 	
     // TerrainFeature // Equatorial ridge 
-	   // 18-7-2024 by Sp_ce // Attempting improvement to bring inline with iapetus
     if (eqridgeMagn > 0.0)
     {
       //noiseOctaves    = 4.0;
@@ -634,7 +624,7 @@ float   HeightMapSelena(vec3 point)
         heightRim   =  1.0;
         float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
         float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
-        float craterRayedMagn = craterMagn * pow(0.62, craterOctaves - craterRayedOctaves);
+        float craterRayedMagn = craterMagn * pow(0.88, craterOctaves - craterRayedOctaves);
         crater = RayedCraterNoise(point, craterRayedMagn, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
         height += crater;
     }
