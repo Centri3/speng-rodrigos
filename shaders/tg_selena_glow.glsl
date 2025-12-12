@@ -7,18 +7,13 @@
 vec4  GlowMapSelena(vec3 point, float height, float slope)
 {
 	// Thermal emission temperature (in thousand Kelvins)
-    vec3 p = point * 6.0 + Randomize;
     noiseOctaves = 5;
-    noiseH = 0.3;
+    vec3  p = point * 600.0 + Randomize;
     float dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
-    //float varyTemp = 0.5 * smoothstep(0.0, 0.4, cell.y - cell.x);
-    //float varyTemp = 0.5 * sqrt(abs(cell.y - cell.x));
-    float varyTemp = 1.0 - 5.0 * RidgedMultifractal(p, 16.0);
     noiseOctaves = 3;
-    float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
+	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
     noiseOctaves = 8;
-    // float varyTemp = abs(Fbm(p + dist));
-    //globTemp *= 1.0 - lithoCells;
+	float varyTemp = abs(Fbm(p + dist));
 
     // Copied from height shader, for extra detail
     float venus = 0.0;

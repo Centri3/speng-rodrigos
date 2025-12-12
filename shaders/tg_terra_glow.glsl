@@ -6,22 +6,25 @@
 
 vec4 GlowMapTerra(vec3 point, float height, float slope) {
     // Assign a climate type
-    noiseOctaves = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 0.1)
-    noiseH = 0.5;
+    noiseOctaves    = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 0.1)
+    noiseH          = 0.5;
     noiseLacunarity = 2.218281828459;
-    noiseOffset = 0.8;
+    noiseOffset     = 0.8;
     float climate, latitude, dist;
-    if(tidalLock <= 0.0) {
+    if (tidalLock <= 0.0)
+    {
         latitude = abs(point.y);
         latitude += 0.15 * (Fbm(point * 0.7 + Randomize) - 1.0);
         latitude = saturate(latitude);
-        if(latitude < latTropic - tropicWidth)
+        if (latitude < latTropic - tropicWidth)
             climate = mix(climateTropic, climateEquator, (latTropic - tropicWidth - latitude) / latTropic);
-        else if(latitude > latTropic + tropicWidth)
+        else if (latitude > latTropic + tropicWidth)
             climate = mix(climateTropic, climatePole, (latitude - latTropic - tropicWidth) / (1.0 - latTropic));
         else
             climate = climateTropic;
-    } else {
+    }
+    else
+    {
         latitude = 1.0 - point.x;
         latitude += 0.15 * (Fbm(point * 0.7 + Randomize) - 1.0);
         climate = mix(climateTropic, climatePole, saturate(latitude));
@@ -38,18 +41,34 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
     float iceCap = saturate((latitude / latIceCaps - 1.0) * 50.0);
     climate = mix(climate, climatePole, iceCap);
 
-	// Thermal emission temperature (in thousand Kelvins)
-    vec3 p = point * 6.0 + Randomize;
+/*
+    // Thermal glow variations
     noiseOctaves = 5;
-    noiseH = 0.3;
+    vec3 p = point * 600.0 + Randomize;
+    dist = 10.0 * colorDistMagn * Fbm3D(p * 0.2);
+    //vec2 cell = Cell3Noise2(p + dist);
+    ////float varyTemp = 0.5 * smoothstep(0.0, 0.4, cell.y - cell.x);
+    ////float varyTemp = 0.5 * sqrt(abs(cell.y - cell.x));
+    //float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
+    //float flow  = saturate(varyTemp * 0.2 * lavaCoverage);
+    noiseOctaves = 8;
+	float varyTemp = abs(Fbm(p + dist));
+	// Thermal emission temperature (in thousand Kelvins)
+	float surfTemp = 0.0;
+*/
+	// Thermal emission temperature (in thousand Kelvins)
+    vec3 p = point * 600.0 + Randomize;
+    noiseOctaves = 5;
     dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
+    /*vec2 cell = Cell3Noise2(p + dist);
     //float varyTemp = 0.5 * smoothstep(0.0, 0.4, cell.y - cell.x);
     //float varyTemp = 0.5 * sqrt(abs(cell.y - cell.x));
-    float varyTemp = 1.0 - 5.0 * RidgedMultifractal(p, 16.0);
+    float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
+    float flow  = saturate(varyTemp * 0.2 * lavaCoverage);*/
     noiseOctaves = 3;
-    float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
+	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
     noiseOctaves = 8;
-    // float varyTemp = abs(Fbm(p + dist));
+	float varyTemp = abs(Fbm(p + dist));
     //globTemp *= 1.0 - lithoCells;
 
     // Copied from height shader, for extra detail
@@ -60,7 +79,6 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
     vec3 distort = Fbm3D(point * 0.3) * 1.5;
     noiseOctaves = 6;
     venus = Fbm((point + distort) * 1.0) * (0.3);
-    
 
     float surfTemp = surfTemperature *
         (globTemp + venus * varyTemp * 0.04) *

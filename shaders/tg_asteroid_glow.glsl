@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 
-vec4 asteroid_glowmap(vec3 point, float height, float slope) {
+vec4 asteroid_glowmap(vec3 point) {
   vec3 p = point * 6.0 + Randomize;
   float dist = 10.0 * colorDistMagn *
                noise_fbm_float(
