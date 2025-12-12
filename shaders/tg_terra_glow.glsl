@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 
-vec4 GlowMapTerra(vec3 point, float height, float slope) {
+vec4 GlowMapTerra(vec3 point, BiomeData biomeData) {
     // Assign a climate type
     noiseOctaves    = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 0.1)
     noiseH          = 0.5;
@@ -34,7 +34,7 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
     //float lithoCells = LithoCellsNoise(point, climate, 1.5);
 
     // Change climate with elevation
-    float montHeight = saturate((height - seaLevel) / (snowLevel - seaLevel));
+    float montHeight = saturate((biomeData.height - seaLevel) / (snowLevel - seaLevel));
     climate = min(climate + heightTempGrad * montHeight, climatePole);
 
     // Ice caps
@@ -82,12 +82,12 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
 
     float surfTemp = surfTemperature *
         (globTemp + venus * varyTemp * 0.04) *
-        saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * height)) *
+        saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * biomeData.height)) *
         saturate((lavaCoverage - 0.01) * 25.0) *
         saturate((0.875 - climate) * 50.0);
 
     // Shield volcano lava
-    if(volcanoOctaves > 0 && height > seaLevel + 0.1 && iceCap == 0.0) {
+    if(volcanoOctaves > 0 && biomeData.height > seaLevel + 0.1 && iceCap == 0.0) {
         // Global volcano activity mask
         noiseOctaves = 3;
         float volcActivity = saturate((Fbm(point * 1.37 + Randomize) - 1.0 + volcanoActivity) * 5.0);
@@ -112,9 +112,7 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
 
 void main() {
     vec3 point = GetSurfacePoint();
-    float height = 0, slope = 0;
-    GetSurfaceHeightAndSlope(height, slope);
-    OutColor = GlowMapTerra(point, height, slope);
+    OutColor = GlowMapTerra(point, GetSurfaceBiomeData());
 }
 
 //-----------------------------------------------------------------------------
