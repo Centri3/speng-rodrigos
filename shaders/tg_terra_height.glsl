@@ -9,7 +9,7 @@
 //	RODRIGO - SMALL CHANGES TO RIVERS AND RIFTS
 // Modified Rodrigo's rivers
 
-void    _PseudoRivers(vec3 point, float global, float damping, inout float height)
+void    _PseudoRivers(vec3 point, float damping, inout float height)
 {
     noiseOctaves = 8.0;
         noiseH       = 1.0;
@@ -22,16 +22,38 @@ void    _PseudoRivers(vec3 point, float global, float damping, inout float heigh
                   0.03 * Fbm3D(p * riversSin * 5.0) + 0.01* RidgedMultifractalErodedDetail(point * 0.3* (canyonsFreq+1000)*(0.5*(1/montesSpiky+1))  + Randomize, 8.0, erosion, 2);
 
 
+    vec2 cell = 2.5* Cell3Noise2(riversFreq * 3.0 * p + 0.5*distort);
+     
+    float errorcor = pow(0.992, (1 / seaLevel));  //Correct Rivers on marine planets
+     
+    float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
+    valleys = smoothstep(0.0, 1.0, valleys) * damping;
+    height = mix(height, seaLevel + 0.019 + errorcor*0.042, valleys);
+
+
+    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn));
+    rivers = smoothstep(0.0, 1.0, rivers) * damping;
+    height = mix(height, seaLevel + 0.004 + errorcor*0.052, rivers);
+}
+
+void    _PseudoCracks(vec3 point, float damping, inout float height)
+{
+    noiseOctaves = 8.0;
+    noiseH       = 1.0;
+    noiseLacunarity = 2.1;
+
+       
+    vec3 p = point * 2.0* mainFreq + Randomize;
+    vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.7);
+    distort = 0.65 * Fbm3D(p * riversSin * 0.7) +
+                  0.03 * Fbm3D(p * riversSin * 3.0) + 0.01* RidgedMultifractalErodedDetail(point * 0.3* (canyonsFreq+1000)*(0.5*(1/montesSpiky+1))  + Randomize, 8.0, erosion, 2);
+
+
     vec2 cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
         
     float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn * 0.2));
     valleys = smoothstep(0.0, 1.0, valleys) * damping;
     height = mix(height, seaLevel + 0.03, valleys);
-
-
-    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn * 0.2));
-    rivers = smoothstep(0.0, 1.0, rivers) * damping;
-    height = mix(height, seaLevel+0.015, rivers);
 }
 
 
@@ -391,11 +413,35 @@ float damping;
 
     // Pseudo rivers
 
+// Pseudo rivers
+
 if (riversMagn > 0.0)
     {
-        damping = (smoothstep(0.195, 0.135, rodrigoDamping)) *    // disable rivers inside continents
-                        (smoothstep(-0.0016, -0.018, seaLevel - height));  // disable rivers inside oceans
-        _PseudoRivers(point, global, damping, height);
+        noiseOctaves = 12.0;
+        noiseH       = 0.8;
+        noiseLacunarity = 2.3;
+        p = point * 2.0* mainFreq + Randomize;
+        distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01* RidgedMultifractalErodedDetail(point * 0.3* (canyonsFreq+1000)*(0.5*(inv2montesSpiky+1))  + Randomize, 8.0, erosion, montBiomeScale*2);
+        cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
+        /*
+        float pseudoRivers2 = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
+            pseudoRivers2 = smoothstep(0.25, 0.99, pseudoRivers2); 
+            pseudoRivers2 *= 1.0 - smoothstep(0.135, 0.145, rodrigoDamping); // disable rivers inside continents
+            pseudoRivers2 *= 1.0 - smoothstep(0.000, 0.0001, seaLevel - height); // disable rivers inside oceans
+            height = mix(height, seaLevel+0.003, pseudoRivers2);
+            cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
+        float PseudoRivers = 1.0 - (saturate(2.8 * abs(cell.y - cell.x) * riversMagn));
+            PseudoRivers = smoothstep(0.0, 1.0, PseudoRivers); 
+            PseudoRivers *= 1.0 - smoothstep(0.055, 0.057, global-seaLevel);
+            PseudoRivers *= 1.0 - smoothstep(0.00, 0.005, seaLevel - height); // disable rivers inside oceans
+            height = mix(height, seaLevel-0.0035, PseudoRivers);
+        */
+        damping = (smoothstep(0.145, 0.135, rodrigoDamping)) *    // disable rivers inside continents
+            (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09, seaLevel - height));  // disable rivers inside oceans
+        _PseudoRivers(point, damping, height);
+
+        // Cracks
+        _PseudoCracks(point, damping, height);
     }
 
     // Rifts
