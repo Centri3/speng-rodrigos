@@ -4,6 +4,21 @@
 
 //-----------------------------------------------------------------------------
 
+Surface _GetBaseSurface(float height, vec2 detUV)
+{
+    float h  = (height * 2.0 - seaLevel * 2.0) / (1.0 - seaLevel) * float(BIOME_ROCK - BIOME_BEACH + 1) + float(BIOME_BEACH);
+    int   h0 = clamp(int(floor(h)), 0, BIOME_ROCK);
+    int   h1 = clamp(h0 + 1,        0, BIOME_ROCK);
+    float dh = fract(h);
+
+    // interpolate between two heights
+    Surface surfH0 = DetailTextureMulti(detUV, h0);
+    Surface surfH1 = DetailTextureMulti(detUV, h1);
+    return BlendMaterials(surfH0, surfH1, dh);
+}
+
+//-----------------------------------------------------------------------------
+
 // Function // Construct Color Map
 void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   Surface surf;
@@ -126,7 +141,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   vec2 shatterUV = Fbm2D2(detUV * 1.0) * (1.0 / 512.0);
   detUV += shatterUV;
 
-  surf = GetBaseSurface(biomeData.height, detUV);
+  surf = _GetBaseSurface(biomeData.height, detUV);
 
   // Vegetation
   if (plantsBiomeOffset > 0.0) {
