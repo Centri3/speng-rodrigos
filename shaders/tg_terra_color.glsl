@@ -90,12 +90,17 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 	
 	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-			distort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 	}
 	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
-			distort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
+			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //For less Volcanic planets
 	}
+	
+	//else if (cracksOctaves > 0)  // Test Ice planets later
+	//{
+	//	distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
+	//}
 	
     vary = 1.0 - Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) + RidgedMultifractal(pp * 0.999, 8.0)));
     vary *= 0.5 * vary * vary;
@@ -109,7 +114,8 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     surf = GetBaseSurface(biomeData.height, detUV);
 
     // Vegetation
-    if(plantsBiomeOffset > 0.0) {
+    if(plantsBiomeOffset > 0.0) 
+	{
         noiseH = 0.5;
         noiseLacunarity = 2.218281828459;
         noiseOffset = 0.8;
@@ -121,9 +127,20 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 //Rodrigo - Changed albedoVaryDistort to distort
 
         noiseOctaves = 8.0;
-        float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0;
+        float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0; //
 
-        float plantsFade = smoothstep(beachWidth, beachWidth * 2.0, biomeData.height - seaLevel) *
+	// Test more Modulate Plant biome with volcano maybe
+	//if (cracksOctaves == 0 && volcanoActivity >= 1.0)
+	//	{
+	//		humidityMod = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + humidity * 2.0) * (volcanoActivity - 1) + (Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0) * (2 - volcanoActivity);  //Io like plants
+	//	}
+	//else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+	//{
+	//		humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0;  //Io like plants
+	//}
+	
+		
+		float plantsFade = smoothstep(beachWidth, beachWidth * 2.0, biomeData.height - seaLevel) *
             smoothstep(0.750, 0.650, biomeData.slope) *
             smoothstep(-0.5, 0.5, humidityMod);
 
@@ -139,7 +156,8 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     }*/
 
     // Mountain/winter snow
-    if(climate > 0.9 && latitude > latTropic) {
+    if((climate > 0.9 && latitude > latTropic) || latitude > latIceCaps) 
+	{
         float snowTransition = smoothstep(0.9, 0.92, climate);
         Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
         surf = BlendMaterials(surf, snow, snowTransition);

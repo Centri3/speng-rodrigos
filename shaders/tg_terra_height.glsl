@@ -153,15 +153,15 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
     float dist;
 //	RODRIGO 
 
-float hillsFreqq = hillsFreq;
+float _hillsFreqq = hillsFreq;
 
 if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)   // exclude icy and small planets
 	{
-		hillsFreqq = hillsFreq*5;
+		_hillsFreqq = hillsFreq*5;
 	}
 	else
 		{
-			hillsFreqq = hillsFreq;
+			_hillsFreqq = hillsFreq;
 		}
 
 float hillsMagnn = hillsMagn;
@@ -176,7 +176,7 @@ if (hillsMagn < .03 && hillsMagn > 0)   // Fix to spiky terrain before planet me
 		}
 
 noiseOctaves = 8;
-vec3  pp = (point + Randomize) * (0.0005 * hillsFreqq / (hillsMagnn * hillsMagnn));
+vec3  pp = (point + Randomize) * (0.0005 * _hillsFreqq / (hillsMagnn * hillsMagnn));
 
 noiseOctaves = 12.0;
 distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
@@ -208,7 +208,7 @@ float zr = 1.0 + 2*Fbm(point + distort) + 7 * (1.5 - RidgedMultifractalEroded(pp
 
 zr = smoothstep(0.0, 1.0, 0.2*zr*zr);
 zr *= 1 - smoothstep(0.0, 0.02, seaLevel-global);
-zr = 0.1*hillsFreqq* smoothstep(0.0, 1.0, zr);
+zr = 0.1*_hillsFreqq* smoothstep(0.0, 1.0, zr);
 global =  mix(global,global+0.0006,zr);
 
 noiseOctaves = 10.0;
@@ -241,7 +241,7 @@ global += rr;
 			noiseH       = 0.90;  // Going to tweak some
 			noiseLacunarity = 2.0;
 			noiseOffset  = montesSpiky;    // Also caused offset
-			height = hillsMagnn * 2.88 * ((1.25 + iqTurbulence(point * 0.5 * hillsFreqq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * hillsFreqq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
+			height = hillsMagnn * 2.88 * ((1.25 + iqTurbulence(point * 0.5 * _hillsFreqq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * _hillsFreqq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
 		}
 		else
 		{
@@ -249,7 +249,7 @@ global += rr;
 			noiseH       = 1.0;
 			noiseLacunarity = 2.0;
 			noiseOffset  = montesSpiky;
-			height = hillsMagnn * 7.5 * ((1.25 + iqTurbulence(point * 0.5 * (hillsFreqq / 2) * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalDetail(point * 1.0 * (hillsFreqq / 2) * inv2montesSpiky * 1.5 + Randomize, 1.0, montBiomeScale)));
+			height = hillsMagnn * 7.5 * ((1.25 + iqTurbulence(point * 0.5 * (_hillsFreqq / 2) * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalDetail(point * 1.0 * (_hillsFreqq / 2) * inv2montesSpiky * 1.5 + Randomize, 1.0, montBiomeScale)));
 		}
     }
     else if (biome < hills2Fraction)
@@ -261,14 +261,14 @@ global += rr;
 			noiseH       = 0.90;
 			noiseOffset  = montesSpiky;   // you cause it ya little shit
 			noiseLacunarity = 2.1;
-			height = (0.5 + 0.4 * iqTurbulence(point * 1.12 * hillsFreqq + Randomize, 0.55)) * (montBiomeScale * hillsMagnn * (0.05 - (0.4 * RidgedMultifractalDetail(point * hillsFreqq + Randomize, 2.0, venus)) + 0.3 * RidgedMultifractalErodedDetail(point * hillsFreqq + Randomize, 2.0, 1.1 * erosion, montBiomeScale)));
+			height = (0.5 + 0.4 * iqTurbulence(point * 1.12 * _hillsFreqq + Randomize, 0.55)) * (montBiomeScale * hillsMagnn * (0.05 - (0.4 * RidgedMultifractalDetail(point * _hillsFreqq + Randomize, 2.0, venus)) + 0.3 * RidgedMultifractalErodedDetail(point * _hillsFreqq + Randomize, 2.0, 1.1 * erosion, montBiomeScale)));
 		}
 		else
 		{
 			noiseOctaves = 8.0; // Decrease the number of octaves for smoother terrain							//Think I'll add these back in
 			noiseLacunarity = 2.0; // Slightly increase lacunarity for more variation in frequency
 			//noiseOffset  = venusFreq;
-			height = montBiomeScale * hillsMagnn * JordanTurbulence(point * hillsFreqq + Randomize, 0.7, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+			height = montBiomeScale * hillsMagnn * JordanTurbulence(point * _hillsFreqq + Randomize, 0.7, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
 		}
     }
     else if (biome < canyonsFraction)
@@ -313,7 +313,7 @@ global += rr;
 			noiseH       = 1.0;
 			noiseLacunarity = 2.1;
 			noiseOffset  = montesSpiky;
-			// height = montesMagn * 5.0 * (0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55))* 0.7* montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale)+ 0.6 * biomeScale * hillsMagnn * JordanTurbulence(point/4 * hillsFreqq/4 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+			// height = montesMagn * 5.0 * (0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55))* 0.7* montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale)+ 0.6 * biomeScale * hillsMagnn * JordanTurbulence(point/4 * _hillsFreqq/4 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
 			height = (0.5 + 0.4 * iqTurbulence(point * 0.5 * (montesFreq * 3) + Randomize, 0.55)) * 0.4 * montesMagn * montRange * RidgedMultifractalErodedDetail(point * (montesFreq * 3) * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale);
 		}
 		else
@@ -472,16 +472,16 @@ distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 
 if (cracksOctaves == 0 && volcanoActivity > 1.0)
 	{
-		distort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+		distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 	}
 else if (cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
-			distort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
+			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
 	}
 
 float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp,         8.0)+ RidgedMultifractal(pp*0.999,         8.0))));
 
-height = mix(height ,height +0.0001,vary);
+height = mix(height ,height +0.00017,vary);
 
 
 

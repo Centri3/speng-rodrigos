@@ -306,8 +306,8 @@ float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtD
 
 // Function // Construct Height Map
 
-float	hillsFreqq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
-float hillsMagnn = hillsMagn;
+float	_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
+float _hillsMagn = hillsMagn;
 
 
 float   HeightMapSelena(vec3 point)
@@ -318,13 +318,13 @@ float   HeightMapSelena(vec3 point)
 	float bottomAlpha = bottomColorHSL.w;
 	bool aquaria = (bottomAlpha == 0.001);
 
-if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet melts
+if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet melts
 	{
-		hillsMagnn = 0.05;
+		_hillsMagn = 0.05;
 	}
 	else
 		{
-			hillsMagnn = hillsMagn;
+			_hillsMagn = hillsMagn;
 		}
 
 	// Fetch variables // Planet types
@@ -375,7 +375,7 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
 
     noiseOctaves = 4;
     distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
-	vec3 pp = (point + Randomize) * (0.0005 * hillsFreqq / (hillsMagnn * hillsMagnn));
+	vec3 pp = (point + Randomize) * (0.0005 * _hillsFreq / (_hillsMagn * _hillsMagn));
     float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
     float global = 1 - Cell3Noise(p + distort);
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
@@ -390,7 +390,7 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
     venus = Fbm((point + distort) * venusFreq + 0.1) * (venusMagn + 0.1);
 
 	noiseOctaves = 8;
-	global = (global + 0.8 *venus+ (0.000006 * ((hillsFreqq + 1500)/hillsMagnn)) * fr - seaLevel)* 0.5 + seaLevel;
+	global = (global + 0.8 *venus+ (0.000006 * ((_hillsFreq + 1500)/_hillsMagn)) * fr - seaLevel)* 0.5 + seaLevel;
 
 	float mr = 1.0 + 2*Fbm(point + distort) + 7 * (1.5 - RidgedMultifractalEroded(pp *0.8,         8.0, erosion)) -
 				   6 * (1.5 - RidgedMultifractalEroded(pp * 0.1,  8.0,erosion));
@@ -398,7 +398,7 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
 	mr = smoothstep(0.0, 1.0, 0.2*mr*mr);
 
 	mr *= 1 - smoothstep(-0.01, 0.00, seaLevel-global);
-	mr = 0.1*hillsFreqq* smoothstep(0.0, 1.0, mr);
+	mr = 0.1*_hillsFreq* smoothstep(0.0, 1.0, mr);
 	global =  mix(global,global+0.0003,mr);
 	float mask = 1.0;
 	
@@ -489,7 +489,7 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
             // TerrainFeature // Europa freckles
             noiseOctaves    = 10.0;
             noiseLacunarity = 2.0;
-            height += 0.2 * hillsMagnn * mask * biomeScale * JordanTurbulence(point * hillsFreqq + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+            height += 0.2 * _hillsMagn * mask * biomeScale * JordanTurbulence(point * _hillsFreq + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
         }
         else if (biome < canyonsFraction)
         {
@@ -539,7 +539,7 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
     {
         vec3 pp = (point + Randomize) * 220.25;
         float fr = 0.20 * (1.5 - RidgedMultifractal(0.3*pp, 2.0));
-        global += (0.00002 * (hillsFreqq + 1500) / hillsMagnn)*fr; 
+        global += (0.00002 * (_hillsFreq + 1500) / _hillsMagn)*fr; 
         crater *= 1.0 - smoothstep(0.1, 0.05, global- seaLevel);
         height *= saturate(mare + crater);
         p = point *20 + Randomize;
@@ -650,15 +650,14 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
 	noiseOctaves    = 14.0;
 	noiseLacunarity = 2.218281828459;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;   //Fbm3D((point + Randomize) * 0.07) * 1.5;  
-	float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
 	
 	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-			distort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 	}
 	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
-			distort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on airless planets donatelo200 12/09/2025
+			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on airless planets donatelo200 12/09/2025
 	}
 	
 		else if (cracksOctaves > 0)
@@ -667,7 +666,9 @@ if (hillsMagnn < .05 && hillsMagnn > 0)   // Fix to spiky terrain before planet 
 		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
 	}
 	
-	height += saturate(0.0001*vary );
+	float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
+	
+	height = mix(height ,height +0.00017,vary);
 	
 	
 	

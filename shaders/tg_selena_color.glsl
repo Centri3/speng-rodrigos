@@ -299,20 +299,20 @@ float   TholinPatchNoise(vec3 point, float height)
 
 
 //-----------------------------------------------------------------------------
-float hillsMagnn = hillsMagn;
+float _hillsMagn = hillsMagn;
 
 // Function // Construct Color Map
 vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 {
     Surface surf;
 	
-if (hillsMagnn < .05)   // Fix to spiky terrain before planet melts
+if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 	{
-		hillsMagnn = 0.05;
+		_hillsMagn = 0.05;
 	}
 	else
 		{
-			hillsMagnn = hillsMagn;
+			_hillsMagn = hillsMagn;
 		}	
 	
 	// Fetch variables // Colors
@@ -396,7 +396,7 @@ if (hillsMagnn < .05)   // Fix to spiky terrain before planet melts
     // Flatland climate distortion
     noiseOctaves    = 4.0;
     noiseLacunarity = 2.218281828459;
-	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagnn * hillsMagnn));
+	vec3  pp = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
     float fr = 0.20 * (1.5 - RidgedMultifractal(pp,         2.0)) +
                0.05 * (1.5 - RidgedMultifractal(pp * 10.0,  2.0)) +
                0.02 * (1.5 - RidgedMultifractal(pp * 100.0, 2.0));
@@ -461,17 +461,17 @@ if (hillsMagnn < .05)   // Fix to spiky terrain before planet melts
 	
 	
     // GlobalModifier // ColorVary setup
-    vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (hillsMagnn * hillsMagnn));
+    vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
 	noiseOctaves = 14.0;
 	vec3 albedoVaryDistort = Fbm3D((point * 1 + Randomize) * .07) * (1.5 + venusMagn ); //Fbm3D((point + Randomize) * 0.07) * 1.5;
 	
 	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-			albedoVaryDistort *= (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			albedoVaryDistort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 	}
 	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
-			albedoVaryDistort *= Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
+			albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
 	}
 	
 	else if (cracksOctaves > 0)
@@ -594,13 +594,18 @@ if (hillsMagnn < .05)   // Fix to spiky terrain before planet melts
         ModifySurfaceByPlants(surf, detUV, climate, plantsFade, plantsTransFractal);
     }
 	
+	float _craterRayedFactor = craterRayedFactor;
 	
+	if (hillsMagn == 0)
+		{
+			_craterRayedFactor = 0;
+		}
 	
     // TerrainFeature // Rayed craters
-    if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05)
+    if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05)
     {
-        float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-        float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
+        float craterRayedSqrtDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
+        float craterRayedOctaves = floor(craterOctaves * _craterRayedFactor);
         float crater = RayedCraterColorNoise(point, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
         surf.color.rgb = mix(surf.color.rgb, vec3(0.82), crater);  //tweaky tweaky
     }

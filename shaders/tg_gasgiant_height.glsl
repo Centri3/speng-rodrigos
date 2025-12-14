@@ -162,7 +162,8 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
 void main() {
     vec3 point = GetSurfacePoint();
     float height = 0.0;
-    if(volcanoActivity != 0.0) {
+    if(volcanoActivity != 0.0) //volcanoActivity != 0.0 && colorDistFreq < 200000000
+	{
         if(cloudsLayer == 0.0) {
             height = 3.0 * stripeFluct * HeightMapCloudsTerraAli(point) + HeightMapCloudsTerraAli2(point);
         }
