@@ -154,7 +154,7 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
     // Reduce height of land to allow rivers to appear at "higher" latitudes; seaLevel
     // shouldn't be just a sphere, this is a workaround! Use smoothstep to avoid "islands"
     // where low values that are otherwise oceans become land again, limit it to seaLevel.
-    global = mix(global, pow(2.71828, global) * 0.2, smoothstep(seaLevel, 1.0, global));
+    global = mix(global, pow(2.71828, global) * 0.1, smoothstep(seaLevel, 1.0, global));
 
     HeightBiomeMap = vec4(global);
 
