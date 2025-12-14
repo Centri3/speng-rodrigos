@@ -151,6 +151,15 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
     global = softPolyMax(global, 0.0, 0.1);
     global = pow(global, 1.5);
 
+    // Reduce height of land to allow rivers to appear at "higher" latitudes; seaLevel
+    // shouldn't be just a sphere, this is a workaround! Use smoothstep to avoid "islands"
+    // where low values that are otherwise oceans become land again, limit it to seaLevel.
+    global = mix(global, pow(2.71828, global) * 0.2, smoothstep(seaLevel, 1.0, global));
+
+    HeightBiomeMap = vec4(global);
+
+    // return;
+
 
     // Venus-like structure
     float venus = 0.0;
@@ -436,11 +445,13 @@ if (riversMagn > 0.0)
             PseudoRivers *= 1.0 - smoothstep(0.00, 0.005, seaLevel - height); // disable rivers inside oceans
             height = mix(height, seaLevel-0.0035, PseudoRivers);
         */
-        damping = (smoothstep(0.145, 0.135, rodrigoDamping)) *    // disable rivers inside continents
+        damping = (smoothstep(0.185, 0.175, rodrigoDamping)) *    // disable rivers inside continents
             (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09, seaLevel - height));  // disable rivers inside oceans
         _PseudoRivers(point, damping, height);
 
         // Cracks
+        damping = (smoothstep(0.1, 0.09, rodrigoDamping)) *    // disable rivers inside continents
+            (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09, seaLevel - height));  // disable rivers inside oceans
         _PseudoCracks(point, damping, height);
     }
 
