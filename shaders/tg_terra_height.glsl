@@ -110,7 +110,7 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
     }
 
     // Assign a climate type
-    noiseOctaves    = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 1)
+    noiseOctaves    = 12.0;
     noiseH          = 0.5;
     noiseLacunarity = 2.218281828459;
     noiseOffset     = 0.8;
