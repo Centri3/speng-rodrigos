@@ -151,7 +151,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // seaLevel shouldn't be just a sphere, this is a workaround! Use smoothstep
   // to avoid "islands" where low values that are otherwise oceans become land
   // again, limit it to seaLevel.
-  global = mix(global, pow(2.71828, global) * 0.1,
+  global = mix(global + 0.1, pow(2.71828, global + 0.1) * 0.1,
                smoothstep(seaLevel, 1.0, global));
 
   HeightBiomeMap = vec4(global);
