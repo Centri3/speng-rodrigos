@@ -497,7 +497,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 	}
 	
 	float vary = 1.0 - 5*(Fbm((point + albedoVaryDistort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
-  height = mix(height, height + 0.0017, vary);
+  height = mix(height, height + 0.0004, vary);
 
   // height = max(height, seaLevel + 0.057);
   // ocean basins
