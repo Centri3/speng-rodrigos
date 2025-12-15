@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 
-vec4 asteroid_glowmap(vec3 point) {
+vec4 asteroid_glowmap(vec3 point, BiomeData biomeData) {
   vec3 p = point * 6.0 + Randomize;
   float dist = 10.0 * colorDistMagn *
                noise_fbm_float(
@@ -28,7 +28,7 @@ vec4 asteroid_glowmap(vec3 point) {
           (0.3);
 
   float surfTemp = surfTemperature * (globTemp + venus * varyTemp * 0.08) *
-                   saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * height));
+                   saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * biomeData.height));
 
   surfTemp = EncodeTemperature(surfTemp); // encode to [0...1] range
   return vec4(surfTemp);
@@ -37,10 +37,7 @@ vec4 asteroid_glowmap(vec3 point) {
 //-----------------------------------------------------------------------------
 
 void main() {
-  vec3 point = GetSurfacePoint();
-  float height = 0, slope = 0;
-  GetSurfaceHeightAndSlope(height, slope);
-  OutColor = asteroid_glowmap(point, height, slope);
+  OutColor = asteroid_glowmap(GetSurfacePoint(), GetSurfaceBiomeData());
 }
 
 //-----------------------------------------------------------------------------
