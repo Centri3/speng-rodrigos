@@ -404,18 +404,23 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
       (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
   noiseOctaves = 14.0;
   noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-  vec3 albedoVaryDistort =
-      Fbm3D((point + Randomize) * 0.07) * (1.5 + venusMagn);
-  if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
-    albedoVaryDistort *=
-        (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) *
-            (volcanoActivity - 1) +
-        (Fbm3D((point + Randomize) * 0.07) * 1.5) *
-            (2 - volcanoActivity); // Io like on atmosphered planets
-  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
-    albedoVaryDistort *= Fbm3D((point + Randomize) * 0.07) *
-                         1.5; // Io like on atmosphered planets
-  }
+	noiseOctaves = 14.0;
+	vec3 albedoVaryDistort = Fbm3D((point * 1 + Randomize) * .07) * (1.5 + venusMagn ); //Fbm3D((point + Randomize) * 0.07) * 1.5;
+	
+	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
+	{
+			albedoVaryDistort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
+	}
+	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+	{
+			albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;
+	}
+	
+	else if (cracksOctaves > 0)
+	{
+	
+		albedoVaryDistort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
+	}
 
   if (europaLike) {
     vary = 1.0 - Fbm(0.5 * (point + albedoVaryDistort) *
