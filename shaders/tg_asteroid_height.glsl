@@ -34,7 +34,7 @@ float HeightMapAsteroid(vec3 point) {
   heightFloor = -0.1;
   heightPeak = 0.6;
   heightRim = 0.4;
-  float crater = 0.4 * CraterNoise(point, craterMagn * 0.3, log(craterFreq * 10.0),
+  float crater = 0.4 * CraterNoise(point, craterMagn * 1.2, log(craterFreq * 10.0),
                                    craterSqrtDensity, craterOctaves);
 
   noiseOctaves = 10;
