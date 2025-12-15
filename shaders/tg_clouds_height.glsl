@@ -188,11 +188,11 @@ float HeightMapCloudsTerraA(vec3 point) {
       -cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
   float ang = zones * 2;
   vec3 twistedPoint = point;
-  float coverage = cloudsCoverage * 0.8;
+  float coverage = cloudsCoverage * 0.3;
   if (cloudsOctaves == 0) {
     coverage = 0.0;
   }
-  float weight = 0.5;
+  float weight = 0.8;
   noiseH = 0.75;
 
   // Compute turbulence
@@ -209,7 +209,7 @@ float HeightMapCloudsTerraA(vec3 point) {
   // Compute the flow-like distortion
   noiseLacunarity = 9.9;
   noiseOctaves = 12;
-  vec3 distort = Fbm3D(twistedPoint) * 2;
+  vec3 distort = Fbm3D(twistedPoint) * 1;
   vec3 p = twistedPoint * cloudsFreq * 6.5;
   noiseOctaves = 0;
   vec3 q = p + Fbm3D(p);
