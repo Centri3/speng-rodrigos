@@ -454,9 +454,12 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   // 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into
   // europaLike section
   float mask = 1.0;
-  if (cracksOctaves > 0.0 && !europaLike) {
-    vary *= CrackColorNoise(point, mask);
-  }
+  // FIXME: Update cracks on non-europalikes to look better. For now, just
+  // remove them.
+
+  // if (cracksOctaves > 0.0 && !europaLike) {
+  //   vary *= CrackColorNoise(point, mask);
+  // }
 
   // PlanetTypes // Enceladuslike terrain
   if (enceladusLike) {
@@ -581,7 +584,8 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   // 22-10-2024 by Sp_ce // Changed vec3(1.0) to snowColor
   float slopedFactor = SlopedIceCaps(slope, latitude);
   float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
-  // BUG: negative snowLevel results in black snow. But it looks too cool to not keep.
+  // BUG: negative snowLevel results in black snow. But it looks too cool to not
+  // keep.
   float snow = float(slope / snowLevel);
   if (snowLevel == 2.0) {
     snow = 0.0;
