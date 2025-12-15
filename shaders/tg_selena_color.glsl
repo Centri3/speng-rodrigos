@@ -93,11 +93,10 @@ vec4 Cell2NoiseCenter(vec3 p) {
 //-----------------------------------------------------------------------------
 
 // Function // Polar Slope Ice
-float SlopedIceCaps(float slope) {
-  if (slope > 0.03 * (2.0 - icecapHeight)) {
-    return 1.0;
-  }
-  return 0.0;
+float SlopedIceCaps(float slope, float latitude) {
+  // This uses `latitude + 0.5` to increase the amount of ice caps on a planet
+  return saturate(slope - smoothstep(latIceCaps, 1.0, latitude + 0.5) * 0.03) +
+         smoothstep(saturate(latIceCaps - 0.3), 1.0, latitude + 0.5) * 0.4;
 }
 
 //-----------------------------------------------------------------------------
@@ -404,23 +403,31 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
       (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
   noiseOctaves = 14.0;
   noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-	noiseOctaves = 14.0;
-	vec3 albedoVaryDistort = Fbm3D((point * 1 + Randomize) * .07) * (1.5 + venusMagn ); //Fbm3D((point + Randomize) * 0.07) * 1.5;
-	
-	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
-	{
-			albedoVaryDistort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
-	}
-	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
-	{
-			albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;
-	}
-	
-	else if (cracksOctaves > 0)
-	{
-	
-		albedoVaryDistort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
-	}
+  noiseOctaves = 14.0;
+  vec3 albedoVaryDistort =
+      Fbm3D((point * 1 + Randomize) * .07) *
+      (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
+
+  if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
+    albedoVaryDistort =
+        (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) +
+         saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) *
+            (volcanoActivity - 1) +
+        (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
+  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
+    albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;
+  }
+
+  else if (cracksOctaves > 0) {
+
+    albedoVaryDistort =
+        Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
+            (1.5 + venusMagn) +
+        saturate(iqTurbulence(point, 0.15) *
+                 volcanoActivity); // albedoVaryDistort =Fbm3D((point *
+                                   // volcanoActivity + Randomize) *
+                                   // volcanoActivity) * (1.5 + venusMagn );
+  }
 
   if (europaLike) {
     vary = 1.0 - Fbm(0.5 * (point + albedoVaryDistort) *
@@ -572,9 +579,10 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
 
   // TerrainFeature // Polar slope ice
   // 22-10-2024 by Sp_ce // Changed vec3(1.0) to snowColor
-  float slopedFactor = SlopedIceCaps(slope);
+  float slopedFactor = SlopedIceCaps(slope, latitude);
   float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
-  float snow = float(slope * 1 > (snowLevel + 1.0) * 0.33);
+  // BUG: negative snowLevel results in black snow. But it looks too cool to not keep.
+  float snow = float(slope / snowLevel);
   if (snowLevel == 2.0) {
     snow = 0.0;
   }
