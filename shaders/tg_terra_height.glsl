@@ -166,7 +166,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseOctaves = 4;
   distort = Fbm3D(point * 0.3) * 1.5;
   noiseOctaves = 6;
-  venus = Fbm((point + distort) * venusFreq) * (venusMagn + 0.3);
+  venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
 
   global = (global + venus - seaLevel) * 0.5 + seaLevel;
   float shore = saturate(70.0 * (global - seaLevel));
@@ -450,9 +450,9 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
     // Cracks
     damping = (smoothstep(0.1, 0.09,
-                          rodrigoDamping)) * // disable rivers inside continents
+                          rodrigoDamping)) *
               (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09,
-                          seaLevel - height)); // disable rivers inside oceans
+                          seaLevel - height));
     _PseudoCracks(point, damping, height);
   }
 
