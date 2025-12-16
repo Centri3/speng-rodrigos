@@ -8,7 +8,7 @@ void main() {
   float height = GetSurfaceHeight();
 
   float modulate = saturate(height * height * 3.5 + height * 4.5);
-  OutColor = GetCloudsColor(height);
+  OutColor = GetCloudsColor(modulate);
 
   // Venus-like clouds
   if (cloudsCoverage == 1.0) {
