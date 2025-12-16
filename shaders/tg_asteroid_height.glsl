@@ -5,7 +5,10 @@
 //-----------------------------------------------------------------------------
 
 float HeightMapAsteroid(vec3 point) {
-  float _hillsMagn = max(hillsMagn, 0.5);
+  float _hillsMagn = hillsMagn;
+  if (_hillsMagn == 0.0) {
+    _hillsMagn = 5.0;
+  }
 
   // GlobalModifier // Global landscape
   vec3 p = point * venusFreq + Randomize;
