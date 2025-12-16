@@ -4,6 +4,7 @@
 
 //-----------------------------------------------------------------------------
 
+// Function // Reduce height required to increase palette color
 Surface _GetBaseSurface(float height, vec2 detUV)
 {
     float h  = (height * 2.0 - seaLevel * 2.0) / (1.0 - seaLevel) * float(BIOME_ROCK - BIOME_BEACH + 1) + float(BIOME_BEACH);
@@ -169,7 +170,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     //}
 
     float plantsFade =
-        smoothstep(beachWidth, beachWidth * 50.0, biomeData.height - seaLevel) *
+        smoothstep(0.0, beachWidth * 0.5, biomeData.height - seaLevel) *
         smoothstep(0.750, 0.650, biomeData.slope) *
         smoothstep(-0.5, 0.5, humidityMod);
 

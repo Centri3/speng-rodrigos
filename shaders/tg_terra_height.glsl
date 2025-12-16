@@ -12,7 +12,7 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
   noiseH = 1.0;
   noiseLacunarity = 2.1;
 
-  vec3 p = point * 2.0 * mainFreq + Randomize;
+  vec3 p = point * mainFreq + Randomize;
   vec3 distort = 0.325 * Fbm3D(p * riversSin);
   distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) +
             0.01 * RidgedMultifractalErodedDetail(
@@ -240,7 +240,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
   rr *= 1 - smoothstep(0.0, 0.02, seaLevel - global);
 
-  global += rr;
+  // global += rr;
 
   if (biome < dunesFraction) {
     // Dunes
