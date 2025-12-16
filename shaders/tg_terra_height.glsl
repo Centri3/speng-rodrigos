@@ -81,11 +81,7 @@ void    _Rifts(vec3 point, float damping, inout float height)
 
 void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 {
-    float _hillsMagn = hillsMagn;
-    if (hillsMagn < 0.05)
-    {
-        _hillsMagn = 0.05;
-    }
+    float _hillsMagn = max(hillsMagn, 0.05);
 
     // Assign a climate type
     noiseOctaves    = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 1)

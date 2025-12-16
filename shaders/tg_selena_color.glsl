@@ -306,11 +306,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 {
     Surface surf;
 	
-    float _hillsMagn = hillsMagn;
-    if (hillsMagn < 0.05)
-    {
-        _hillsMagn = 0.05;
-    }
+    float _hillsMagn = max(hillsMagn, 0.05);
 	
 	// Fetch variables // Colors
 	vec4 iceColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_ICE), 0);

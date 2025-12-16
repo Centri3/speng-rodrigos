@@ -258,11 +258,7 @@ float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtD
 // Function // Construct Height Map
 float   HeightMapSelena(vec3 point)
 {
-    float _hillsMagn = hillsMagn;
-    if (hillsMagn < 0.05)
-    {
-        _hillsMagn = 0.05;
-    }
+    float _hillsMagn = max(hillsMagn, 0.05);
     float _hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
 
 	// Fetch variables // Colors

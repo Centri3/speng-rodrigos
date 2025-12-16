@@ -5,10 +5,7 @@
 //-----------------------------------------------------------------------------
 
 float HeightMapAsteroid(vec3 point) {
-  float _hillsMagn = hillsMagn;
-  if (hillsMagn < 0.05) {
-    _hillsMagn = 0.05;
-  }
+  float _hillsMagn = max(hillsMagn, 0.5);
 
   // GlobalModifier // Global landscape
   vec3 p = point * venusFreq + Randomize;
@@ -24,11 +21,7 @@ float HeightMapAsteroid(vec3 point) {
   // TerrainFeature // Hills
   noiseOctaves = 5;
   noiseLacunarity = 2.218281828459;
-  float hills = (0.5 + 1.5 * Fbm(p * 0.0721)) * hillsFreq;
-  hills = Fbm(p * hills) * 0.15;
-  noiseOctaves = 2;
-  float hillsMod = smoothstep(0.0, 1.0, Fbm(p * hillsFraction) * 3.0);
-  height *= 1.0 + _hillsMagn * hills * hillsMod;
+  height += 0.2 * _hillsMagn * JordanTurbulence(point * hillsFreq * 10.0 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
 
   // TerrainFeature // Craters (Old)
   heightFloor = -0.1;
@@ -67,7 +60,7 @@ float HeightMapAsteroid(vec3 point) {
 
   // GlobalModifier // Terrain noise match colorvary
   vec3 pp =
-      (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
+      (point + Randomize) * (0.0005 * hillsFreq * 10.0 / (_hillsMagn * _hillsMagn));
   noiseOctaves = 14.0;
   noiseLacunarity = 2.218281828459;
   noiseH = smoothstep(0.0, 0.1, colorDistMagn) * 0.5;

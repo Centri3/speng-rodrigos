@@ -11,11 +11,7 @@ void    ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap)
 {
     Surface surf;
 
-    float _hillsMagn = hillsMagn;
-    if (hillsMagn < 0.05)
-    {
-        _hillsMagn = 0.05;
-    }
+    float _hillsMagn = max(hillsMagn, 0.05);
 
     // GlobalModifier // Assign climate
 	vec3 p = point * mainFreq + Randomize;
