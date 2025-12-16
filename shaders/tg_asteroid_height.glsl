@@ -21,7 +21,7 @@ float HeightMapAsteroid(vec3 point) {
   // TerrainFeature // Hills
   noiseOctaves = 5;
   noiseLacunarity = 2.218281828459;
-  height += 0.2 * _hillsMagn * JordanTurbulence(point * hillsFreq * 10.0 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
+  height += 0.2 * _hillsMagn * JordanTurbulence(point * (log(hillsFreq + 10.0) / 10.0) * 2.0 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
 
   // TerrainFeature // Craters (Old)
   heightFloor = -0.1;
