@@ -161,10 +161,6 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   global = mix(global + 0.1, pow(2.71828, global + 0.1) * 0.1,
                smoothstep(seaLevel, 1.0, global));
 
-  HeightBiomeMap = vec4(global);
-
-  // return;
-
   // Venus-like structure
   float venus = 0.0;
 
