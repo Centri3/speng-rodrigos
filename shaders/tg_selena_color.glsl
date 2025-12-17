@@ -598,10 +598,10 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
 
   // TerrainFeature // Rayed craters
   if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
-    float craterRayedSqrtDensity = smoothstep(0.0, 0.25, craterRayedFactor); // Increase number of them
+    float craterRayedDensity = smoothstep(0.0, 0.25, craterRayedFactor); // Increase number of them
     float craterRayedOctaves = floor(craterOctaves);
     float crater = _RayedCraterColorNoise(
-        point, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
+        point, craterFreq, craterRayedDensity, craterRayedOctaves);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
   }
 

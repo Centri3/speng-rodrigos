@@ -323,9 +323,9 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
       radFactor *= sqrt(1.03);
       // FIX: Higher octave rayed craters usually have no height, so uh, let's
       // not reduce these values so quickly.
-      amplitude *= 0.98;
-      heightPeak *= 0.7;
-      heightFloor *= 0.98;
+      amplitude *= 0.99;
+      heightPeak *= 0.98;
+      heightFloor *= 0.99;
       radInner *= 0.9;
     }
   }
@@ -612,14 +612,14 @@ ridgeModulate;
     heightFloor = -3.5;
     heightPeak = 0.6;
     heightRim = 1.0;
-    float craterRayedSqrtDensity = smoothstep(0.0, 0.25, craterRayedFactor); // Increase number of them
+    float craterRayedDensity = smoothstep(0.0, 0.25, craterRayedFactor); // Increase number of them
     float craterRayedOctaves = floor(craterOctaves);
     float craterRayedMagn =
         craterMagn *
         0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned
               // down rayed crater depth donatelo200 12/07/2025
     crater = _RayedCraterNoise(point, craterRayedMagn, craterFreq,
-                               craterRayedSqrtDensity, craterRayedOctaves);
+                               craterRayedDensity, craterRayedOctaves);
     height +=
         crater *
         (height + 0.2); // toned down rayed crater depth donatelo200 12/07/2025
