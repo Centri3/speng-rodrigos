@@ -303,7 +303,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
     rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
     fi = acos(dot(binormal, normalize(cellCenter - point))) / pi2;
 
-    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0;
+    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0 * smoothstep(0.0, 0.25, craterRayedFactor);
     color += RayedCraterColorFunc(cell.y * radFactor / rad, fi,
                                   48.3 * dot(cellCenter, Randomize)) *
              brightness;
