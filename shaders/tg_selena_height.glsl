@@ -240,27 +240,31 @@ float _CraterNoise(vec3 point, float cratMagn, float cratFreq,
 
 //-----------------------------------------------------------------------------
 
-// Function // This function's only purpose is to reduce height, heightFloor and heightPeak by brightness.
-float   _RayedCraterHeightFunc(float lastlastLand, float lastLand, float height, float r, float brightness)
-{
-    // FIXME: Why does this need to be 0.0? we get crazy discontinuities if it's not.
-    float distHeight = 0.0; // craterDistortion * height * brightness;
+// Function // This function's only purpose is to reduce height, heightFloor and
+// heightPeak by brightness.
+float _RayedCraterHeightFunc(float lastlastLand, float lastLand, float height,
+                             float r, float brightness) {
+  // FIXME: Why does this need to be 0.0? we get crazy discontinuities if it's
+  // not.
+  float distHeight = 0.0; // craterDistortion * height * brightness;
 
-    float t = 1.0 - r/radPeak;
-    float peak = heightPeak * brightness * craterDistortion * smoothstep(0.0, 1.0, t);
+  float t = 1.0 - r / radPeak;
+  float peak =
+      heightPeak * brightness * craterDistortion * smoothstep(0.0, 1.0, t);
 
-    t = smoothstep(0.0, 1.0, (r - radInner) / (radRim - radInner));
-    float inoutMask = t*t*t;
-    float innerRim = heightRim * distHeight * smoothstep(0.0, 1.0, inoutMask);
+  t = smoothstep(0.0, 1.0, (r - radInner) / (radRim - radInner));
+  float inoutMask = t * t * t;
+  float innerRim = heightRim * distHeight * smoothstep(0.0, 1.0, inoutMask);
 
-    t = smoothstep(0.0, 1.0, (radOuter - r) / (radOuter - radRim));
-    float outerRim = distHeight * mix(0.05, heightRim, t*t);
+  t = smoothstep(0.0, 1.0, (radOuter - r) / (radOuter - radRim));
+  float outerRim = distHeight * mix(0.05, heightRim, t * t);
 
-    t = saturate((1.0 - r) / (1.0 - radOuter));
-    float halo = 0.05 * distHeight * t;
+  t = saturate((1.0 - r) / (1.0 - radOuter));
+  float halo = 0.05 * distHeight * t;
 
-    // Don't apply brightness here twice to both height and heightFloor.
-    return mix(lastlastLand + height * heightFloor * brightness + peak + innerRim, lastLand + outerRim + halo, inoutMask);
+  // Don't apply brightness here twice to both height and heightFloor.
+  return mix(lastlastLand + height * heightFloor * brightness + peak + innerRim,
+             lastLand + outerRim + halo, inoutMask);
 }
 
 //-----------------------------------------------------------------------------
@@ -292,7 +296,8 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
-  float fibFreq = 40.0 * cratFreq;
+  // FIXME: See equivalent function in tg_selena_color.
+  float fibFreq = 40.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
 
   for (int i = 0; i < cratOctaves; i++) {
     lastlastlastLand = lastlastLand;

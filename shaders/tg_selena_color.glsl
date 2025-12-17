@@ -282,7 +282,9 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
-  float fibFreq = 40.0 * cratFreq;
+  // FIXME: Just adding Randomize to point doesn't work (no craters show up) so
+  // how else do I do this?
+  float fibFreq = 40.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
 
   heightFloor = -0.5;
   heightPeak = 0.6;
@@ -306,7 +308,8 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
 
     float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0;
     color += RayedCraterColorFunc(cell.y * radFactor / rad, fi,
-                                  48.3 * dot(cellCenter, Randomize)) * brightness;
+                                  48.3 * dot(cellCenter, Randomize)) *
+             brightness;
 
     if (cratOctaves > 1) {
       point = Rotate(pi2 * hash1(float(i)), rotVec, point);
@@ -599,9 +602,8 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
     float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
     float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
-    float crater =
-        _RayedCraterColorNoise(point, craterFreq, craterRayedSqrtDensity,
-                              craterRayedOctaves);
+    float crater = _RayedCraterColorNoise(
+        point, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
   }
 
