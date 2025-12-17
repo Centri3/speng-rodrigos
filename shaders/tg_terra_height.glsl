@@ -12,29 +12,34 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
   noiseH = 1.0;
   noiseLacunarity = 2.1;
 
+  // FIX: Don't apply this separately in each octave (like before) so that
+  // rivers don't become cutoff when intersecting each other at different
+  // octaves.
+  float valleys = 1.0;
+  float rivers = 1.0;
+
   for (int i = 0; i < 3; i++) {
     vec3 p = point * mainFreq + Randomize;
     vec3 distort = 0.325 * Fbm3D(p * riversSin * i);
-    distort = 0.65 * Fbm3D(p * riversSin * i) + 0.03 * Fbm3D(p * riversSin * 5.0 * i) +
+    distort = 0.65 * Fbm3D(p * riversSin * i) +
+              0.03 * Fbm3D(p * riversSin * 5.0 * i) +
               0.01 * RidgedMultifractalErodedDetail(
-                        point * 0.3 * (canyonsFreq + 1000) *
-                                (0.5 * (1 / montesSpiky + 1)) +
-                            Randomize,
-                        8.0, erosion, 2);
+                         point * 0.3 * (canyonsFreq + 1000) *
+                                 (0.5 * (1 / montesSpiky + 1)) +
+                             Randomize,
+                         8.0, erosion, 2);
 
     vec2 cell = 2.5 * Cell3Noise2(riversFreq * i * 3.0 * p + 0.5 * distort);
 
-    float errorcor =
+    valleys *= saturate(0.36 * abs(cell.y - cell.x) * riversMagn);
+    rivers *= saturate(6.5 * abs(cell.y - cell.x) * riversMagn);
+  }
+
+  float errorcor =
         pow(0.992, (1 / seaLevel)); // Correct Rivers on marine planets
 
-    float valleys = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
-    valleys = smoothstep(0.0, 1.0, valleys) * damping;
-    height = mix(height, seaLevel + 0.019 + errorcor * 0.042, valleys);
-
-    float rivers = 1.0 - (saturate(6.5 * abs(cell.y - cell.x) * riversMagn));
-    rivers = smoothstep(0.0, 1.0, rivers) * damping;
-    height = mix(height, seaLevel + 0.004 + errorcor * 0.052, rivers);
-  }
+  height = mix(height, seaLevel + 0.019 + errorcor * 0.042, (1.0 - valleys) * damping);
+  height = mix(height, seaLevel + 0.004 + errorcor * 0.052, (1.0 - rivers) * damping);
 }
 
 void _PseudoCracks(vec3 point, float damping, inout float height) {
@@ -304,7 +309,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   } else {
     // Mountains
     //	RODRIGO  - Edited mountains. Different mountains whithout erosion in
-    //deserts. No terraces
+    // deserts. No terraces
 
     if (riversMagn > 0.0) {
 
@@ -449,8 +454,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     _PseudoRivers(point, damping, height);
 
     // Cracks
-    damping = (smoothstep(0.1, 0.09,
-                          rodrigoDamping)) *
+    damping = (smoothstep(0.1, 0.09, rodrigoDamping)) *
               (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09,
                           seaLevel - height));
     _PseudoCracks(point, damping, height);
@@ -485,20 +489,26 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   //	RODRIGO - Terrain noise matching albedo noise
 
   noiseOctaves = 14.0;
-	noiseLacunarity = 2.218281828459;
+  noiseLacunarity = 2.218281828459;
   noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-	vec3 albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;   //Fbm3D((point + Randomize) * 0.07) * 1.5;  
-	
-	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
-	{
-			albedoVaryDistort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
-	}
-	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
-	{
-			albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
-	}
-	
-	float vary = 1.0 - 5*(Fbm((point + albedoVaryDistort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
+  vec3 albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) *
+                           1.5; // Fbm3D((point + Randomize) * 0.07) * 1.5;
+
+  if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
+    albedoVaryDistort =
+        (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) +
+         saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) *
+            (volcanoActivity - 1) +
+        (Fbm3D((point + Randomize) * 0.07) * 1.5) *
+            (2 - volcanoActivity); // Io like on atmosphered planets
+  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
+    albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) *
+                        1.5; // Io like on atmosphered planets
+  }
+
+  float vary = 1.0 - 5 * (Fbm((point + albedoVaryDistort) *
+                              (1.5 - RidgedMultifractal(pp, 8.0) +
+                               RidgedMultifractal(pp * 0.999, 8.0))));
   height = mix(height, height + 0.0004, vary);
 
   // height = max(height, seaLevel + 0.057);
