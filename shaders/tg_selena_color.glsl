@@ -282,9 +282,8 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
-  // FIXME: Just adding Randomize to point doesn't work (no craters show up) so
-  // how else do I do this?
-  float fibFreq = 40.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
+  float fibFreq = 1.0 * cratFreq + Randomize.x * 0.1 + Randomize.y * 0.1 +
+                  Randomize.z * 0.1;
 
   heightFloor = -0.5;
   heightPeak = 0.6;
@@ -292,10 +291,9 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
   radPeak = 0.004;
   radInner = 0.015;
   radRim = 0.03;
-  // Reduced from 0.7 to remove color discontinuities near the edges.
-  radOuter = 0.5;
+  radOuter = 1.3;
 
-  for (int i = 0; i < cratOctaves; i++) {
+  for (int i = 0; i < cratOctaves * 20; i++) {
     // cell = Cell2NoiseSphere(point, craterSphereRadius);
     ////cell = Cell2NoiseVec(point * craterSphereRadius, 1.0);
     // fi = acos(dot(binormal, normalize(cell.xyz - point))) / pi2;
@@ -313,8 +311,8 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
 
     if (cratOctaves > 1) {
       point = Rotate(pi2 * hash1(float(i)), rotVec, point);
-      fibFreq *= craterFreqPower;
-      radFactor *= craterRadFactorPower;
+      fibFreq *= 1.03;
+      radFactor *= sqrt(1.03);
       radInner *= 0.9;
     }
   }
@@ -600,8 +598,8 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
 
   // TerrainFeature // Rayed craters
   if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
-    float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-    float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
+    float craterRayedSqrtDensity = smoothstep(0.0, 0.25, craterRayedFactor); // Increase number of them
+    float craterRayedOctaves = floor(craterOctaves);
     float crater = _RayedCraterColorNoise(
         point, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);

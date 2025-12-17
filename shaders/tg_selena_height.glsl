@@ -296,10 +296,10 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
-  // FIXME: See equivalent function in tg_selena_color.
-  float fibFreq = 40.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
+  float fibFreq = 1.0 * cratFreq + Randomize.x * 0.1 + Randomize.y * 0.1 +
+                  Randomize.z * 0.1;
 
-  for (int i = 0; i < cratOctaves; i++) {
+  for (int i = 0; i < cratOctaves * 20; i++) {
     lastlastlastLand = lastlastLand;
     lastlastLand = lastLand;
     lastLand = newLand;
@@ -313,14 +313,14 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
     cell = inverseSF(point, fibFreq, cellCenter);
     rad = hash1(cell.x * 743.1) * 0.9 + 0.1;
 
-    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0;
+    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 8.0;
     newLand = _RayedCraterHeightFunc(lastlastlastLand, lastLand, amplitude,
                                      cell.y * radFactor / rad, brightness);
 
     if (cratOctaves > 1) {
       point = Rotate(pi2 * hash1(float(i)), rotVec, point);
-      fibFreq *= craterFreqPower;
-      radFactor *= craterRadFactorPower;
+      fibFreq *= 1.03;
+      radFactor *= sqrt(1.03);
       // FIX: Higher octave rayed craters usually have no height, so uh, let's
       // not reduce these values so quickly.
       amplitude *= 0.98;
@@ -612,8 +612,8 @@ ridgeModulate;
     heightFloor = -3.5;
     heightPeak = 0.6;
     heightRim = 1.0;
-    float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-    float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
+    float craterRayedSqrtDensity = smoothstep(0.0, 0.25, craterRayedFactor); // Increase number of them
+    float craterRayedOctaves = floor(craterOctaves);
     float craterRayedMagn =
         craterMagn *
         0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned
