@@ -36,10 +36,18 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
   }
 
   float errorcor =
-        pow(0.992, (1 / seaLevel)); // Correct Rivers on marine planets
+      pow(0.992, (1 / seaLevel)); // Correct rivers on marine planets. seaLevel
+                                  // is slightly off from actual sea level. :/
 
-  height = mix(height, seaLevel + 0.019 + errorcor * 0.042, (1.0 - valleys) * damping);
-  height = mix(height, seaLevel + 0.004 + errorcor * 0.052, (1.0 - rivers) * damping);
+  height = mix(height, seaLevel + 0.019 + errorcor * 0.042,
+               (1.0 - valleys) * damping);
+  height =
+      mix(height, seaLevel + 0.004 + errorcor * 0.052,
+          (1.0 - rivers) * damping *
+              smoothstep(0.7, 0.68,
+                         seaLevel)); // dampen rivers at high seaLevel because
+                                     // they become wider and more like cracks
+                                     // even with error correction.
 }
 
 void _PseudoCracks(vec3 point, float damping, inout float height) {
