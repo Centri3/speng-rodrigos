@@ -282,7 +282,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
-  float fibFreq = 2.0 * cratFreq;
+  float fibFreq = 40.0 * cratFreq;
 
   heightFloor = -0.5;
   heightPeak = 0.6;
@@ -290,7 +290,8 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
   radPeak = 0.004;
   radInner = 0.015;
   radRim = 0.03;
-  radOuter = 0.8;
+  // Reduced from 0.7 to remove color discontinuities near the edges.
+  radOuter = 0.5;
 
   for (int i = 0; i < cratOctaves; i++) {
     // cell = Cell2NoiseSphere(point, craterSphereRadius);
@@ -311,7 +312,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
       point = Rotate(pi2 * hash1(float(i)), rotVec, point);
       fibFreq *= craterFreqPower;
       radFactor *= craterRadFactorPower;
-      radInner *= craterRadiusPower;
+      radInner *= 0.9;
     }
   }
 
