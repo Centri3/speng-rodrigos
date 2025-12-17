@@ -291,15 +291,15 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
   float lastLand = 0.0;
   float lastlastLand = 0.0;
   float lastlastlastLand = 0.0;
-  float amplitude = 0.3;
+  float amplitude = 0.1;
   vec2 cell;
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
-  float fibFreq = 1.0 * cratFreq + Randomize.x * 0.1 + Randomize.y * 0.1 +
-                  Randomize.z * 0.1;
+  float fibFreq = 10.0 * cratFreq + Randomize.x + Randomize.y +
+                  Randomize.z;
 
-  for (int i = 0; i < cratOctaves * 20; i++) {
+  for (int i = 0; i < cratOctaves; i++) {
     lastlastlastLand = lastlastLand;
     lastlastLand = lastLand;
     lastLand = newLand;
@@ -311,7 +311,7 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
     // cell    = inverseSF(point + craterRoundDist * Fbm3D(point * 2.56),
     // fibFreq);
     cell = inverseSF(point, fibFreq, cellCenter);
-    rad = hash1(cell.x * 743.1) * 0.9 + 0.1;
+    rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
 
     float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 8.0;
     newLand = _RayedCraterHeightFunc(lastlastlastLand, lastLand, amplitude,
@@ -319,13 +319,13 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
 
     if (cratOctaves > 1) {
       point = Rotate(pi2 * hash1(float(i)), rotVec, point);
-      fibFreq *= 1.03;
-      radFactor *= sqrt(1.03);
+      fibFreq *= 1.125;
+      radFactor *= sqrt(1.125);
       // FIX: Higher octave rayed craters usually have no height, so uh, let's
       // not reduce these values so quickly.
-      amplitude *= 0.99;
-      heightPeak *= 0.98;
-      heightFloor *= 0.99;
+      amplitude *= 0.97;
+      heightPeak *= 0.9;
+      heightFloor *= 0.97;
       radInner *= 0.9;
     }
   }
@@ -609,11 +609,11 @@ ridgeModulate;
 
   // TerrainFeature // Rayed craters
   if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
-    heightFloor = -3.5;
-    heightPeak = 0.6;
+    heightFloor = -1.5;
+    heightPeak = 0.15;
     heightRim = 1.0;
-    float craterRayedDensity = smoothstep(0.0, 0.25, craterRayedFactor); // Increase number of them
-    float craterRayedOctaves = floor(craterOctaves);
+    float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
+    float craterRayedOctaves = floor(craterOctaves + min(craterRayedFactor * 240.0, 60.0));
     float craterRayedMagn =
         craterMagn *
         0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned

@@ -282,8 +282,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
-  float fibFreq = 1.0 * cratFreq + Randomize.x * 0.1 + Randomize.y * 0.1 +
-                  Randomize.z * 0.1;
+  float fibFreq = 10.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
 
   heightFloor = -0.5;
   heightPeak = 0.6;
@@ -293,7 +292,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
   radRim = 0.03;
   radOuter = 1.3;
 
-  for (int i = 0; i < cratOctaves * 20; i++) {
+  for (int i = 0; i < cratOctaves; i++) {
     // cell = Cell2NoiseSphere(point, craterSphereRadius);
     ////cell = Cell2NoiseVec(point * craterSphereRadius, 1.0);
     // fi = acos(dot(binormal, normalize(cell.xyz - point))) / pi2;
@@ -301,7 +300,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
     // dot(cell.xyz, Randomize)); radInner  *= 0.6;
 
     cell = inverseSF(point, fibFreq, cellCenter);
-    rad = hash1(cell.x * 743.1) * 0.9 + 0.1;
+    rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
     fi = acos(dot(binormal, normalize(cellCenter - point))) / pi2;
 
     float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0;
@@ -311,8 +310,8 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
 
     if (cratOctaves > 1) {
       point = Rotate(pi2 * hash1(float(i)), rotVec, point);
-      fibFreq *= 1.03;
-      radFactor *= sqrt(1.03);
+      fibFreq *= 1.125;
+      radFactor *= sqrt(1.125);
       radInner *= 0.9;
     }
   }
@@ -598,10 +597,10 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
 
   // TerrainFeature // Rayed craters
   if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
-    float craterRayedDensity = smoothstep(0.0, 0.25, craterRayedFactor); // Increase number of them
-    float craterRayedOctaves = floor(craterOctaves);
-    float crater = _RayedCraterColorNoise(
-        point, craterFreq, craterRayedDensity, craterRayedOctaves);
+    float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
+    float craterRayedOctaves = floor(craterOctaves + min(craterRayedFactor * 240.0, 60.0));
+    float crater = _RayedCraterColorNoise(point, craterFreq, craterRayedDensity,
+                                          craterRayedOctaves);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
   }
 
