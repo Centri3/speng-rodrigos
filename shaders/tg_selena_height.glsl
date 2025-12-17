@@ -222,14 +222,77 @@ float _CraterNoise(vec3 point, float cratMagn, float cratFreq,
 
     // cell = inverseSF(point + 0.2 * craterRoundDist * Fbm3D(point*2.56),
     // fibFreq); rad = hash1(cell.x * 743.1) * 0.9 + 0.1; newLand =
-    // CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y * radFactor
-    // / rad); fibFreq   *= craterFreqPower; radFactor *= craterRadFactorPower;
+    // CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y *
+    // radFactor / rad); fibFreq   *= craterFreqPower; radFactor *=
+    // craterRadFactorPower;
 
     if (cratOctaves > 1) {
       point *= craterFreqPower;
       amplitude *= craterAmplPower;
       heightPeak *= craterPeakPower;
       heightFloor *= craterFloorPower;
+      radInner *= craterRadiusPower;
+    }
+  }
+
+  return cratMagn * newLand;
+}
+
+//-----------------------------------------------------------------------------
+
+float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
+                        float cratSqrtDensity, float cratOctaves) {
+  vec3 rotVec = normalize(Randomize);
+
+  // Craters roundness distortion
+  noiseH = 0.5;
+  noiseLacunarity = 2.218281828459;
+  noiseOffset = 0.8;
+  noiseOctaves = 3;
+  craterDistortion = 1.0;
+  craterRoundDist = 0.03;
+  float shapeDist = 1.0 + 2.5 * craterRoundDist * Fbm(point * 419.54);
+
+  radPeak = 0.004;
+  radInner = 0.015;
+  radRim = 0.03;
+  radOuter = 0.8;
+
+  float newLand = 0.0;
+  float lastLand = 0.0;
+  float lastlastLand = 0.0;
+  float lastlastlastLand = 0.0;
+  float amplitude = 0.3;
+  vec2 cell;
+  float rad;
+  float radFactor = shapeDist / cratSqrtDensity;
+  float fibFreq = 2.0 * cratFreq;
+
+  for (int i = 0; i < cratOctaves; i++) {
+    lastlastlastLand = lastlastLand;
+    lastlastLand = lastLand;
+    lastLand = newLand;
+
+    // cell = Cell2NoiseSphere(point, craterSphereRadius).w;
+    ////cell = Cell2NoiseVec(point * craterSphereRadius, 1.0).w;
+    // newLand = CraterHeightFunc(0.0, lastLand, amplitude, cell * radFactor);
+
+    // cell    = inverseSF(point + craterRoundDist * Fbm3D(point * 2.56),
+    // fibFreq);
+    cell = inverseSF(point, fibFreq);
+    rad = hash1(cell.x * 743.1) * 0.9 + 0.1;
+    newLand = CraterHeightFunc(lastlastlastLand, lastLand, amplitude,
+                                     cell.y * radFactor / rad);
+
+    if (cratOctaves > 1) {
+      point = Rotate(pi2 * hash1(float(i)), rotVec, point);
+      fibFreq *= craterFreqPower;
+      radFactor *= craterRadFactorPower;
+      // FIX: Higher octave rayed craters usually have no height, so uh, let's
+      // not reduce these values so quickly.
+      amplitude *= 0.88;
+      heightPeak *= craterPeakPower;
+      heightFloor *= 0.88;
       radInner *= craterRadiusPower;
     }
   }
@@ -513,7 +576,7 @@ ridgeModulate;
 
   // TerrainFeature // Rayed craters
   if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
-    heightFloor = -0.5;
+    heightFloor = -3.5;
     heightPeak = 0.6;
     heightRim = 1.0;
     float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
@@ -522,8 +585,8 @@ ridgeModulate;
         craterMagn *
         0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned
               // down rayed crater depth donatelo200 12/07/2025
-    crater = RayedCraterNoise(point, craterRayedMagn, craterFreq,
-                              craterRayedSqrtDensity, craterRayedOctaves);
+    crater = _RayedCraterNoise(point, craterRayedMagn, craterFreq,
+                               craterRayedSqrtDensity, craterRayedOctaves);
     height +=
         crater *
         (height + 0.2); // toned down rayed crater depth donatelo200 12/07/2025
@@ -534,25 +597,33 @@ ridgeModulate;
   noiseOctaves = 14.0;
   noiseLacunarity = 2.218281828459;
   noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;   //Fbm3D((point + Randomize) * 0.07) * 1.5;  
-	
-	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
-	{
-			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
-	}
-	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
-	{
-			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on airless planets donatelo200 12/09/2025
-	}
-	
-		else if (cracksOctaves > 0)
-	{
-	
-		distort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
-	}
-	
-	float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
-	height = mix(height ,height +0.00017,vary);
+  distort = Fbm3D((point + Randomize) * 0.07) *
+            1.5; // Fbm3D((point + Randomize) * 0.07) * 1.5;
+
+  if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
+    distort =
+        (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) +
+         saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) *
+            (volcanoActivity - 1) +
+        (Fbm3D((point + Randomize) * 0.07) * 1.5) *
+            (2 - volcanoActivity); // Io like on atmosphered planets
+  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
+    distort = Fbm3D((point + Randomize) * 0.07) *
+              1.5; // Io like on airless planets donatelo200 12/09/2025
+  }
+
+  else if (cracksOctaves > 0) {
+
+    distort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
+                  (1.5 + venusMagn) +
+              saturate(iqTurbulence(point, 0.15) * volcanoActivity);
+  }
+
+  float vary =
+      1.0 -
+      5 * (Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) +
+                                    RidgedMultifractal(pp * 0.999, 8.0))));
+  height = mix(height, height + 0.00017, vary);
 
   // GlobalModifier // Soften max/min height
   height = softPolyMin(height, 0.99, 0.3);
