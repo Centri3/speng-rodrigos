@@ -296,6 +296,7 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
+  // FIXME: This is not the proper way to randomize! Fix this for volcanoes, too.
   float fibFreq = 10.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
 
   for (int i = 0; i < cratOctaves; i++) {
