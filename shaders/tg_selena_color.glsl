@@ -262,10 +262,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
     rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
     fi = acos(dot(binormal, normalize(cellCenter - point))) / pi2;
 
-    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0 *
-                           smoothstep(0.0, 0.5, craterRayedFactor) +
-                       // Highly increase brightness for the big ones.
-                       smoothstep(1, 0, i);
+    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0 * smoothstep(0.0, 0.6, craterRayedFactor);
     color += RayedCraterColorFunc(cell.y * radFactor / rad, fi,
                                   48.3 * dot(cellCenter, Randomize)) *
              brightness;
@@ -511,9 +508,8 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   else if (europaLike) {
     float europaCracksOctaves = cracksOctaves + 2;
     vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 6, mask);
-    vary *=
-        (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask) +
-         0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask));
+    vary *= (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask) +
+             0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask));
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
     float whiteCracks =
@@ -559,8 +555,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   // TerrainFeature // Rayed craters
   if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
     float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-    float craterRayedOctaves =
-        floor(craterOctaves + smoothstep(0.0, 0.4, craterRayedFactor) * 60.0);
+    float craterRayedOctaves = floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
     float crater = _RayedCraterColorNoise(point, craterFreq, craterRayedDensity,
                                           craterRayedOctaves);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
