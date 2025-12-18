@@ -296,8 +296,7 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
   vec3 cellCenter = vec3(0.0);
   float rad;
   float radFactor = shapeDist / cratSqrtDensity;
-  float fibFreq = 10.0 * cratFreq + Randomize.x + Randomize.y +
-                  Randomize.z;
+  float fibFreq = 10.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
 
   for (int i = 0; i < cratOctaves; i++) {
     lastlastlastLand = lastlastLand;
@@ -319,6 +318,8 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
 
     if (cratOctaves > 1) {
       point = Rotate(pi2 * hash1(float(i)), rotVec, point);
+      // FIXME: For the first few octaves this results in very similar spots for
+      // the craters. Not too noticeable but please fix me.
       fibFreq *= 1.125;
       radFactor *= sqrt(1.125);
       // FIX: Higher octave rayed craters usually have no height, so uh, let's
@@ -613,7 +614,8 @@ ridgeModulate;
     heightPeak = 0.15;
     heightRim = 1.0;
     float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-    float craterRayedOctaves = floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
+    float craterRayedOctaves =
+        floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
     float craterRayedMagn =
         craterMagn *
         0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned
