@@ -613,7 +613,7 @@ ridgeModulate;
     heightPeak = 0.15;
     heightRim = 1.0;
     float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-    float craterRayedOctaves = floor(craterOctaves + min(craterRayedFactor * 240.0, 60.0));
+    float craterRayedOctaves = floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
     float craterRayedMagn =
         craterMagn *
         0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned
