@@ -548,11 +548,11 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   // 26-10-2024 by Sp_ce // Added ice cracks section cracks here
   else if (europaLike) {
     float europaCracksOctaves = cracksOctaves + 2;
-    vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 1, mask);
-    vary *= (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves, mask) +
-             0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves, mask) +
-             0.1 * EuropaCrackNoise(point * 32, europaCracksOctaves, mask) +
-             0.05 * EuropaCrackNoise(point * 64, europaCracksOctaves, mask));
+    vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 6, mask);
+    vary *= (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask) +
+             0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask) +
+             0.1 * EuropaCrackNoise(point * 32, europaCracksOctaves + 5, mask) +
+             0.05 * EuropaCrackNoise(point * 64, europaCracksOctaves + 5, mask));
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
     float whiteCracks =
