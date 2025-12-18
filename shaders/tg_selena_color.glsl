@@ -115,47 +115,6 @@ float EuropaCrackColorFunc(float lastLand, float lastlastLand, float height,
 
 //-----------------------------------------------------------------------------
 
-// Function // Europa Cracks Noise
-// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
-// 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
-// 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
-float EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask) {
-  point = (point + Randomize) * cracksFreq;
-  point.x *= 0.3;
-
-  float newLand = 0.0;
-  float lastLand = 0.0;
-  float lastlastLand = 0.0;
-  vec2 cell;
-  float r;
-  float ampl = 0.4 * cracksMagn;
-  mask = 1.0;
-
-  // Rim shape and height distortion
-  noiseH = 0.5;
-  noiseLacunarity = 2.218281828459;
-  noiseOffset = 0.8;
-  noiseOctaves = 5.0;
-
-  for (int i = 0; i < europaCracksOctaves; i++) {
-    for (int j = 0; j < 2; j++) {
-      cell = Cell2Noise2(point + 0.02 * Fbm3D(1.8 * point));
-      r = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
-      lastlastLand = lastLand;
-      lastLand = newLand;
-      newLand = CrackHeightFunc(lastlastLand, lastLand, ampl, r, point);
-      point += Randomize;
-      mask *= smoothstep(0.6, 1.0, r);
-    }
-    point = point * 1.2 + Randomize;
-    ampl *= 0.8333;
-  }
-
-  return newLand;
-}
-
-//-----------------------------------------------------------------------------
-
 // Function // Europa Cracks Color Noise
 // 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
 // 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
@@ -550,9 +509,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
     float europaCracksOctaves = cracksOctaves + 2;
     vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 6, mask);
     vary *= (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask) +
-             0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask) +
-             0.1 * EuropaCrackNoise(point * 32, europaCracksOctaves + 5, mask) +
-             0.05 * EuropaCrackNoise(point * 64, europaCracksOctaves + 5, mask));
+             0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask));
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
     float whiteCracks =
