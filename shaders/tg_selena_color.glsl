@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------------
 
 // Calculation Function // Fixed hsl2rgb
-vec3 hsl2rgb2(vec3 hsl) {
+vec3 _hsl2rgb(vec3 hsl) {
   float h = hsl.x;
   float s = hsl.y;
   float l = hsl.z;
@@ -262,7 +262,8 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
     rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
     fi = acos(dot(binormal, normalize(cellCenter - point))) / pi2;
 
-    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0 * smoothstep(0.0, 0.6, craterRayedFactor);
+    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0 *
+                       smoothstep(0.0, 0.6, craterRayedFactor);
     color += RayedCraterColorFunc(cell.y * radFactor / rad, fi,
                                   48.3 * dot(cellCenter, Randomize)) *
              brightness;
@@ -291,13 +292,13 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
 
   // Fetch variables // Colors
   vec4 iceColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_ICE), 0);
-  vec3 iceColor = hsl2rgb2(iceColorHSL.xyz);
+  vec3 iceColor = hsl2rgb(iceColorHSL.xyz);
 
   vec4 snowColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_SNOW), 0);
-  vec3 snowColor = hsl2rgb2(snowColorHSL.xyz);
+  vec3 snowColor = hsl2rgb(snowColorHSL.xyz);
 
   vec4 bottomColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_BOTTOM), 0);
-  vec3 bottomColor = hsl2rgb2(bottomColorHSL.xyz);
+  vec3 bottomColor = _hsl2rgb(bottomColorHSL.xyz);
   float bottomAlpha = bottomColorHSL.w;
   bool aquaria = (bottomAlpha == 0.001);
 
@@ -430,6 +431,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
       (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
+    distort.x *= 2.0;
     albedoVaryDistort =
         (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) +
          saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) *
@@ -490,8 +492,8 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
     noiseH = 0.9;
     noiseOffset = 0.5;
     p = point * 0.5 * mainFreq + Randomize;
-    distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5 +
-              Fbm3D(point * 0.1) * 12.5;
+    distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5;
+    Fbm3D(point * 0.1) * 12.5;
     cell = Cell3Noise2(canyonsFreq * 0.05 * p + distort);
     float rima2 = 2 - saturate(abs(cell.y - cell.x) * 250.0 * canyonsMagn);
     rima2 = biomeScale * smoothstep(0.0, 1.0, rima2);
@@ -508,8 +510,9 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   else if (europaLike) {
     float europaCracksOctaves = cracksOctaves + 2;
     vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 6, mask);
-    vary *= (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask) +
-             0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask));
+    vary *=
+        (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask) +
+         0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask));
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
     float whiteCracks =
@@ -555,7 +558,8 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   // TerrainFeature // Rayed craters
   if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
     float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-    float craterRayedOctaves = floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
+    float craterRayedOctaves =
+        floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
     float crater = _RayedCraterColorNoise(point, craterFreq, craterRayedDensity,
                                           craterRayedOctaves);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
