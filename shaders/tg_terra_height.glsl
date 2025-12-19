@@ -372,11 +372,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // seas
 
   // Ice caps
-  // Make more steep slope on oceanic planets (oceanType == 0.1) and shallower
-  // on earth-like planets (oceanType == 1.0)
-  float oceaniaFade = (oceanType == 1.0) ? 0.2 : 1.0;
   float iceCap = smoothstep(
-      0.0, 1.0, saturate((latitude / latIceCaps - 0.8) * 50.0 * oceaniaFade));
+      0.0, 1.0, saturate((latitude / latIceCaps - 0.8) * 50.0 * 0.02));
 
   // Ice cracks
   float mask = 1.0;
@@ -487,8 +484,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // Suppress everything except ice caps in oceanic planets
   // height = height * oceaniaFade + (seaLevel + icecapHeight) * iceCap; // old
   // version
-  height = height * oceaniaFade +
-           (0.3 * seaLevel + icecapHeight) * iceCap; // donatelo version
+  height =
+      height + (0.3 * seaLevel + icecapHeight) * iceCap; // donatelo version
 
   //	RODRIGO - Terrain noise matching albedo noise
 

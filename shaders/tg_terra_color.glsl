@@ -179,7 +179,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   }
 
   // Polar cap ice
-  if (iceCap > 0) {
+  if (iceCap > 0 && biomeData.height > seaLevel) {
     Surface ice = DetailTextureMulti(detUV, BIOME_SNOW);
     surf = BlendMaterials(surf, ice, iceCap);
   }
