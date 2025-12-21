@@ -5,17 +5,18 @@
 //-----------------------------------------------------------------------------
 
 // Function // Reduce height required to increase palette color
-Surface _GetBaseSurface(float height, vec2 detUV)
-{
-    float h  = (height * 2.0 - seaLevel * 2.0) / (1.0 - seaLevel) * float(BIOME_ROCK - BIOME_BEACH + 1) + float(BIOME_BEACH);
-    int   h0 = clamp(int(floor(h)), 0, BIOME_ROCK);
-    int   h1 = clamp(h0 + 1,        0, BIOME_ROCK);
-    float dh = fract(h);
+Surface _GetBaseSurface(float height, vec2 detUV) {
+  float h = (height * 2.0 - seaLevel * 2.0) / (1.0 - seaLevel) *
+                float(BIOME_ROCK - BIOME_BEACH + 1) +
+            float(BIOME_BEACH);
+  int h0 = clamp(int(floor(h)), 0, BIOME_ROCK);
+  int h1 = clamp(h0 + 1, 0, BIOME_ROCK);
+  float dh = fract(h);
 
-    // interpolate between two heights
-    Surface surfH0 = DetailTextureMulti(detUV, h0);
-    Surface surfH1 = DetailTextureMulti(detUV, h1);
-    return BlendMaterials(surfH0, surfH1, dh);
+  // interpolate between two heights
+  Surface surfH0 = DetailTextureMulti(detUV, h0);
+  Surface surfH1 = DetailTextureMulti(detUV, h1);
+  return BlendMaterials(surfH0, surfH1, dh);
 }
 
 //-----------------------------------------------------------------------------
@@ -93,8 +94,12 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
              0.02 * (1.5 - RidgedMultifractal(pp * 100.0, 2.0));
   p += Fbm3D(p * 0.38) * 1.2;
   vary = Fbm(p) * 0.35 + 0.245;
-  climate += 2.8 * vary * saturate(1.0 - 3.0 * biomeData.slope) *
-             saturate(1.0 - 1.333 * climate);
+  float slopeModulations = saturate(1.0 - 3.0 * biomeData.slope);
+  // HACK: Don't add slope modulations in deserts because otherwise you get
+  // grass in deserts.
+  if (vary > 0.3)
+    slopeModulations = 1.0;
+  climate += 2.8 * vary * slopeModulations * saturate(1.0 - 1.333 * climate);
 
   // Shield volcano lava
   vec2 volcMask = vec2(0.0);
@@ -113,26 +118,34 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   // biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
 
   // GlobalModifier // ColorVary setup
-	noiseOctaves = 14.0;
+  noiseOctaves = 14.0;
   noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-	vec3 albedoVaryDistort = Fbm3D((point * 1 + Randomize) * .07) * (1.5 + venusMagn ); //Fbm3D((point + Randomize) * 0.07) * 1.5;
-	
-	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
-	{
-			albedoVaryDistort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
-	}
-	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
-	{
-			albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;
-	}
+  vec3 albedoVaryDistort =
+      Fbm3D((point * 1 + Randomize) * .07) *
+      (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
-	//else if (cracksOctaves > 0)  // Test Ice planets later
-	//{
-	//	distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
-	//}
+  if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
+    albedoVaryDistort =
+        (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) +
+         saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) *
+            (volcanoActivity - 1) +
+        (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
+  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
+    albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;
+  }
 
-  vary = 1.0 - Fbm((point + albedoVaryDistort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp * 0.999, 8.0)));
-	vary *= 0.5 * vary * vary;
+  // else if (cracksOctaves > 0)  // Test Ice planets later
+  //{
+  //	distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) *
+  //(1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
+  ////albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) *
+  // volcanoActivity) * (1.5 + venusMagn );
+  //}
+
+  vary = 1.0 - Fbm((point + albedoVaryDistort) *
+                   (1.5 - RidgedMultifractal(pp, 8.0) +
+                    RidgedMultifractal(pp * 0.999, 8.0)));
+  vary *= 0.5 * vary * vary;
 
   // Scale detail texture UV and add a small distortion to it to fix
   // pixelization
@@ -160,13 +173,18 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0;
 
     // Test more Modulate Plant biome with volcano maybe
-    //if (cracksOctaves == 0 && volcanoActivity >= 1.0)
+    // if (cracksOctaves == 0 && volcanoActivity >= 1.0)
     //	{
-    //		humidityMod = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + humidity * 2.0) * (volcanoActivity - 1) + (Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0) * (2 - volcanoActivity);  //Io like plants
+    //		humidityMod = (saturate(iqTurbulence(point, 0.55) * (2 *
+    //(volcanoActivity - 1))) + humidity * 2.0) * (volcanoActivity - 1) +
+    //(Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0) * (2 -
+    // volcanoActivity);  //Io like plants
     //	}
-    //else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+    // else if (cracksOctaves == 0 && volcanoActivity < 1.0)
     //{
-    //		humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0;  //Io like plants
+    //		humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity
+    //* 2.0;
+    ////Io like plants
     //}
 
     float plantsFade =
