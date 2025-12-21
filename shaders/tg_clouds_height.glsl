@@ -221,8 +221,7 @@ float HeightMapCloudsTerraA(vec3 point) {
   }
   float _distort = Fbm(twistedPoint + distort);
   noiseH = 1.0;
-  float global = max(saturate(f) * weight * (_distort + cloudsCoverage),
-                     pow(abs(point.y + Fbm(point)), 2.0) * 0.02);
+  float global = saturate(f) * weight * (_distort + cloudsCoverage);
 
   return global;
 }
