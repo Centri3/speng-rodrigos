@@ -70,7 +70,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   float snowLine = biomeData.height + 0.25 * vary * biomeData.slope;
   float montHeight =
       saturate((biomeData.height - seaLevel) / (snowLevel - seaLevel));
-  climate = min(climate + heightTempGrad * montHeight, climatePole - 0.125);
+  climate = min(climate + heightTempGrad * montHeight, climatePole - 0.03);
   climate = mix(climate, climatePole, saturate((snowLine - snowLevel) * 100.0));
 
   // Ice caps
@@ -95,11 +95,12 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   p += Fbm3D(p * 0.38) * 1.2;
   vary = Fbm(p) * 0.35 + 0.245;
   float slopeModulations = saturate(1.0 - 3.0 * biomeData.slope);
+  float randomizedGrassAmount = hash1(Randomize.x) * 0.333 + hash1(Randomize.y) * 0.333 + hash1(Randomize.z) * 0.333;
   // HACK: Don't add slope modulations in deserts because otherwise you get
   // grass in deserts.
-  if (vary > 0.3)
+  if (vary > 0.3 + randomizedGrassAmount * 0.1)
     slopeModulations = 1.0;
-  climate += 2.8 * vary * slopeModulations * saturate(1.0 - 1.333 * climate);
+  climate += (2.8 + randomizedGrassAmount) * vary * slopeModulations * saturate(1.0 - 1.333 * climate);
 
   // Shield volcano lava
   vec2 volcMask = vec2(0.0);
