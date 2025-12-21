@@ -55,22 +55,24 @@ void _PseudoCracks(vec3 point, float damping, inout float height) {
   noiseH = 1.0;
   noiseLacunarity = 2.1;
 
+  float cracks = 0.0;
+
   vec3 p = point * 2.0 * mainFreq + Randomize;
   vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.7);
   distort =
-      0.65 * Fbm3D(p * riversSin * 0.7) + 0.03 * Fbm3D(p * riversSin * 3.0) +
+      0.65 * Fbm3D(p * riversSin * 0.7) + 0.03 * Fbm3D(p * riversSin * 6.0) +
       0.01 *
           RidgedMultifractalErodedDetail(point * 0.3 * (canyonsFreq + 1000) *
                                                  (0.5 * (1 / montesSpiky + 1)) +
                                              Randomize,
                                          8.0, erosion, 2);
 
-  vec2 cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
+  vec2 cell = 2.5 * Cell3Noise2(cracksFreq * 10.0 * p + 0.5 * distort);
 
-  float valleys =
-      1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn * 0.2));
-  valleys = smoothstep(0.0, 1.0, valleys) * damping;
-  height = mix(height, seaLevel + 0.03, valleys);
+  cracks =
+      1.0 - (saturate(0.36 * abs(cell.y - cell.x) * cracksFreq * 10.0));
+  cracks = smoothstep(0.0, 1.0, cracks) * damping;
+  height = mix(height, seaLevel + 0.03, cracks);
 }
 
 //-----------------------------------------------------------------------------
@@ -455,7 +457,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     _PseudoRivers(point, damping, height);
 
     // Cracks
-    damping = (smoothstep(0.1, 0.09, rodrigoDamping)) *
+    damping = (smoothstep(cracksMagn * 0.8 + 0.01, cracksMagn * 0.8, rodrigoDamping)) *
               (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09,
                           seaLevel - height));
     _PseudoCracks(point, damping, height);
