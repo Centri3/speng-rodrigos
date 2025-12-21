@@ -188,7 +188,7 @@ float HeightMapCloudsTerraA(vec3 point) {
       -cos(point.y * 1.75 * pow(abs(stripeTwist), 0.3) * stripeZones * 0.3);
   float ang = zones * 2;
   vec3 twistedPoint = point;
-  float coverage = cloudsCoverage * 0.3;
+  float coverage = cloudsCoverage * 0.6;
   if (cloudsOctaves == 0) {
     coverage = 0.0;
   }
