@@ -159,8 +159,8 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
   // Vegetation
   if (plantsBiomeOffset > 0.0) {
-    noiseH = 4.0;
-    noiseLacunarity = 2.218281828459;
+    noiseH = 0.7;
+    noiseLacunarity = 4.0;
     noiseOffset = 0.8;
     noiseOctaves = 2.0;
     float plantsTransFractal =
@@ -171,7 +171,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     // Rodrigo - Changed albedoVaryDistort to distort
 
     noiseOctaves = 8.0;
-    float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + humidity * 2.0;
+    float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + pow(humidity, 0.333) * 1.5;
 
     // Test more Modulate Plant biome with volcano maybe
     // if (cracksOctaves == 0 && volcanoActivity >= 1.0)
