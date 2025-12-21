@@ -120,7 +120,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
   // GlobalModifier // ColorVary setup
   noiseOctaves = 14.0;
-  noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
+  noiseH = 0.4 + smoothstep(0.0, 0.1, colorDistMagn) * 0.3;
   vec3 albedoVaryDistort =
       Fbm3D((point * 1 + Randomize) * .07) *
       (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
