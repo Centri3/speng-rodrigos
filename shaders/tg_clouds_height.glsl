@@ -221,7 +221,7 @@ float HeightMapCloudsTerraA(vec3 point) {
   }
   float _distort = Fbm(twistedPoint + distort);
   noiseH = 1.0;
-  float global = saturate(f) * weight * (_distort + cloudsCoverage);
+  float global = saturate(f) * weight * (_distort + cloudsCoverage * 0.1);
 
   return global;
 }
@@ -341,13 +341,9 @@ float HeightMapCloudsTerraKham2(vec3 point) {
 
 void main() {
   vec3 point = GetSurfacePoint();
-  float height = 0.0;
-  if (cloudsNLayers == 1 || cloudsLayer != 0) {
-    height = 0.75 *
-             (HeightMapCloudsTerraTPE(point) + HeightMapCloudsTerraTPE2(point));
-  } else {
-    height = 3.0 * (HeightMapCloudsTerraA(point));
-  }
+  float height = 2.0 * max(HeightMapCloudsTerraTPE(point) +
+                               HeightMapCloudsTerraTPE2(point),
+                           pow(HeightMapCloudsTerraA(point), 2.0) * 50.0);
   OutColor = vec4(height);
 }
 
