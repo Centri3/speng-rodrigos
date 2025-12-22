@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 
-vec4 GlowMapTerra(vec3 point, float height, float slope) {
+vec4 GlowMapTerra(vec3 point, BiomeData biomeData) {
   // Assign a climate type
   noiseOctaves = 12.0;
   noiseH = 0.5;
