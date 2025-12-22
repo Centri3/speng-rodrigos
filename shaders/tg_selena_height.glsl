@@ -536,6 +536,9 @@ ridgeModulate;
   noiseOctaves = 14.0;
   noiseLacunarity = 2.218281828459;
   noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
+  if (cracksOctaves > 0) {
+    noiseH += 0.3;
+  }
   distort = Fbm3D((point + Randomize) * 0.07) *
             1.5; // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
