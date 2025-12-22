@@ -8,9 +8,9 @@
 // increased amount of colors
 Surface _GetBaseSurface(float height, vec2 detUV) {
   float _seaLevel = seaLevel;
-  if (seaLevel == -1e+38) {
-    _seaLevel = 0.6;
-  }
+  // if (seaLevel == -1e+38) {
+  //   _seaLevel = 0.6;
+  // }
 
   float h = (height * 6.0 - _seaLevel) / (1.0 - _seaLevel) *
                 float(BIOME_ROCK - BIOME_BEACH + 1) +
