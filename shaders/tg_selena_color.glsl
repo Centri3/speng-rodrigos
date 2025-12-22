@@ -486,7 +486,6 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
 
   // PlanetTypes // Enceladuslike terrain
   if (enceladusLike) {
-    vary /= CrackColorNoise(point, mask);
     noiseOctaves = 6.0;
     noiseLacunarity = 2.218281828459;
     noiseH = 0.9;
