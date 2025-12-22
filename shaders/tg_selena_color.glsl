@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 
@@ -214,69 +214,6 @@ float TholinPatchNoise(vec3 point, float height) {
       TholinPatchColorFunc(cell * radFactor, slopeFromCenter, height);
 
   return pow(saturate(1.0 - patches), 2.0);
-}
-
-//-----------------------------------------------------------------------------
-
-// Function // Modified rayed craters to have random brightness
-float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
-                             float cratOctaves) {
-  vec3 binormal = normalize(vec3(
-      -point.z, 0.0, point.x)); // = normalize(cross(point, vec3(0, 1, 0)));
-  vec3 rotVec = normalize(Randomize);
-
-  // Craters roundness distortion
-  noiseH = 0.5;
-  noiseLacunarity = 2.218281828459;
-  noiseOffset = 0.8;
-  noiseOctaves = 3;
-  craterDistortion = 1.0;
-  craterRoundDist = 0.03;
-  float shapeDist = 1.0 + 2.5 * craterRoundDist * Fbm(point * 419.54);
-  float colorDist = 1.0 - 0.3 * Fbm(point * 315.16);
-
-  float color = 0.0;
-  float fi;
-  vec2 cell;
-  vec3 cellCenter = vec3(0.0);
-  float rad;
-  float radFactor = shapeDist / cratSqrtDensity;
-  float fibFreq = 10.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
-
-  heightFloor = -0.5;
-  heightPeak = 0.6;
-  heightRim = 1.0;
-  radPeak = 0.004;
-  radInner = 0.015;
-  radRim = 0.03;
-  radOuter = 1.3;
-
-  for (int i = 0; i < cratOctaves; i++) {
-    // cell = Cell2NoiseSphere(point, craterSphereRadius);
-    ////cell = Cell2NoiseVec(point * craterSphereRadius, 1.0);
-    // fi = acos(dot(binormal, normalize(cell.xyz - point))) / pi2;
-    // color += vary * RayedCraterColorFunc(cell.w * radFactor, fi, 48.3 *
-    // dot(cell.xyz, Randomize)); radInner  *= 0.6;
-
-    cell = inverseSF(point, fibFreq, cellCenter);
-    rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
-    fi = acos(dot(binormal, normalize(cellCenter - point))) / pi2;
-
-    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0 *
-                       smoothstep(0.0, 0.6, craterRayedFactor);
-    color += RayedCraterColorFunc(cell.y * radFactor / rad, fi,
-                                  48.3 * dot(cellCenter, Randomize)) *
-             brightness;
-
-    if (cratOctaves > 1) {
-      point = Rotate(pi2 * hash1(float(i)), rotVec, point);
-      fibFreq *= 1.125;
-      radFactor *= sqrt(1.125);
-      radInner *= 0.9;
-    }
-  }
-
-  return min(color, 1.0) * colorDist;
 }
 
 //-----------------------------------------------------------------------------
@@ -565,6 +502,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   }
 
   // Fetch variables // Get height slope normal
+  // FIXME: We already have 2/3 of these in biomeData lol
   float height = 0.0;
   float slope = 0.0;
   vec3 normal;

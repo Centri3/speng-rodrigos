@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 
@@ -246,6 +246,16 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
   // GlobalModifier // ColorVary apply
   surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
+
+  // TerrainFeature // Rayed craters
+  if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
+    float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
+    float craterRayedOctaves =
+        floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
+    float crater = _RayedCraterColorNoise(point, craterFreq, craterRayedDensity,
+                                          craterRayedOctaves);
+    surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
+  }
 
   // GlobalModifier // Slope contrast
   surf.color.rgb *= 0.9 + biomeData.slope * 0.5;

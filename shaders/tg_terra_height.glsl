@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 
@@ -486,6 +486,26 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // version
   height =
       height + (0.3 * seaLevel + icecapHeight) * iceCap; // donatelo version
+
+  // TerrainFeature // Rayed craters
+  if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05) {
+    heightFloor = -1.5;
+    heightPeak = 0.15;
+    heightRim = 1.0;
+    float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
+    float craterRayedOctaves =
+        floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
+    float craterRayedMagn =
+        craterMagn *
+        0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned
+              // down rayed crater depth donatelo200 12/07/2025
+    crater = _RayedCraterNoise(point, craterRayedMagn, craterFreq,
+                               craterRayedDensity, craterRayedOctaves);
+    height +=
+        crater *
+        (height + 0.2); // toned down rayed crater depth donatelo200 12/07/2025
+                        // (mostly works but some edge cases still break
+  }
 
   //	RODRIGO - Terrain noise matching albedo noise
 
