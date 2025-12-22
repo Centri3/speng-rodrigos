@@ -21,8 +21,7 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
   for (int i = 0; i < 3; i++) {
     vec3 p = point + i * mainFreq + Randomize;
     vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.3);
-    distort = 0.65 * Fbm3D(p * riversSin) +
-              0.03 * Fbm3D(p * riversSin * 2.0) +
+    distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 2.0) +
               0.01 * RidgedMultifractalErodedDetail(
                          point * 0.1 * (canyonsFreq + 1000) *
                                  (0.5 * (1 / montesSpiky + 1)) +
@@ -69,8 +68,7 @@ void _PseudoCracks(vec3 point, float damping, inout float height) {
 
   vec2 cell = 2.5 * Cell3Noise2(cracksFreq * 10.0 * p + 0.5 * distort);
 
-  cracks =
-      1.0 - (saturate(0.36 * abs(cell.y - cell.x) * cracksFreq * 10.0));
+  cracks = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * cracksFreq * 10.0));
   cracks = smoothstep(0.0, 1.0, cracks) * damping;
   height = mix(height, seaLevel + 0.03, cracks);
 }
@@ -216,7 +214,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseH = 1.0;
   noiseLacunarity = 2.3;
   noiseOffset = montesSpiky;
-  float rocks = -0.005 * iqTurbulence(point * 200.0, 1.0);
+  float rocks = -0.005 * iqTurbulence(point * 20.0, 1.0) * smoothstep(2, 1, volcanoActivity);
 
   // small terrain elevations
   noiseOctaves = 12.0;
@@ -224,7 +222,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseOctaves = 8.0;
 
   float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0)) +
-             0.05 * (1.5 - RidgedMultifractal(pp * 10.0, 2.0));
+             0.05 * (1.5 - RidgedMultifractal(pp * 10.0, 2.0)) + rocks * 0.5;
 
   fr *= 1 - smoothstep(0.0, 0.02, seaLevel - global);
 
@@ -455,7 +453,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     _PseudoRivers(point, damping, height);
 
     // Cracks
-    damping = (smoothstep(cracksMagn * 0.8 + 0.01, cracksMagn * 0.8, rodrigoDamping)) *
+    damping = (smoothstep(cracksMagn * 0.8 + 0.01, cracksMagn * 0.8,
+                          rodrigoDamping)) *
               (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09,
                           seaLevel - height));
     _PseudoCracks(point, damping, height);
