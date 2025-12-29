@@ -533,7 +533,9 @@ float HeightMapSelena(vec3 point) {
     noiseOctaves = 5.0;
 
     // We share this among all octaves as a speedup.
-    vec3 europaDistort = Fbm3D(1.8 * europaP);
+    vec3 europaDistort = Fbm3D(1.8 * europaP) +
+                         Fbm3D(1.8 * europaP * 8.0) * 0.4 +
+                         Fbm3D(1.8 * europaP * 32.0) * 0.1;
 
     float europaCracksOctaves = cracksOctaves + 12;
     height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
@@ -543,11 +545,10 @@ float HeightMapSelena(vec3 point) {
                                      europaDistort) +
               1.2 * EuropaCrackNoise(europaP * 4.0, europaCracksOctaves, mask,
                                      europaDistort);
-    vec3 europaSmallDistort = Fbm3D(1.8 * europaP * 32.0);
     height += 0.3 * EuropaCrackNoise(europaP * 16.0, europaCracksOctaves, mask,
-                                     europaSmallDistort) +
+                                     europaDistort) +
               0.3 * EuropaCrackNoise(europaP * 32.0, europaCracksOctaves, mask,
-                                     europaSmallDistort);
+                                     europaDistort);
     height += 1.3 * EuropaCrackNoise(europaP * 3.0, europaCracksOctaves, mask,
                                      europaDistort);
   }

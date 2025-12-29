@@ -446,7 +446,9 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
     noiseOctaves = 5.0;
 
     // We share this among all octaves as a speedup.
-    vec3 europaDistort = Fbm3D(1.8 * europaP);
+    vec3 europaDistort = Fbm3D(1.8 * europaP) +
+                         Fbm3D(1.8 * europaP * 8.0) * 0.4 +
+                         Fbm3D(1.8 * europaP * 32.0) * 0.1;
 
     float europaCracksOctaves = cracksOctaves + 12;
     vary *= EuropaCrackColorNoise(europaP, europaCracksOctaves + 1, mask,
@@ -455,11 +457,10 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
                                          mask, europaDistort) +
              0.2 * EuropaCrackColorNoise(europaP * 4.0, europaCracksOctaves,
                                          mask, europaDistort));
-    vec3 europaSmallDistort = Fbm3D(1.8 * europaP * 32.0);
     vary *= (0.2 * EuropaCrackColorNoise(europaP * 16.0, europaCracksOctaves,
-                                         mask, europaSmallDistort)) +
+                                         mask, europaDistort)) +
             (0.2 * EuropaCrackColorNoise(europaP * 32.0, europaCracksOctaves,
-                                         mask, europaSmallDistort));
+                                         mask, europaDistort));
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
     float whiteCracks =
