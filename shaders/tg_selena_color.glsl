@@ -456,9 +456,9 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
                                          europaDistort));
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
-    float whiteCracks = 0.3 * EuropaCrackColorNoise(point * 2, cracksOctaves,
+    float whiteCracks = 0.3 * EuropaCrackColorNoise(point * 2, europaCracksOctaves,
                                                     mask, europaDistort);
-    surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.3 - whiteCracks);
+    surf.color.rgb = mix(surf.color.rgb, iceColor, 0.3 - whiteCracks);
   }
 
   // TerrainFeature // Europa freckles
