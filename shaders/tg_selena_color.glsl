@@ -120,7 +120,7 @@ float EuropaCrackColorFunc(float lastLand, float lastlastLand, float height,
 // 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
 // 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
 float EuropaCrackColorNoise(vec3 point, float europaCracksOctaves,
-                            out float mask) {
+                            out float mask, vec3 distort) {
   point = (point + Randomize) * cracksFreq;
   point.x *= 0.3;
 
@@ -139,7 +139,7 @@ float EuropaCrackColorNoise(vec3 point, float europaCracksOctaves,
 
   for (int i = 0; i < europaCracksOctaves; i++) {
     for (int j = 0; j < 2; j++) {
-      cell = Cell2Noise2(point + 0.02 * Fbm3D(1.8 * point));
+      cell = Cell2Noise2(point + 0.02 * distort);
       r = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
       lastlastLand = lastLand;
       lastLand = newLand;
@@ -444,15 +444,18 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   // 23-10-2024 by Sp_ce // Changed vec3(1.0) to iceColor
   // 26-10-2024 by Sp_ce // Added ice cracks section cracks here
   else if (europaLike) {
+    // We share this among all octaves as a speedup.
+    vec3 europaDistort = Fbm3D(1.8 * point);
+
     float europaCracksOctaves = cracksOctaves + 2;
-    vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 6, mask);
+    vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 6, mask, europaDistort);
     vary *=
-        (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask) +
-         0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask));
+        (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask, europaDistort) +
+         0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask, europaDistort));
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
     float whiteCracks =
-        0.3 * EuropaCrackColorNoise(point * 2, cracksOctaves, mask);
+        0.3 * EuropaCrackColorNoise(point * 2, cracksOctaves, mask, europaDistort);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.3 - whiteCracks);
   }
 
