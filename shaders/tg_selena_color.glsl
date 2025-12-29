@@ -120,9 +120,9 @@ float EuropaCrackColorFunc(float lastLand, float lastlastLand, float height,
 // 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
 // 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
 float EuropaCrackColorNoise(vec3 point, float europaCracksOctaves,
-                            out float mask) {
-  point = (point + Randomize) * cracksFreq;
-  point.x *= 0.3;
+                            out float mask, float latitude) {
+  vec3 p = vec3(0.0);
+  // point = (point + Randomize) * cracksFreq;
 
   float newLand = 0.0;
   float lastLand = 0.0;
@@ -138,16 +138,49 @@ float EuropaCrackColorNoise(vec3 point, float europaCracksOctaves,
   mask = 1.0;
 
   for (int i = 0; i < europaCracksOctaves; i++) {
-    for (int j = 0; j < 2; j++) {
-      cell = Cell2Noise2(point + 0.02 * Fbm3D(1.8 * point));
-      r = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
+    for (int j = 0; j < 1; j++) {
+      p += Randomize;
+
+      float angleX = mod(p.x, 0.08) * 6.283185;
+      float angleY = mod(p.y, 0.08) * 6.283185;
+      float angleZ = mod(p.z, 0.08) * 6.283185;
+
+      // clang-format off
+      mat3x3 rotX = mat3x3(1.0, 0.0, 0.0,
+                           0.0, cos(angleX), -sin(angleX),
+                           0.0, sin(angleX), cos(angleX));
+
+      mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
+                           0.0, 1.0, 0.0,
+                           -sin(angleY), 0.0, cos(angleY));
+
+      mat3x3 rotZ = mat3x3(cos(angleZ), -sin(angleZ), 0.0,
+                           sin(angleZ), cos(angleZ), 0.0,
+                           0.0, 0.0, 1.0);
+      // clang-format on
+
+      point *= rotX;
+      point *= rotY;
+      point *= rotZ;
+
+      float radius =
+          sqrt(point.x * point.x + point.y * point.y + point.z * point.z);
+      // unused to get cracks to stretch
+      float azimuthal = atan(point.x, point.y);
+      float polar = acos(point.z / radius);
+
+      radius += Fbm(point) * 0.03;
+      azimuthal += Fbm(point) * 0.03;
+      polar += Fbm(point) * 0.03;
+
+      r = smoothstep(0.0, 1.0,
+                     (1.0 + i * 1.0) * smoothstep(0.0, 0.05, abs(Fbm(vec3(radius * 1.3, 0.0, polar * 1.3)))));
+
       lastlastLand = lastLand;
       lastLand = newLand;
       newLand = EuropaCrackColorFunc(lastlastLand, lastLand, 1.0, r, point);
-      point += Randomize;
       mask *= smoothstep(0.6, 1.0, r);
     }
-    point = point * 1.2 + Randomize;
   }
 
   return pow(saturate(1.0 - newLand), 2.0);
@@ -445,14 +478,16 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   // 26-10-2024 by Sp_ce // Added ice cracks section cracks here
   else if (europaLike) {
     float europaCracksOctaves = cracksOctaves + 2;
-    vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 6, mask);
     vary *=
-        (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5, mask) +
-         0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5, mask));
+        EuropaCrackColorNoise(point, europaCracksOctaves + 6, mask, point.y);
+    vary *= (0.2 * EuropaCrackColorNoise(point * 2, europaCracksOctaves + 5,
+                                         mask, point.y) +
+             0.2 * EuropaCrackColorNoise(point * 4, europaCracksOctaves + 5,
+                                         mask, point.y));
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
     float whiteCracks =
-        0.3 * EuropaCrackColorNoise(point * 2, cracksOctaves, mask);
+        0.3 * EuropaCrackColorNoise(point * 2, cracksOctaves, mask, point.y);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.3 - whiteCracks);
   }
 
