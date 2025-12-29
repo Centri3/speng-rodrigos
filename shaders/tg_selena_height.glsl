@@ -77,6 +77,38 @@ void _RiftsNoise(vec3 point, float damping, inout float height) {
 
 //-----------------------------------------------------------------------------
 
+// Function // Europa Cracks Noise
+// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
+// 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
+// 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
+float EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask,
+                       vec3 distort) {
+  float newLand = 0.0;
+  float lastLand = 0.0;
+  float lastlastLand = 0.0;
+  vec2 cell;
+  float r;
+  float ampl = 0.1 * cracksMagn;
+  mask = 1.0;
+
+  for (int i = 0; i < europaCracksOctaves; i++) {
+    for (int j = 0; j < 2; j++) {
+      cell = Cell2Noise2(point + 0.02 * distort);
+      r = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
+      lastlastLand = lastLand;
+      lastLand = newLand;
+      newLand = CrackHeightFunc(lastlastLand, lastLand, ampl, r, point);
+      point += Randomize;
+      mask *= smoothstep(0.6, 1.0, r);
+    }
+    point = point * 1.1 + Randomize;
+  }
+
+  return newLand;
+}
+
+//-----------------------------------------------------------------------------
+
 // Function // Altered Mare Height Formula
 float _MareHeightFunc(vec3 point, float lastLand, float lastlastLand,
                       float height, float r, inout float mareFloor) {
@@ -477,6 +509,49 @@ float HeightMapSelena(vec3 point) {
     height = mix(height, height - 0.2, venus2);
   }
 
+  // PlanetTypes // Europalike terrain
+
+  // 8-10-2024 by Sp_ce // Changed cracksOctaves to +2 instead of +3
+
+  // 21-10-2024 by Sp_ce // Low europaLikeness keeps original height
+
+  // 22-10-2024 by Sp_ce // Reverted europaLikeness, added white cracks
+
+  // 21-10-2024 by Sp_ce // 1.0 europaLikeness 30% height, 0.0 europaLikeness
+  // 60% height
+
+  // 26-10-2024 by Sp_ce // Added ice cracks section cracks here
+
+  else if (europaLike) {
+    vec3 europaP = point = (point + Randomize) * cracksFreq * 0.5;
+    europaP.x *= 0.3;
+
+    // Rim height and shape distortion
+    noiseH = 0.5;
+    noiseLacunarity = 2.218281828459;
+    noiseOffset = 0.8;
+    noiseOctaves = 5.0;
+
+    // We share this among all octaves as a speedup.
+    vec3 europaDistort = Fbm3D(1.8 * europaP);
+
+    float europaCracksOctaves = cracksOctaves + 12;
+    height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
+    height += 3.5 * EuropaCrackNoise(europaP, europaCracksOctaves + 1, mask,
+                                     europaDistort);
+    height += 1.2 * EuropaCrackNoise(europaP * 2.0, europaCracksOctaves, mask,
+                                     europaDistort) +
+              1.2 * EuropaCrackNoise(europaP * 4.0, europaCracksOctaves, mask,
+                                     europaDistort);
+    vec3 europaSmallDistort = Fbm3D(1.8 * europaP * 32.0);
+    height += 0.3 * EuropaCrackNoise(europaP * 16.0, europaCracksOctaves, mask,
+                                     europaSmallDistort) +
+              0.3 * EuropaCrackNoise(europaP * 32.0, europaCracksOctaves, mask,
+                                     europaSmallDistort);
+    height += 1.3 * EuropaCrackNoise(europaP * 3.0, europaCracksOctaves, mask,
+                                     europaDistort);
+  }
+
   // TerrainFeature // Equatorial ridge
   /*
 if (eqridgeMagn > 0.0)
@@ -566,10 +641,9 @@ ridgeModulate;
       5 * (Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) +
                                     RidgedMultifractal(pp * 0.999, 8.0))));
   if (cracksOctaves > 0) {
-  height = mix(height, height + 0.1, vary);
+    height = mix(height, height + 0.1, vary);
   } else {
-  height = mix(height, height + 0.0017, vary);
-    
+    height = mix(height, height + 0.0017, vary);
   }
 
   // GlobalModifier // Soften max/min height
