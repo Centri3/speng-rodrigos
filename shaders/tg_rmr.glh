@@ -1,0 +1,257 @@
+#include "tg_common.glh"
+
+#ifdef _FRAGMENT_
+
+//-----------------------------------------------------------------------------
+
+// Function // Modified rayed craters to have random brightness
+float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
+                             float cratOctaves) {
+  vec3 binormal = normalize(vec3(
+      -point.z, 0.0, point.x)); // = normalize(cross(point, vec3(0, 1, 0)));
+  vec3 rotVec = normalize(Randomize);
+
+  // Craters roundness distortion
+  noiseH = 0.5;
+  noiseLacunarity = 2.218281828459;
+  noiseOffset = 0.8;
+  noiseOctaves = 3;
+  craterDistortion = 1.0;
+  craterRoundDist = 0.03;
+  float shapeDist = 1.0 + 2.5 * craterRoundDist * Fbm(point * 419.54);
+  float colorDist = 1.0 - 0.3 * Fbm(point * 315.16);
+
+  float color = 0.0;
+  float fi;
+  vec2 cell;
+  vec3 cellCenter = vec3(0.0);
+  float rad;
+  float radFactor = shapeDist / cratSqrtDensity;
+  float fibFreq = 10.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
+
+  heightFloor = -0.5;
+  heightPeak = 0.6;
+  heightRim = 1.0;
+  radPeak = 0.004;
+  radInner = 0.015;
+  radRim = 0.03;
+  radOuter = 1.3;
+
+  for (int i = 0; i < cratOctaves; i++) {
+    // cell = Cell2NoiseSphere(point, craterSphereRadius);
+    ////cell = Cell2NoiseVec(point * craterSphereRadius, 1.0);
+    // fi = acos(dot(binormal, normalize(cell.xyz - point))) / pi2;
+    // color += vary * RayedCraterColorFunc(cell.w * radFactor, fi, 48.3 *
+    // dot(cell.xyz, Randomize)); radInner  *= 0.6;
+
+    cell = inverseSF(point, fibFreq, cellCenter);
+    rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
+    fi = acos(dot(binormal, normalize(cellCenter - point))) / pi2;
+
+    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0 *
+                       smoothstep(0.0, 0.6, craterRayedFactor);
+    color += RayedCraterColorFunc(cell.y * radFactor / rad, fi,
+                                  48.3 * dot(cellCenter, Randomize)) *
+             brightness;
+
+    if (cratOctaves > 1) {
+      point = Rotate(pi2 * hash1(float(i)), rotVec, point);
+      fibFreq *= 1.125;
+      radFactor *= sqrt(1.125);
+      radInner *= 0.9;
+    }
+  }
+
+  return min(color, 1.0) * colorDist;
+}
+
+// Function // This function's only purpose is to reduce height, heightFloor and
+// heightPeak by brightness.
+float _RayedCraterHeightFunc(float lastlastLand, float lastLand, float height,
+                             float r, float brightness) {
+  // FIXME: Why does this need to be 0.0? we get crazy discontinuities if it's
+  // not.
+  float distHeight = 0.0; // craterDistortion * height * brightness;
+
+  float t = 1.0 - r / radPeak;
+  float peak =
+      heightPeak * brightness * craterDistortion * smoothstep(0.0, 1.0, t);
+
+  t = smoothstep(0.0, 1.0, (r - radInner) / (radRim - radInner));
+  float inoutMask = t * t * t;
+  float innerRim = heightRim * distHeight * smoothstep(0.0, 1.0, inoutMask);
+
+  t = smoothstep(0.0, 1.0, (radOuter - r) / (radOuter - radRim));
+  float outerRim = distHeight * mix(0.05, heightRim, t * t);
+
+  t = saturate((1.0 - r) / (1.0 - radOuter));
+  float halo = 0.05 * distHeight * t;
+
+  // Don't apply brightness here twice to both height and heightFloor.
+  return mix(lastlastLand + height * heightFloor * brightness + peak + innerRim,
+             lastLand + outerRim + halo, inoutMask);
+}
+
+float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
+                        float cratSqrtDensity, float cratOctaves) {
+  vec3 rotVec = normalize(Randomize);
+
+  // Craters roundness distortion
+  noiseH = 0.5;
+  noiseLacunarity = 2.218281828459;
+  noiseOffset = 0.8;
+  noiseOctaves = 3;
+  craterDistortion = 1.0;
+  craterRoundDist = 0.03;
+  float shapeDist = 1.0 + 2.5 * craterRoundDist * Fbm(point * 419.54);
+
+  radPeak = 0.004;
+  radInner = 0.015;
+  radRim = 0.03;
+  radOuter = 0.8;
+
+  float newLand = 0.0;
+  float lastLand = 0.0;
+  float lastlastLand = 0.0;
+  float lastlastlastLand = 0.0;
+  float amplitude = 0.1;
+  vec2 cell;
+  vec3 cellCenter = vec3(0.0);
+  float rad;
+  float radFactor = shapeDist / cratSqrtDensity;
+  // FIXME: This is not the proper way to randomize! Fix this for volcanoes,
+  // too.
+  float fibFreq = 10.0 * cratFreq + Randomize.x + Randomize.y + Randomize.z;
+
+  for (int i = 0; i < cratOctaves; i++) {
+    lastlastlastLand = lastlastLand;
+    lastlastLand = lastLand;
+    lastLand = newLand;
+
+    // cell = Cell2NoiseSphere(point, craterSphereRadius).w;
+    ////cell = Cell2NoiseVec(point * craterSphereRadius, 1.0).w;
+    // newLand = CraterHeightFunc(0.0, lastLand, amplitude, cell * radFactor);
+
+    // cell    = inverseSF(point + craterRoundDist * Fbm3D(point * 2.56),
+    // fibFreq);
+    cell = inverseSF(point, fibFreq, cellCenter);
+    rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
+
+    float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 8.0;
+    newLand = _RayedCraterHeightFunc(lastlastlastLand, lastLand, amplitude,
+                                     cell.y * radFactor / rad, brightness);
+
+    if (cratOctaves > 1) {
+      point = Rotate(pi2 * hash1(float(i)), rotVec, point);
+      // FIXME: For the first few octaves this results in very similar spots for
+      // the craters. Not too noticeable but please fix me.
+      fibFreq *= 1.125;
+      radFactor *= sqrt(1.125);
+      // FIX: Higher octave rayed craters usually have no height, so uh, let's
+      // not reduce these values so quickly.
+      amplitude *= 0.97;
+      heightPeak *= 0.9;
+      heightFloor *= 0.97;
+      radInner *= 0.9;
+    }
+  }
+
+  return cratMagn * newLand;
+}
+
+struct NoiseParams {
+  // FIXME: IDK why we need to use floats here, but nested structs do not work.
+  float octaves;
+  float lacunarity;
+  float h;
+  float add;
+  float mul;
+};
+
+struct Lacunarity {
+  float inner;
+};
+struct Octaves {
+  float inner;
+};
+struct H {
+  float inner;
+};
+struct RidgeSmooth {
+  float inner;
+};
+struct Add {
+  float inner;
+};
+struct Mul {
+  float inner;
+};
+
+Octaves DEFAULT_OCTAVES = Octaves(4.0);
+Lacunarity DEFAULT_LACUNARITY = Lacunarity(2.218281828459);
+H DEFAULT_H = H(0.5);
+
+NoiseParams mk_noise(Octaves octaves, Lacunarity lacunarity, H h) {
+  return NoiseParams(octaves.inner, lacunarity.inner, h.inner, 0.0f, 1.0f);
+}
+
+NoiseParams mk_noise(Octaves octaves, Lacunarity lacunarity, H h, Add add,
+                     Mul mul) {
+  return NoiseParams(octaves.inner, lacunarity.inner, h.inner, add.inner,
+                     mul.inner);
+}
+
+#define noise_vec2(coords) vec2(Noise(coords), Noise(coords + vyd))
+#define noise_vec3(coords)                                                     \
+  vec3(Noise(coords), Noise(coords + vyd), Noise(coords + vzd))
+#define noise_vec4(coords)                                                     \
+  vec4(Noise(coords), Noise(coords + vyd), Noise(coords + vzd),                \
+       Noise(coords + vwd))
+#define noise_u_float(coords) Noise(coords) * 0.5 + 0.5
+#define noise_u_vec3(coords) noise_vec3(coords) * 0.5 + vec3(0.5)
+#define noise_u_vec4(coords) noise_vec4(coords) * 0.5 + vec4(0.5)
+
+float noise_fbm_float(vec3 coords, NoiseParams noise) {
+  float sum = 0.0f;
+
+  float ampl = 1.0f;
+  float gain = pow(noise.lacunarity, -noise.h);
+
+  for (int i = 0; i < noise.octaves; i++) {
+    sum += Noise(coords) * ampl * noise.mul + noise.add;
+    ampl *= gain;
+    coords *= noise.lacunarity;
+  }
+
+  return sum;
+}
+
+vec2 noise_fbm_vec2(vec3 coords, NoiseParams noise) {
+  vec2 sum = vec2(0.0f);
+  float ampl = 1.0f;
+  float gain = pow(noise.lacunarity, -noise.h);
+
+  for (int i = 0; i < noise.octaves; i++) {
+    sum += noise_vec2(coords) * ampl;
+    ampl *= gain;
+    coords *= noise.lacunarity;
+  }
+
+  return sum;
+}
+
+vec3 noise_fbm_vec3(vec3 coords, NoiseParams noise) {
+  vec3 sum = vec3(0.0f);
+  float ampl = 1.0f;
+  float gain = pow(noise.lacunarity, -noise.h);
+
+  for (int i = 0; i < noise.octaves; i++) {
+    sum += noise_vec3(coords) * ampl;
+    ampl *= gain;
+    coords *= noise.lacunarity;
+  }
+
+  return sum;
+}
+
+#endif

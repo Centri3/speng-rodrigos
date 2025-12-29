@@ -2,9 +2,7 @@
  
 #ifdef _FRAGMENT_
 
-
 //-----------------------------------------------------------------------------
-
 
 // Calculation Function // Fixed hsl2rgb
 vec3 hsl2rgb2(vec3 hsl) 
@@ -38,9 +36,7 @@ vec3 hsl2rgb2(vec3 hsl)
     return rgb + vec3(m);
 }
 
-
 //-----------------------------------------------------------------------------
-
 
 // Function // Modified Rodrigo's rifts
 void    _RiftsNoise(vec3 point, float damping, inout float height)
@@ -371,7 +367,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
     noiseH = 1.0;
     //noiseLacunarity = 2.3; // Caused offset
     noiseOffset = montesSpiky;
-	float rocks = iqTurbulence(point * 80, 1); 
+	float rocks = -0.01 * iqTurbulence(point * 80, 1);   // iqTurbulence(point * 80, 1)
 
     noiseOctaves = 4;
     distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
@@ -649,15 +645,20 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	// GlobalModifier // Terrain noise match colorvary
 	noiseOctaves    = 14.0;
 	noiseLacunarity = 2.218281828459;
+	noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.7;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;   //Fbm3D((point + Randomize) * 0.07) * 1.5;  
+	if (cracksOctaves > 0) 
+	{
+		noiseH += 0.3;
+	}
 	
 	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity) + rocks;  //Io like on atmosphered planets
 	}
 	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
-			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on airless planets donatelo200 12/09/2025
+			distort = Fbm3D((point + Randomize) * 0.07) * 1.5 + rocks;  //Io like on airless planets donatelo200 12/09/2025
 	}
 	
 		else if (cracksOctaves > 0)
@@ -668,7 +669,15 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	
 	float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
 	
-	height = mix(height ,height +0.00017,vary);
+if (cracksOctaves > 0)  
+  {
+    height = mix(height, height + 0.1, vary);
+  } 
+  
+  else   
+  {
+  height = mix(height, height + 0.001, vary);    //0.0015
+  }
 	
 	
 	

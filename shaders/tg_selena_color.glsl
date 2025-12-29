@@ -2,9 +2,7 @@
 
 #ifdef _FRAGMENT_
 
-
 //-----------------------------------------------------------------------------
-
 
 // Calculation Function // Fixed hsl2rgb
 vec3 hsl2rgb2(vec3 hsl) 
