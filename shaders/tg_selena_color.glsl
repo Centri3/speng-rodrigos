@@ -121,7 +121,7 @@ float EuropaCrackColorFunc(float lastLand, float lastlastLand, float height,
 // 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
 float EuropaCrackColorNoise(vec3 point, float europaCracksOctaves,
                             out float mask, vec3 distort) {
-  point = (point + Randomize) * cracksFreq * 0.3;
+  point = (point + Randomize) * cracksFreq * 0.5;
   point.x *= 0.3;
 
   float newLand = 0.0;
@@ -147,7 +147,7 @@ float EuropaCrackColorNoise(vec3 point, float europaCracksOctaves,
       point += Randomize;
       mask *= smoothstep(0.6, 1.0, r);
     }
-    point = point * 1.13 + Randomize;
+    point = point * 1.1 + Randomize;
   }
 
   return pow(saturate(1.0 - newLand), 2.0);
