@@ -643,10 +643,20 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 
 
 	// GlobalModifier // Terrain noise match colorvary
+	
+	float _colorDistMagn = colorDistMagn;
+	float colorDistMin = 0.065;
+
+	if (colorDistMagn <= colorDistMin && cracksOctaves == 0)  // Prevent some planets from becoming chaos
+	{
+		_colorDistMagn = colorDistMin;
+	}
+	
 	noiseOctaves    = 14.0;
 	noiseLacunarity = 2.218281828459;
-	noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.7;
+	noiseH = 0.6 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;   //Fbm3D((point + Randomize) * 0.07) * 1.5;  
+	float SmallDistort = 0;
 	if (cracksOctaves > 0) 
 	{
 		noiseH += 0.3;
@@ -654,11 +664,14 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	
 	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity) + rocks;  //Io like on atmosphered planets
+			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + 0*saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			SmallDistort = saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1) + rocks;
+	
 	}
 	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
-			distort = Fbm3D((point + Randomize) * 0.07) * 1.5 + rocks;  //Io like on airless planets donatelo200 12/09/2025
+			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on airless planets donatelo200 12/09/2025
+			SmallDistort = rocks;
 	}
 	
 		else if (cracksOctaves > 0)
@@ -667,7 +680,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
 	}
 	
-	float vary = 1.0 - 5*(Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
+	float vary = 1.0 - 5*(Fbm((point + distort + (SmallDistort * 0.015)) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
 	
 if (cracksOctaves > 0)  
   {
@@ -676,7 +689,7 @@ if (cracksOctaves > 0)
   
   else   
   {
-  height = mix(height, height + 0.001, vary);    //0.0015
+  height = mix(height, height + 0.05, vary) - 0.05;    //0.0015
   }
 	
 	
