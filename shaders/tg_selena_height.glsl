@@ -671,7 +671,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	
 if (cracksOctaves > 0)  
   {
-    height = mix(height, height + 0.1, vary);
+    height = mix(height, height + 0.1, vary - 0.1);
   } 
   
   else   
@@ -683,7 +683,7 @@ if (cracksOctaves > 0)
 	
 	// GlobalModifier // Soften max/min height
 	height = softPolyMin(height, 0.99, 0.3);
-    height = softPolyMax(height, 0.01, 0.3);
+    height = softPolyMax(height, 0.00, 0.3);
 
 
 	

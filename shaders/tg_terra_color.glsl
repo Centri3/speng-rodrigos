@@ -141,7 +141,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 	
 		
 		float plantsFade = smoothstep(beachWidth, beachWidth * 2.0, biomeData.height - seaLevel) *
-            smoothstep(0.750, 0.650, biomeData.slope) *
+            smoothstep(0.750, 0.650, biomeData.slope) *			//smoothstep(0.145, 0.135, biomeData.slope)   smoothstep(0.750, 0.650, biomeData.slope)
             smoothstep(-0.5, 0.5, humidityMod);
 
         // Interpolate previous surface to the vegetation surface
