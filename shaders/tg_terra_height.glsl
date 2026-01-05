@@ -401,7 +401,7 @@ global += rr;
         heightFloor = -0.1;
         heightPeak  =  0.6;
         heightRim   =  1.0;
-        crater = CraterNoise(point, 0.5 * craterMagn, craterFreq, (craterSqrtDensity * (1 - (volcanoActivity / 2.5))), craterOctaves);  // reduce craters on volcanic worlds Donatelo200 11/16/2025
+        crater = CraterNoise(point, 0.5 * craterMagn, craterFreq, (craterSqrtDensity * (1 - (volcanoActivity / 2.1))), craterOctaves);  // reduce craters on volcanic worlds Donatelo200 11/16/2025
         noiseOctaves    = 10.0;
         noiseLacunarity = 2.0;
         crater = 0.25 * crater + 0.05 * crater * iqTurbulence(point * montesFreq + Randomize, 0.55);
@@ -483,7 +483,7 @@ if (cracksOctaves > 0)
 	
 if (cracksOctaves == 0 && volcanoActivity > 1.0)
 	{
-		distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + 0 * saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 0) * (2 - volcanoActivity);  //Io like on atmosphered planets
+		distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 0) * (2 - volcanoActivity);  //Io like on atmosphered planets
 		SmallDistort = saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1);
 	}
 	else if (cracksOctaves == 0 && volcanoActivity < 1.0)

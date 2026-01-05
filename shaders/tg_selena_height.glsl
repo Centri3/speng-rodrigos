@@ -303,6 +303,7 @@ float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtD
 // Function // Construct Height Map
 
 float	_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
+
 float _hillsMagn = hillsMagn;
 
 
@@ -313,6 +314,11 @@ float   HeightMapSelena(vec3 point)
 	vec3 bottomColor = hsl2rgb2(bottomColorHSL.xyz);
 	float bottomAlpha = bottomColorHSL.w;
 	bool aquaria = (bottomAlpha == 0.001);
+
+if (volcanoActivity >= 1 && cracksOctaves == 0)
+{
+	_hillsFreq = hillsFreq * (pow(0.99,(1 / (5 - volcanoActivity * 2) * hillsFreq)) * 5 + 1);
+}
 
 if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet melts
 	{
@@ -443,7 +449,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
         heightPeak  =  0.6;
         heightRim   =  1.0;
         //crater = _CraterNoise(point, craterMagn, craterFreq, craterSqrtDensity, craterOctaves, mareSuppress); // NEW SUPPRESS
-		crater = saturate(mareSuppress + Fbm(10*point)) * CraterNoise(point, craterMagn, craterFreq, (craterSqrtDensityAltered * (1 - (volcanoActivity / 2.5))), craterOctaves);  // Supress craters on volcanic worlds
+		crater = saturate(mareSuppress + Fbm(10*point)) * CraterNoise(point, craterMagn, craterFreq, (craterSqrtDensityAltered * (1 - (volcanoActivity / 2.1))), craterOctaves);  // Supress craters on volcanic worlds
         noiseOctaves    = 10.0;
         noiseLacunarity = 2.0;
         crater = 0.25 * crater + 0.05 * crater * iqTurbulence(point * montesFreq + Randomize, 0.55);
@@ -654,7 +660,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	
 	noiseOctaves    = 14.0;
 	noiseLacunarity = 2.218281828459;
-	noiseH = 0.6 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
+	noiseH = 0.55 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;   //Fbm3D((point + Randomize) * 0.07) * 1.5;  
 	float SmallDistort = 0;
 	if (cracksOctaves > 0) 
@@ -664,7 +670,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	
 	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + 0*saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 			SmallDistort = saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1) + rocks;
 	
 	}

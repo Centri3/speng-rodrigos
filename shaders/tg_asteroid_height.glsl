@@ -70,7 +70,7 @@ float HeightMapAsteroid(vec3 point) {
       (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
   noiseOctaves = 14.0;
   noiseLacunarity = 2.218281828459;
-  noiseH = smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
+  noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
   vec3 distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
   float vary =
       (1.0 -
