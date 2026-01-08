@@ -353,32 +353,37 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   vec3 zz =
       (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
   noiseOctaves = 14.0;
-  noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
+  noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
   noiseOctaves = 14.0;
   vec3 albedoVaryDistort =
-      Fbm3D((point * 1 + Randomize) * .07) *
+      vec3(JordanTurbulence(((point + vyd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
+                            1.0, 3.0),
+           JordanTurbulence(((point + vzd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
+                            1.0, 3.0),
+           JordanTurbulence(((point + vwd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
+                            1.0, 3.0)) *
       (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
     distort.x *= 2.0;
     albedoVaryDistort =
-        (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) +
-         saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) *
-            (volcanoActivity - 1) +
-        (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
-  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
-    albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;
-  }
-
-  else if (cracksOctaves > 0) {
-
+        // FIXME: Emulate a 3d noise function. There is none for iqTurbulence in
+        // SE's shaders, but we could make one ourselves.
+        vec3((saturate(iqTurbulence(point + vyd, 0.65)),
+              saturate(iqTurbulence(point + vzd, 0.55)),
+              saturate(iqTurbulence(point + vwd, 0.55))) *
+             (2 * (min(volcanoActivity, 1.6) - 1))) *
+        saturate(min(volcanoActivity, 1.6) - 0.5);
+  } else if (cracksOctaves > 0) {
     albedoVaryDistort =
         Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
             (1.5 + venusMagn) +
-        saturate(iqTurbulence(point, 0.15) *
-                 volcanoActivity); // albedoVaryDistort =Fbm3D((point *
-                                   // volcanoActivity + Randomize) *
-                                   // volcanoActivity) * (1.5 + venusMagn );
+        vec3(saturate(iqTurbulence(point + vyd, 0.15) * volcanoActivity),
+             saturate(iqTurbulence(point + vzd, 0.15) * volcanoActivity),
+             saturate(iqTurbulence(point + vwd, 0.15) * volcanoActivity));
+    // albedoVaryDistort =Fbm3D((point *
+    // volcanoActivity + Randomize) *
+    // volcanoActivity) * (1.5 + venusMagn );
   }
 
   if (europaLike) {

@@ -337,7 +337,9 @@ float HeightMapSelena(vec3 point) {
   vec3 pp =
       (point + Randomize) * (0.0005 * _hillsFreq / (_hillsMagn * _hillsMagn));
   float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
-  float global = 1 - Cell3Noise(p + distort);
+  noiseOctaves = 12;
+  float global = 1 - JordanTurbulence(p * 0.2 + distort, 0.8, 0.5, 0.6,
+                                 0.35, 0.0, 1.8, 1.0);
   fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 
   // GlobalModifier // Venus
@@ -405,8 +407,8 @@ float HeightMapSelena(vec3 point) {
     crater =
         saturate(mareSuppress + Fbm(10 * point)) *
         CraterNoise(point, craterMagn, craterFreq,
-                    (craterSqrtDensityAltered * (1 - (volcanoActivity / 2.5))),
-                    craterOctaves); // Supress craters on volcanic worlds
+                    (craterSqrtDensityAltered * (1 - (volcanoActivity / 4.0))), // Supress craters on volcanic worlds
+                    craterOctaves);
     noiseOctaves = 10.0;
     noiseLacunarity = 2.0;
     crater = 0.25 * crater +
@@ -611,20 +613,25 @@ ridgeModulate;
   // GlobalModifier // Terrain noise match colorvary
   noiseOctaves = 14.0;
   noiseLacunarity = 2.218281828459;
-  noiseH = 0.5 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
+  noiseH = 0.6 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
   if (cracksOctaves > 0) {
     noiseH += 0.3;
   }
-  distort = Fbm3D((point + Randomize) * 0.07) *
-            1.5; // Fbm3D((point + Randomize) * 0.07) * 1.5;
+  distort =       vec3(JordanTurbulence(((point + vyd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
+                            1.0, 3.0),
+           JordanTurbulence(((point + vzd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
+                            1.0, 3.0),
+           JordanTurbulence(((point + vwd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
+                            1.0, 3.0)) *
+            (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
     distort =
-        (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) +
-         saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) *
-            (volcanoActivity - 1) +
-        (Fbm3D((point + Randomize) * 0.07) * 1.5) *
-            (2 - volcanoActivity); // Io like on atmosphered planets
+vec3((saturate(iqTurbulence(point + vyd, 0.65)),
+              saturate(iqTurbulence(point + vzd, 0.55)),
+              saturate(iqTurbulence(point + vwd, 0.55))) *
+             (2 * (min(volcanoActivity, 1.6) - 1))) *
+        saturate(min(volcanoActivity, 1.6) - 0.5) * 2.0;
   } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
     distort = Fbm3D((point + Randomize) * 0.07) *
               1.5; // Io like on airless planets donatelo200 12/09/2025
@@ -644,7 +651,7 @@ ridgeModulate;
   if (cracksOctaves > 0) {
     height = mix(height, height + 0.1, vary);
   } else {
-    height = mix(height, height + 0.0017, vary);
+    height = mix(height, height + 0.0017 + volcanoActivity * 0.013, vary);
   }
 
   // Return height
