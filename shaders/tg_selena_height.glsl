@@ -647,10 +647,6 @@ ridgeModulate;
     height = mix(height, height + 0.0017, vary);
   }
 
-  // GlobalModifier // Soften max/min height
-  height = softPolyMin(height, 0.99, 0.3);
-  height = softPolyMax(height, 0.01, 0.3);
-
   // Return height
   return height;
 }

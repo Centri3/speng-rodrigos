@@ -214,7 +214,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseH = 1.0;
   noiseLacunarity = 2.3;
   noiseOffset = montesSpiky;
-  float rocks = -0.005 * iqTurbulence(point * 20.0, 1.0) * smoothstep(2, 1, volcanoActivity);
+  float rocks = -0.005 * iqTurbulence(point * 20.0, 1.0) *
+                smoothstep(2, 1, volcanoActivity);
 
   // small terrain elevations
   noiseOctaves = 12.0;
@@ -448,7 +449,9 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     seaLevel - height); // disable rivers inside oceans height = mix(height,
     seaLevel-0.0035, PseudoRivers);
     */
-    damping = (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09,
+    damping = (smoothstep(seaLevel + 0.09, seaLevel + 0.08,
+                          rodrigoDamping)) * // disable rivers inside continents
+              (smoothstep(-0.0016, -0.018,
                           seaLevel - height)); // disable rivers inside oceans
     _PseudoRivers(point, damping, height);
 
@@ -537,11 +540,6 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // reduce ocean depth near shore
   float h = smoothstep(seaLevel - 0.23, seaLevel + 0.08, height);
   height = mix(height, max(height, seaLevel + 0.0595), h);
-
-  // smoothly limit the height
-  if (iceCap == 0.0)
-    height = softPolyMin(height, 0.99, 0.1);
-  height = softPolyMax(height, 0.05, 0.1);
 
   if (riversMagn > 0.0) {
     HeightBiomeMap = vec4(height - 0.06);
