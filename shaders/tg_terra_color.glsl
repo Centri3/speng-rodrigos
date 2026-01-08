@@ -95,12 +95,15 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   p += Fbm3D(p * 0.38) * 1.2;
   vary = Fbm(p) * 0.35 + 0.245;
   float slopeModulations = saturate(1.0 - 3.0 * biomeData.slope);
-  float randomizedGrassAmount = hash1(Randomize.x) * 0.333 + hash1(Randomize.y) * 0.333 + hash1(Randomize.z) * 0.333;
+  float randomizedGrassAmount = hash1(Randomize.x) * 0.333 +
+                                hash1(Randomize.y) * 0.333 +
+                                hash1(Randomize.z) * 0.333;
   // HACK: Don't add slope modulations in deserts because otherwise you get
   // grass in deserts.
   if (vary > 0.3 + randomizedGrassAmount * 0.1)
     slopeModulations = 1.0;
-  climate += (2.8 + randomizedGrassAmount) * vary * slopeModulations * saturate(1.0 - 1.333 * climate);
+  climate += (2.8 + randomizedGrassAmount) * vary * slopeModulations *
+             saturate(1.0 - 1.333 * climate);
 
   // Shield volcano lava
   vec2 volcMask = vec2(0.0);
@@ -120,19 +123,37 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
   // GlobalModifier // ColorVary setup
   noiseOctaves = 14.0;
-  noiseH = 0.4 + smoothstep(0.0, 0.1, colorDistMagn) * 0.3;
+  noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
+  noiseOctaves = 14.0;
   vec3 albedoVaryDistort =
-      Fbm3D((point * 1 + Randomize) * .07) *
+      vec3(JordanTurbulence(((point + vyd) + Randomize) * .07, 0.6, 0.6, 0.6,
+                            0.8, 0.0, 1.0, 3.0),
+           JordanTurbulence(((point + vzd) + Randomize) * .07, 0.6, 0.6, 0.6,
+                            0.8, 0.0, 1.0, 3.0),
+           JordanTurbulence(((point + vwd) + Randomize) * .07, 0.6, 0.6, 0.6,
+                            0.8, 0.0, 1.0, 3.0)) *
       (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
+    distort.x *= 2.0;
     albedoVaryDistort =
-        (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) +
-         saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) *
-            (volcanoActivity - 1) +
-        (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
-  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
-    albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;
+        // FIXME: Emulate a 3d noise function. There is none for iqTurbulence in
+        // SE's shaders, but we could make one ourselves.
+        vec3((saturate(iqTurbulence(point + vyd, 0.65)),
+              saturate(iqTurbulence(point + vzd, 0.55)),
+              saturate(iqTurbulence(point + vwd, 0.55))) *
+             (2 * (min(volcanoActivity, 1.6) - 1))) *
+        saturate(min(volcanoActivity, 1.6) - 0.5);
+  } else if (cracksOctaves > 0) {
+    albedoVaryDistort =
+        Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
+            (1.5 + venusMagn) +
+        vec3(saturate(iqTurbulence(point + vyd, 0.15) * volcanoActivity),
+             saturate(iqTurbulence(point + vzd, 0.15) * volcanoActivity),
+             saturate(iqTurbulence(point + vwd, 0.15) * volcanoActivity));
+    // albedoVaryDistort =Fbm3D((point *
+    // volcanoActivity + Randomize) *
+    // volcanoActivity) * (1.5 + venusMagn );
   }
 
   // else if (cracksOctaves > 0)  // Test Ice planets later
@@ -171,7 +192,8 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     // Rodrigo - Changed albedoVaryDistort to distort
 
     noiseOctaves = 8.0;
-    float humidityMod = Fbm((point + distort) * 1.73) - 1.0 + pow(humidity, 0.333) * 1.5;
+    float humidityMod =
+        Fbm((point + distort) * 1.73) - 1.0 + pow(humidity, 0.333) * 1.5;
 
     // Test more Modulate Plant biome with volcano maybe
     // if (cracksOctaves == 0 && volcanoActivity >= 1.0)
