@@ -449,14 +449,14 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     seaLevel - height); // disable rivers inside oceans height = mix(height,
     seaLevel-0.0035, PseudoRivers);
     */
-    damping = (smoothstep(seaLevel + 0.09, seaLevel + 0.08,
-                          rodrigoDamping)) * // disable rivers inside continents
+    damping = (smoothstep(0.01, 0.0,
+                          seaLevel - height)) * // disable rivers inside continents
               (smoothstep(-0.0016, -0.018,
                           seaLevel - height)); // disable rivers inside oceans
     _PseudoRivers(point, damping, height);
 
     // Cracks
-    damping = (smoothstep(cracksMagn * 0.8 + 0.01, cracksMagn * 0.8,
+    damping = (smoothstep(cracksMagn * 0.5 + 0.01, cracksMagn * 0.5,
                           rodrigoDamping)) *
               (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09,
                           seaLevel - height));
