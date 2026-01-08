@@ -30,7 +30,7 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
 
     vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * p + 0.5 * distort);
 
-    valleys *= saturate(0.36 * abs(cell.y - cell.x) * riversMagn);
+    valleys *= saturate(1.36 * abs(cell.y - cell.x) * riversMagn);
     rivers *= saturate(6.5 * abs(cell.y - cell.x) * riversMagn);
   }
 
