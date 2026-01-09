@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 
@@ -41,7 +41,7 @@ vec4  GlowMapSelena(vec3 point, BiomeData biomeData)
         noiseOctaves = 3;
         float volcActivity = saturate((Fbm(point * 1.37 + Randomize) - 1.0 + volcanoActivity) * 5.0);
         // Lava in the volcano caldera and lava flows
-		vec2  volcMask = VolcanoGlowNoise(point);
+		vec2  volcMask = _VolcanoGlowNoise(point);
         volcMask.x *= (0.75 + 0.25 * varyTemp) * volcActivity * volcanoTemp;
 	    surfTemp = max(surfTemp, volcMask.x);
     }

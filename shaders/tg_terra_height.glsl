@@ -474,7 +474,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
   // Shield volcano
   if (volcanoOctaves > 0)
-    height = VolcanoNoise(point, global, height);
+    height = _VolcanoNoise(point, global, height);
 
   // Mountain glaciers
   /*noiseOctaves = 5.0;

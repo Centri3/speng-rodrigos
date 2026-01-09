@@ -474,7 +474,7 @@ float HeightMapSelena(vec3 point) {
 
   // TerrainFeature // Shield volcano
   if (volcanoOctaves > 0) {
-    height = VolcanoNoise(point, global, height);
+    height = _VolcanoNoise(point, global, height);
   }
 
   // PlanetTypes // Plutolike terrain
