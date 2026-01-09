@@ -75,6 +75,15 @@ void _RiftsNoise(vec3 point, float damping, inout float height) {
   }
 }
 
+float EuropaCrackHeightFunc(float land, float height, float r, vec3 p)
+{
+    p.x += 0.05 * r;
+    float inner = smoothstep(0.0, 0.5, r);
+    float outer = smoothstep(0.5, 1.0, r);
+    float cracks = height * (.4 * Noise(p * 625.7) * (1.0 - inner) + inner * (1.0 - outer));
+    return mix(cracks, land, outer);
+}
+
 //-----------------------------------------------------------------------------
 
 // Function // Europa Cracks Noise
@@ -83,9 +92,7 @@ void _RiftsNoise(vec3 point, float damping, inout float height) {
 // 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
 float EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask,
                        vec3 distort) {
-  float newLand = 0.0;
-  float lastLand = 0.0;
-  float lastlastLand = 0.0;
+  float land = 0.0;
   vec2 cell;
   float r;
   float ampl = 0.1 * cracksMagn;
@@ -95,16 +102,14 @@ float EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask,
     for (int j = 0; j < 2; j++) {
       cell = Cell2Noise2(point + 0.02 * distort);
       r = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
-      lastlastLand = lastLand;
-      lastLand = newLand;
-      newLand = CrackHeightFunc(lastlastLand, lastLand, ampl, r, point);
+      land = EuropaCrackHeightFunc(land, ampl, r, point);
       point += Randomize;
       mask *= smoothstep(0.6, 1.0, r);
     }
     point = point * 1.1 + Randomize;
   }
 
-  return newLand;
+  return land;
 }
 
 //-----------------------------------------------------------------------------
