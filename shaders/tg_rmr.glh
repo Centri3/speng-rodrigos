@@ -246,7 +246,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
     fi = acos(dot(binormal, normalize(cellCenter - point))) / pi2;
 
     float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 2.0 *
-                       smoothstep(0.0, 0.6, craterRayedFactor);
+                       smoothstep(0.0, 0.6, craterRayedFactor) * 6.0;
     color += RayedCraterColorFunc(cell.y * radFactor / rad, fi,
                                   48.3 * dot(cellCenter, Randomize)) *
              brightness;
@@ -254,7 +254,9 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
     if (cratOctaves > 1) {
       point = Rotate(pi2 * hash1(float(i)), rotVec, point);
       fibFreq *= 1.125;
-      radFactor *= sqrt(1.125);
+      // FIXED: This has to be slightly higher than fibFreq or else some craters
+      // have their ends cut off at the edge of the cell.
+      radFactor *= sqrt(1.333);
       radInner *= 0.9;
     }
   }
