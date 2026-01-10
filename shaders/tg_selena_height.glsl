@@ -659,6 +659,10 @@ vec3((saturate(iqTurbulence(point + vyd, 0.65)),
     height = mix(height, height + 0.0017 + volcanoActivity * 0.013, vary);
   }
 
+  // GlobalModifier // Soften max/min height
+  height = softPolyMin(height, 0.99, 0.3);
+  height = softPolyMax(height, 0.01, 0.3);
+
   // Return height
   return height;
 }
