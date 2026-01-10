@@ -1,4 +1,4 @@
-#include "tg_common.glh"  
+#include "tg_rmr.glh"  
 
 #ifdef _FRAGMENT_
 
@@ -138,43 +138,32 @@ float   EuropaCrackColorFunc(float lastLand, float lastlastLand, float height, f
 	// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
 	// 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
 	// 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
-float   EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask)
-{
-    point = (point + Randomize) * cracksFreq;
-	point.x *= 0.3;
+float EuropaCrackColorNoise(vec3 point, float europaCracksOctaves,
+                            out float mask, vec3 distort) {
+  float newLand = 0.0;
+  float lastLand = 0.0;
+  float lastlastLand = 0.0;
+  vec2 cell;
+  float r;
 
-    float  newLand = 0.0;
-    float  lastLand = 0.0;
-    float  lastlastLand = 0.0;
-    vec2   cell;
-    float  r;
-    float  ampl = 0.4 * cracksMagn;
-    mask = 1.0;
+  mask = 1.0;
 
-    // Rim shape and height distortion
-    noiseH          = 0.5;
-    noiseLacunarity = 2.218281828459;
-    noiseOffset     = 0.8;
-    noiseOctaves    = 5.0;
-
-    for (int i=0; i<europaCracksOctaves; i++)
-    {
-		for (int j=0; j<2; j++)
-		{
-			cell = Cell2Noise2(point + 0.02 * Fbm3D(1.8 * point));
-			r    = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
-			lastlastLand = lastLand;
-			lastLand = newLand;
-			newLand = CrackHeightFunc(lastlastLand, lastLand, ampl, r, point);
-			point += Randomize;
-			mask *= smoothstep(0.6, 1.0, r);
-		}
-		point = point * 1.2 + Randomize;
-		ampl *= 0.8333;
+  for (int i = 0; i < europaCracksOctaves; i++) {
+    for (int j = 0; j < 2; j++) {
+      cell = Cell2Noise2(point + 0.02 * distort);
+      r = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
+      lastlastLand = lastLand;
+      lastLand = newLand;
+      newLand = EuropaCrackColorFunc(lastlastLand, lastLand, 1.0, r, point);
+      point += Randomize;
+      mask *= smoothstep(0.6, 1.0, r);
     }
+    point = point * 1.1 + Randomize;
+  }
 
-    return newLand;
+  return pow(saturate(1.0 - newLand), 2.0);
 }
+
 
 
 //-----------------------------------------------------------------------------
@@ -459,20 +448,28 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 	
 	
     // GlobalModifier // ColorVary setup
-    vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
+    
+	float _cracksOctaves = cracksOctaves;
+	
+	if (aquaria)
+	{
+		_cracksOctaves = cracksOctaves + 1;
+	}	
+	
+	vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
 	noiseOctaves = 14.0;
 	vec3 albedoVaryDistort = Fbm3D((point * 1 + Randomize) * .07) * (1.5 + venusMagn ); //Fbm3D((point + Randomize) * 0.07) * 1.5;
 	
-	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
+	if (_cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
 			albedoVaryDistort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 	}
-	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+	else if (_cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
 			albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
 	}
 	
-	else if (cracksOctaves > 0)
+	else if (_cracksOctaves > 0)
 	{
 	
 		albedoVaryDistort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
@@ -509,7 +506,7 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
     float mask = 1.0;
     if (cracksOctaves > 0.0)
 	{
-		vary *= CrackColorNoise(point, mask);	// * ((volcanoActivity * 4) + 1);
+		vary *= CrackColorNoise(point, mask);	// CrackColorNoise(point, mask);
 	}
 
 
@@ -540,19 +537,40 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 		// 23-10-2024 by Sp_ce // Changed vec3(1.0) to iceColor
 		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
 		// 07-12-2025 Donatelo200 // perfomance still rough but a bit better by reducing cracksOctaves
-	else if (europaLike)
-	{
-		float europaCracksOctaves = cracksOctaves;
-		vary *= EuropaCrackColorNoise(point, europaCracksOctaves + 0, mask);
-		vary *=  (0.2*EuropaCrackColorNoise(point*2, europaCracksOctaves, mask)
-				+ 0.2*EuropaCrackColorNoise(point*4, europaCracksOctaves, mask));
-				//+ 0.1*EuropaCrackNoise(point*32, europaCracksOctaves, mask)
-				//+ 0.05*EuropaCrackNoise(point*64, europaCracksOctaves, mask));
-		surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
-		
-		float whiteCracks = 0.3*EuropaCrackColorNoise(point*2, cracksOctaves, mask);
-		surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.3 - whiteCracks);
-	}
+  else if (europaLike) 
+  {
+    vec3 europaP = (point + Randomize) * cracksFreq * 0.5;
+    europaP.x *= 0.3;
+
+    // Rim height and shape distortion
+    noiseH = 0.5;
+    noiseLacunarity = 2.218281828459;
+    noiseOffset = 0.8;
+    noiseOctaves = 5.0;
+
+    // We share this among all octaves as a speedup.
+    vec3 europaDistort = Fbm3D(1.8 * europaP) +
+                         Fbm3D(1.8 * europaP * 8.0) * 0.4 +
+                         Fbm3D(1.8 * europaP * 32.0) * 0.1;
+
+    float europaCracksOctaves = cracksOctaves + 6;
+    vary *= EuropaCrackColorNoise(europaP, europaCracksOctaves + 1, mask,
+                                  europaDistort) *
+            (0.2 * EuropaCrackColorNoise(europaP * 2.0, europaCracksOctaves,
+                                         mask, europaDistort) +
+             0.2 * EuropaCrackColorNoise(europaP * 4.0, europaCracksOctaves,
+                                         mask, europaDistort));
+    vary *= (0.2 * EuropaCrackColorNoise(europaP * 16.0, europaCracksOctaves,
+                                         mask, europaDistort)) +
+            (0.2 * EuropaCrackColorNoise(europaP * 32.0, europaCracksOctaves,
+                                         mask, europaDistort));
+    surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
+
+    float whiteCracks =
+        0.3 * EuropaCrackColorNoise(europaP * 3.0, europaCracksOctaves, mask,
+                                    europaDistort);
+    surf.color.rgb = mix(surf.color.rgb, iceColor, 0.3 - whiteCracks);
+  }
 
 
 
@@ -594,20 +612,36 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 	
 	float _craterRayedFactor = craterRayedFactor;
 	
+	if (volcanoActivity > 1)
+	{
+		_craterRayedFactor = craterRayedFactor *(volcanoActivity * -0.95 + 1.95);
+	}
+	
 	if (hillsMagn == 0)
 		{
 			_craterRayedFactor = 0;
 		}
 	
     // TerrainFeature // Rayed craters
-    if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05)
+    //Centri Rayed Craters
+	if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05) {
+    float craterRayedDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
+    float craterRayedOctaves =
+        floor(craterOctaves + smoothstep(0.0, 0.5, _craterRayedFactor) * 60.0);
+    float crater = _RayedCraterColorNoise(point, craterFreq, craterRayedDensity,
+                                          craterRayedOctaves);
+    surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
+  }
+	
+	/*  // Old Rayed Craters Function
+	if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05)
     {
         float craterRayedSqrtDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
         float craterRayedOctaves = floor(craterOctaves * _craterRayedFactor);
         float crater = RayedCraterColorNoise(point, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
         surf.color.rgb = mix(surf.color.rgb, vec3(0.82), crater);  //tweaky tweaky
     }
-	
+	*/
 	
 	
 	// Fetch variables // Get height slope normal

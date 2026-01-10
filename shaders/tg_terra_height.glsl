@@ -543,7 +543,8 @@ if (riversMagn > 0.0)
 		*/
         damping = (smoothstep(0.185, 0.135, rodrigoDamping)) *    // disable rivers inside continents smoothstep(0.145, 0.135, rodrigoDamping)  smoothstep(0.185, 0.135, rodrigoDamping)
             (smoothstep(0.08, -0.018 - pow(0.99, (1 / seaLevel)) * 0.14, seaLevel - height));  // disable rivers inside oceans
-        _PseudoRivers(point, global, damping, height);
+			
+		_PseudoRivers(point, global, damping, height);
 	}
 
     if (volcanoOctaves > 0) //&& cracksOctaves == 0)

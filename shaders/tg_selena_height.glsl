@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
  
 #ifdef _FRAGMENT_
 
@@ -84,42 +84,31 @@ void    _RiftsNoise(vec3 point, float damping, inout float height)
 	// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
 	// 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
 	// 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
-float   EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask)
-{
-    point = (point + Randomize) * cracksFreq;
-	point.x *= 0.3;
+float EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask,
+                       vec3 distort) {
+  float newLand = 0.0;
+  float lastLand = 0.0;
+  float lastlastLand = 0.0;
+  vec2 cell;
+  float r;
+  float ampl = 0.1 * cracksMagn;
+  mask = 1.0;
 
-    float  newLand = 0.0;
-    float  lastLand = 0.0;
-    float  lastlastLand = 0.0;
-    vec2   cell;
-    float  r;
-    float  ampl = 0.4 * cracksMagn;
-    mask = 1.0;
-
-    // Rim shape and height distortion
-    noiseH          = 0.5;
-    noiseLacunarity = 2.218281828459;
-    noiseOffset     = 0.8;
-    noiseOctaves    = 5.0;
-
-    for (int i=0; i<europaCracksOctaves; i++)
-    {
-		for (int j=0; j<2; j++)
-		{
-			cell = Cell2Noise2(point + 0.02 * Fbm3D(1.8 * point));
-			r    = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
-			lastlastLand = lastLand;
-			lastLand = newLand;
-			newLand = CrackHeightFunc(lastlastLand, lastLand, ampl, r, point);
-			point += Randomize;
-			mask *= smoothstep(0.6, 1.0, r);
-		}
-		point = point * 1.2 + Randomize;
-		ampl *= 0.8333;
+  for (int i = 0; i < europaCracksOctaves; i++) 
+  {
+    for (int j = 0; j < 2; j++) {
+      cell = Cell2Noise2(point + 0.02 * distort);
+      r = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
+      lastlastLand = lastLand;
+      lastLand = newLand;
+      newLand = CrackHeightFunc(lastlastLand, lastLand, ampl, r, point);
+      point += Randomize;
+      mask *= smoothstep(0.6, 1.0, r);
     }
+    point = point * 1.1 + Randomize;
+  }
 
-    return newLand;
+  return newLand;
 }
 
 
@@ -302,7 +291,7 @@ float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtD
 
 // Function // Construct Height Map
 
-float	_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
+float	_hillsFreq = hillsFreq;  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
 
 float _hillsMagn = hillsMagn;
 
@@ -314,10 +303,20 @@ float   HeightMapSelena(vec3 point)
 	vec3 bottomColor = hsl2rgb2(bottomColorHSL.xyz);
 	float bottomAlpha = bottomColorHSL.w;
 	bool aquaria = (bottomAlpha == 0.001);
+	
+if (cracksOctaves > 0)
+{
+	_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  //Let aquarias have some fun
+}
+
+if (volcanoActivity < 1 && cracksOctaves == 0)
+{
+	_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 2 + 1);  //Lower hillsFreq for smooter plains?
+}
 
 if (volcanoActivity >= 1 && cracksOctaves == 0)
 {
-	_hillsFreq = hillsFreq * (pow(0.99,(1 / (5 - volcanoActivity * 2) * hillsFreq)) * 5 + 1);
+	_hillsFreq = hillsFreq * (pow(0.99,(1 / (5 - volcanoActivity * 2) * hillsFreq)) * 2 + 1);   // / (volcanoActivity * 2 - 1) ;  //Lower hillsFreq for smooter plains?
 }
 
 if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet melts
@@ -378,7 +377,8 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
     noiseOctaves = 4;
     distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
 	vec3 pp = (point + Randomize) * (0.0005 * _hillsFreq / (_hillsMagn * _hillsMagn));
-    float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
+	
+	float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
     float global = 1 - Cell3Noise(p + distort);
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 
@@ -499,7 +499,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
             noiseOctaves     = 3.0;
             noiseLacunarity  = 2.218281828459;
             noiseH           = 0.9;
-            noiseOffset      = 0.5;
+            //noiseOffset      = 0.5;    // causes break
             p = point * mainFreq + Randomize;
             distort  = 0.035 * Fbm3D(p * riversSin * 5.0);
             distort += 0.350 * Fbm3D(p * riversSin);
@@ -513,7 +513,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
             // TerrainFeature // Mountains
             noiseOctaves    = 10.0;
             noiseLacunarity = 2.0;
-            height += mareSuppress * montesMagn * montBiomeScale * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.45);
+            height += mareSuppress * montesMagn *  montBiomeScale * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.45);
         }
     }
 
@@ -523,16 +523,16 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
     if (cracksOctaves > 0.0 && !europaLike)
 	{
-		height += 0.5*CrackNoise(point, mask);
+		height += 0.5*CrackNoise(point, mask);     //height += 0.5*CrackNoise(point, mask);
 	}
 	
 	
 	
 	// TerrainFeature // Shield volcano
-    if (volcanoOctaves > 0)
-	{
-        height = VolcanoNoise(point, global, height);
-	}
+//    if (volcanoOctaves > 0)
+//	{
+//        height = VolcanoNoise(point, global, height);
+//	}
 	
 	
 	
@@ -585,18 +585,37 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 		// 21-10-2024 by Sp_ce // 1.0 europaLikeness 30% height, 0.0 europaLikeness 60% height
 		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
 		// 07-12-2025 Donatelo200 // perfomance still rough but a bit better by reducing cracksOctaves
-	else if (europaLike)
-	{
-		float europaCracksOctaves = cracksOctaves;
-		height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
-		height += 0.5*EuropaCrackNoise(point, europaCracksOctaves + 0, mask);
-		height += 0.2*EuropaCrackNoise(point*2, europaCracksOctaves, mask)
-				+ 0.2*EuropaCrackNoise(point*4, europaCracksOctaves, mask);
-				//+ 0.1*EuropaCrackNoise(point*32, europaCracksOctaves, mask)
-				//+ 0.05*EuropaCrackNoise(point*64, europaCracksOctaves, mask);
-				
-		height += 0.3*EuropaCrackNoise(point*2, cracksOctaves, mask);
-	}
+  else if (europaLike) 
+  {
+    vec3 europaP = point = (point + Randomize) * cracksFreq * 0.5;
+    europaP.x *= 0.3;
+
+    // Rim height and shape distortion
+    noiseH = 0.5;
+    noiseLacunarity = 2.218281828459;
+    noiseOffset = 0.8;
+    noiseOctaves = 5.0;
+
+    // We share this among all octaves as a speedup.
+    vec3 europaDistort = Fbm3D(1.8 * europaP) +
+                         Fbm3D(1.8 * europaP * 8.0) * 0.4 +
+                         Fbm3D(1.8 * europaP * 32.0) * 0.1;
+
+    float europaCracksOctaves = cracksOctaves + 6;
+    height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
+    height += 3.5 * EuropaCrackNoise(europaP, europaCracksOctaves + 1, mask,
+                                     europaDistort);
+    height += 1.2 * EuropaCrackNoise(europaP * 2.0, europaCracksOctaves, mask,
+                                     europaDistort) +
+              1.2 * EuropaCrackNoise(europaP * 4.0, europaCracksOctaves, mask,
+                                     europaDistort);
+    height += 0.3 * EuropaCrackNoise(europaP * 16.0, europaCracksOctaves, mask,
+                                     europaDistort) +
+              0.3 * EuropaCrackNoise(europaP * 32.0, europaCracksOctaves, mask,
+                                     europaDistort);
+    height += 1.3 * EuropaCrackNoise(europaP * 3.0, europaCracksOctaves, mask,
+                                     europaDistort);
+  }
 	
 	
 	
@@ -631,32 +650,71 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	    height = max(height + (eqridgeMagn * ridgeHeight * iqTurbulence(point * 0.4 * eqridgeModFreq + Randomize, 0.2 * eqridgeModMagn)), height);
     }
 	
-
+	float _craterRayedFactor = craterRayedFactor;
+	
+	if (volcanoActivity > 1)
+	{
+		_craterRayedFactor = craterRayedFactor *(volcanoActivity * -0.95 + 1.95);
+	}
 
     // TerrainFeature // Rayed craters
-    if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05)
+	// Centri Rayed Craters
+	if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05) {
+    heightFloor = -1.5;
+    heightPeak = 0.15;
+    heightRim = 1.0;
+    float craterRayedDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
+    float craterRayedOctaves =
+        floor(craterOctaves + smoothstep(0.0, 0.5, _craterRayedFactor) * 60.0);
+    float craterRayedMagn =
+        craterMagn *
+        0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned
+              // down rayed crater depth donatelo200 12/07/2025
+    crater = _RayedCraterNoise(point, craterRayedMagn, craterFreq,
+                               craterRayedDensity, craterRayedOctaves);
+    height +=
+        crater *
+        (height + 0.2); // toned down rayed crater depth donatelo200 12/07/2025
+                        // (mostly works but some edge cases still break
+  }
+
+/* // Old Rayed Craters Function
+   if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05)
     {
         heightFloor = -0.5;
         heightPeak  =  0.6;
         heightRim   =  1.0;
-        float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-        float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
+        float craterRayedSqrtDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
+        float craterRayedOctaves = floor(craterOctaves * _craterRayedFactor);
         float craterRayedMagn = craterMagn * 0.25;   // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned down rayed crater depth donatelo200 12/07/2025
         crater = RayedCraterNoise(point, craterRayedMagn, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
         height += crater * (height + 0.2); // toned down rayed crater depth donatelo200 12/07/2025  (mostly works but some edge cases still break
     }
-
+*/
 
 
 	// GlobalModifier // Terrain noise match colorvary
 	
 	float _colorDistMagn = colorDistMagn;
 	float colorDistMin = 0.065;
-
-	if (colorDistMagn <= colorDistMin && cracksOctaves == 0)  // Prevent some planets from becoming chaos
+	
+	if (cracksOctaves > 0)  // Prevent some planets from becoming chaos
+	{
+		colorDistMin = 0.058;
+	}
+	
+	if (colorDistMagn <= colorDistMin)  // Prevent some planets from becoming chaos
 	{
 		_colorDistMagn = colorDistMin;
 	}
+	
+	
+	float _cracksOctaves = cracksOctaves;
+	
+//	if (aquaria)
+//	{
+//		_cracksOctaves = cracksOctaves + 1;
+//	}
 	
 	noiseOctaves    = 14.0;
 	noiseLacunarity = 2.218281828459;
@@ -665,22 +723,23 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	float SmallDistort = 0;
 	if (cracksOctaves > 0) 
 	{
-		noiseH += 0.3;
+		//noiseH += 0.3;
+		noiseH = 0.6 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.8;
 	}
 	
-	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
+	if (_cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
 			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 			SmallDistort = saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1) + rocks;
 	
 	}
-	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+	else if (_cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
 			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on airless planets donatelo200 12/09/2025
 			SmallDistort = rocks;
 	}
 	
-		else if (cracksOctaves > 0)
+		else if (_cracksOctaves > 0)
 	{
 	
 		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
@@ -688,7 +747,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	
 	float vary = 1.0 - 5*(Fbm((point + distort + (SmallDistort * 0.015)) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
 	
-if (cracksOctaves > 0)  
+if (_cracksOctaves > 0)  
   {
     height = mix(height, height + 0.1, vary - 0.1);
   } 
@@ -698,7 +757,11 @@ if (cracksOctaves > 0)
   height = mix(height, height + 0.05, vary) - 0.05;    //0.0015
   }
 	
-	
+	// TerrainFeature // Shield volcano
+    if (volcanoOctaves > 0)
+	{
+        height = VolcanoNoise(point, global, height);
+	}	
 	
 	// GlobalModifier // Soften max/min height
 	height = softPolyMin(height, 0.99, 0.3);
