@@ -632,9 +632,9 @@ ridgeModulate;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
     distort =
-vec3((saturate(iqTurbulence(point + vyd, 0.65)),
-              saturate(iqTurbulence(point + vzd, 0.55)),
-              saturate(iqTurbulence(point + vwd, 0.55))) *
+vec3((saturate(iqTurbulence(point + vyd + Randomize, 0.65)),
+              saturate(iqTurbulence(point + vzd + Randomize, 0.55)),
+              saturate(iqTurbulence(point + vwd + Randomize, 0.55))) *
              (2 * (min(volcanoActivity, 1.6) - 1))) *
         saturate(min(volcanoActivity, 1.6) - 0.5) * 2.0;
   } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
