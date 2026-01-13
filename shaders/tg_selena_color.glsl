@@ -578,7 +578,8 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   surf.color.rgb = mix(surf.color.rgb, snowColor, 0.8 * iceCap + snow);
 
   // GlobalModifier // Slope contrast
-  surf.color.rgb *= 0.9 + biomeData.slope * 0.5;
+  noiseH = 0.3;
+  surf.color.rgb *= 0.85 + biomeData.slope * (Fbm(p) * 1.6 + 1.0) * 0.35;
 
   // Return surface color
   return surf.color;

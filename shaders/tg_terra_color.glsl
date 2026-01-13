@@ -270,7 +270,8 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   }
 
   // GlobalModifier // Slope contrast
-  surf.color.rgb *= 0.9 + biomeData.slope * 0.5;
+  noiseH = 0.3;
+  surf.color.rgb *= 0.85 + biomeData.slope * (Fbm(p) * 1.6 + 1.0) * 0.35;
 
   // water mask for planets with oceans (oceanType == 0 on dry planets)
 
