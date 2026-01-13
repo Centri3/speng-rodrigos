@@ -351,31 +351,21 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
   noiseOctaves = 14.0;
   vec3 albedoVaryDistort =
-      vec3(JordanTurbulence((point + vyd + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
-                            1.0, 3.0),
-           JordanTurbulence((point + vzd + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
-                            1.0, 3.0),
-           JordanTurbulence((point + vwd + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
-                            1.0, 3.0)) *
+      JordanTurbulence3D((point + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
+                            1.0, 3.0) *
       (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
     distort.x *= 2.0;
     albedoVaryDistort =
-        // FIXME: Emulate a 3d noise function. There is none for iqTurbulence in
-        // SE's shaders, but we could make one ourselves.
-        vec3((saturate(iqTurbulence(point + vyd + Randomize, 0.65)),
-              saturate(iqTurbulence(point + vzd + Randomize, 0.55)),
-              saturate(iqTurbulence(point + vwd + Randomize, 0.55))) *
+        (saturate(iqTurbulence3D(point + Randomize, 0.65)) *
              (2 * (min(volcanoActivity, 1.6) - 1))) *
         saturate(min(volcanoActivity, 1.6) - 0.5);
   } else if (cracksOctaves > 0) {
     albedoVaryDistort =
         Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
             (1.5 + venusMagn) +
-        vec3(saturate(iqTurbulence(point + vyd + Randomize, 0.15) * volcanoActivity),
-             saturate(iqTurbulence(point + vzd + Randomize, 0.15) * volcanoActivity),
-             saturate(iqTurbulence(point + vwd + Randomize, 0.15) * volcanoActivity));
+        saturate(iqTurbulence3D(point + Randomize, 0.15) * volcanoActivity);
     // albedoVaryDistort =Fbm3D((point *
     // volcanoActivity + Randomize) *
     // volcanoActivity) * (1.5 + venusMagn );

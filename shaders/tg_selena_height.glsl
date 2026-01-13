@@ -75,13 +75,13 @@ void _RiftsNoise(vec3 point, float damping, inout float height) {
   }
 }
 
-float EuropaCrackHeightFunc(float land, float height, float r, vec3 p)
-{
-    p.x += 0.05 * r;
-    float inner = smoothstep(0.0, 0.5, r);
-    float outer = smoothstep(0.5, 1.0, r);
-    float cracks = height * (.4 * Noise(p * 625.7) * (1.0 - inner) + inner * (1.0 - outer));
-    return mix(cracks, land, outer);
+float EuropaCrackHeightFunc(float land, float height, float r, vec3 p) {
+  p.x += 0.05 * r;
+  float inner = smoothstep(0.0, 0.5, r);
+  float outer = smoothstep(0.5, 1.0, r);
+  float cracks =
+      height * (.4 * Noise(p * 625.7) * (1.0 - inner) + inner * (1.0 - outer));
+  return mix(cracks, land, outer);
 }
 
 //-----------------------------------------------------------------------------
@@ -343,8 +343,8 @@ float HeightMapSelena(vec3 point) {
       (point + Randomize) * (0.0005 * _hillsFreq / (_hillsMagn * _hillsMagn));
   float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
   noiseOctaves = 12;
-  float global = 1 - JordanTurbulence(p * 0.2 + distort, 0.8, 0.5, 0.6,
-                                 0.35, 0.0, 1.8, 1.0);
+  float global = 1 - JordanTurbulence(p * 0.2 + distort, 0.8, 0.5, 0.6, 0.35,
+                                      0.0, 1.8, 1.0);
   fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 
   // GlobalModifier // Venus
@@ -409,11 +409,12 @@ float HeightMapSelena(vec3 point) {
     heightRim = 1.0;
     // crater = _CraterNoise(point, craterMagn, craterFreq, craterSqrtDensity,
     // craterOctaves, mareSuppress); // NEW SUPPRESS
-    crater =
-        saturate(mareSuppress + Fbm(10 * point)) *
-        CraterNoise(point, craterMagn, craterFreq,
-                    (craterSqrtDensityAltered * (1 - (volcanoActivity / 4.0))), // Supress craters on volcanic worlds
-                    craterOctaves);
+    crater = saturate(mareSuppress + Fbm(10 * point)) *
+             CraterNoise(point, craterMagn, craterFreq,
+                         (craterSqrtDensityAltered *
+                          (1 - (volcanoActivity /
+                                4.0))), // Supress craters on volcanic worlds
+                         craterOctaves);
     noiseOctaves = 10.0;
     noiseLacunarity = 2.0;
     crater = 0.25 * crater +
@@ -622,21 +623,14 @@ ridgeModulate;
   if (cracksOctaves > 0) {
     noiseH += 0.3;
   }
-  distort =       vec3(JordanTurbulence(((point + vyd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
-                            1.0, 3.0),
-           JordanTurbulence(((point + vzd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
-                            1.0, 3.0),
-           JordanTurbulence(((point + vwd) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
-                            1.0, 3.0)) *
+  distort = JordanTurbulence3D(((point) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8,
+                               0.0, 1.0, 3.0) *
             (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
-    distort =
-vec3((saturate(iqTurbulence(point + vyd + Randomize, 0.65)),
-              saturate(iqTurbulence(point + vzd + Randomize, 0.55)),
-              saturate(iqTurbulence(point + vwd + Randomize, 0.55))) *
-             (2 * (min(volcanoActivity, 1.6) - 1))) *
-        saturate(min(volcanoActivity, 1.6) - 0.5) * 2.0;
+    distort = (saturate(iqTurbulence3D(point + Randomize, 0.65)) *
+               (2 * (min(volcanoActivity, 1.6) - 1))) *
+              saturate(min(volcanoActivity, 1.6) - 0.5) * 2.0;
   } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
     distort = Fbm3D((point + Randomize) * 0.07) *
               1.5; // Io like on airless planets donatelo200 12/09/2025

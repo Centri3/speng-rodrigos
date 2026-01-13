@@ -2,6 +2,21 @@
 
 #ifdef _FRAGMENT_
 
+vec3 iqTurbulence3D(vec3 point, float gain) {
+  return vec3(iqTurbulence(point + vyd, gain), iqTurbulence(point + vzd, gain),
+              iqTurbulence(point + vwd, gain));
+}
+
+vec3 JordanTurbulence3D(vec3 point, float gain0, float gain, float warp0,
+                        float warp, float damp0, float damp, float dampScale) {
+  return vec3(JordanTurbulence(point + vyd, gain0, gain, warp0, warp, damp0,
+                               damp, dampScale),
+              JordanTurbulence(point + vzd, gain0, gain, warp0, warp, damp0,
+                               damp, dampScale),
+              JordanTurbulence(point + vwd, gain0, gain, warp0, warp, damp0,
+                               damp, dampScale));
+}
+
 float _VolcanoNoise(vec3 point, float globalLand, float localLand) {
   noiseLacunarity = 2.218281828459;
   noiseH = 0.5;

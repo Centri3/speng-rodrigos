@@ -173,7 +173,9 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   float venus = 0.0;
 
   noiseOctaves = 4;
-  distort = Fbm3D(point * 0.3) * 1.5;
+  distort = JordanTurbulence3D(p * 0.2 + (point + Randomize) * 0.0, 0.8,
+                               0.5, 0.6, 0.35, 0.0, 1.8, 1.0) *
+            (1.5 + venusMagn);
   noiseOctaves = 6;
   venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
 
@@ -519,19 +521,13 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   if (cracksOctaves > 0) {
     noiseH += 0.3;
   }
-  distort = vec3(JordanTurbulence((point + vyd + Randomize) * .07, 0.6, 0.6,
-                                  0.6, 0.8, 0.0, 1.0, 3.0),
-                 JordanTurbulence((point + vzd + Randomize) * .07, 0.6, 0.6,
-                                  0.6, 0.8, 0.0, 1.0, 3.0),
-                 JordanTurbulence((point + vwd + Randomize) * .07, 0.6, 0.6,
-                                  0.6, 0.8, 0.0, 1.0, 3.0)) *
+  distort = JordanTurbulence3D((point + Randomize) * .07, 0.6, 0.6, 0.6,
+                               0.8, 0.0, 1.0, 3.0) *
             (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
-    distort = vec3((saturate(iqTurbulence(point + vyd + Randomize, 0.65)),
-                    saturate(iqTurbulence(point + vzd + Randomize, 0.55)),
-                    saturate(iqTurbulence(point + vwd + Randomize, 0.55))) *
-                   (2 * (min(volcanoActivity, 1.6) - 1))) *
+    distort = saturate(iqTurbulence3D(point + Randomize, 0.65)) *
+              (2 * (min(volcanoActivity, 1.6) - 1)) *
               saturate(min(volcanoActivity, 1.6) - 0.5) * 2.0;
   } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
     distort = Fbm3D((point + Randomize) * 0.07) *
