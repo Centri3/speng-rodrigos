@@ -3,7 +3,16 @@
 #ifdef _FRAGMENT_
 
 Surface _GetBaseSurface(vec3 point, float height, vec2 detUV) {
-  float h = (height - craterMagn * 0.045 - seaLevel) / (1.0  - seaLevel) *
+  noiseOctaves = 12;
+  noiseLacunarity = 3.0;
+  noiseH = 0.7;
+
+  // Color variations
+  height +=
+      JordanTurbulence(point * 10.0, 0.5, 0.5, 2.0, 2.0, 1.0, 1.0, 1.0) * 0.3 +
+      Fbm(point * 3.0) * 0.5;
+
+  float h = (height - craterMagn * 0.045 - seaLevel) / (1.0 - seaLevel) *
                 float(BIOME_ROCK - BIOME_BEACH + 1) +
             float(BIOME_BEACH);
   int h0 = clamp(int(floor(h)), 0, BIOME_ROCK);
