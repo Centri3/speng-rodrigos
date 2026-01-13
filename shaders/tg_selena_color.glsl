@@ -2,6 +2,20 @@
 
 #ifdef _FRAGMENT_
 
+Surface _GetBaseSurface(vec3 point, float height, vec2 detUV) {
+  float h = (height - craterMagn * 0.045 - seaLevel) / (1.0  - seaLevel) *
+                float(BIOME_ROCK - BIOME_BEACH + 1) +
+            float(BIOME_BEACH);
+  int h0 = clamp(int(floor(h)), 0, BIOME_ROCK);
+  int h1 = clamp(h0 + 1, 0, BIOME_ROCK);
+  float dh = fract(h);
+
+  // interpolate between two heights
+  Surface surfH0 = DetailTextureMulti(detUV, h0);
+  Surface surfH1 = DetailTextureMulti(detUV, h1);
+  return BlendMaterials(surfH0, surfH1, dh);
+}
+
 //-----------------------------------------------------------------------------
 
 // Calculation Function // Fixed hsl2rgb
@@ -102,8 +116,7 @@ float SlopedIceCaps(float slope, float latitude) {
 //-----------------------------------------------------------------------------
 
 // Function // Europa Crack Formula
-float EuropaCrackColorFunc(float land, float height,
-                           float r, vec3 p) {
+float EuropaCrackColorFunc(float land, float height, float r, vec3 p) {
   p.x += 0.05 * r;
   float inner = smoothstep(0.0, 0.5, r);
   float outer = smoothstep(0.5, 1.0, r);
@@ -342,7 +355,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   vec2 shatterUV = Fbm2D2(detUV * 16.0) * (16.0 / 512.0);
   detUV += shatterUV;
 
-  surf = GetBaseSurface(biomeData.height, detUV);
+  surf = _GetBaseSurface(point, biomeData.height, detUV);
 
   // GlobalModifier // ColorVary setup
   vec3 zz =
@@ -352,15 +365,14 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   noiseOctaves = 14.0;
   vec3 albedoVaryDistort =
       JordanTurbulence3D((point + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
-                            1.0, 3.0) *
+                         1.0, 3.0) *
       (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
     distort.x *= 2.0;
-    albedoVaryDistort =
-        (saturate(iqTurbulence3D(point + Randomize, 0.65)) *
-             (2 * (min(volcanoActivity, 1.6) - 1))) *
-        saturate(min(volcanoActivity, 1.6) - 0.5);
+    albedoVaryDistort = (saturate(iqTurbulence3D(point + Randomize, 0.65)) *
+                         (2 * (min(volcanoActivity, 1.6) - 1))) *
+                        saturate(min(volcanoActivity, 1.6) - 0.5);
   } else if (cracksOctaves > 0) {
     albedoVaryDistort =
         Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
