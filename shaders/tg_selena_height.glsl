@@ -233,7 +233,6 @@ float _CraterNoise(vec3 point, float cratMagn, float cratFreq,
   float radFactor = 1.0 / cratSqrtDensity;
 
   // Craters roundness distortion
-  noiseH = 0.1 + smoothstep(0.0, 0.1, colorDistMagn) * 0.9;
   noiseLacunarity = 2.218281828459;
   noiseOffset = 0.8;
   noiseOctaves = 3;
@@ -455,7 +454,6 @@ float HeightMapSelena(vec3 point) {
       // TerrainFeature // Rimae
       noiseOctaves = 3.0;
       noiseLacunarity = 2.218281828459;
-      noiseH = 0.9;
       noiseOffset = 0.5;
       p = point * mainFreq + Randomize;
       distort = 0.035 * Fbm3D(p * riversSin * 5.0);
