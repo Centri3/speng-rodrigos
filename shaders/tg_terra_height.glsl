@@ -38,15 +38,14 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
       pow(0.992, (1 / seaLevel)); // Correct rivers on marine planets. seaLevel
                                   // is slightly off from actual sea level. :/
 
-  height = mix(height, seaLevel + 0.019 + errorcor * 0.042,
-               (1.0 - valleys) * damping);
-  height =
-      mix(height, seaLevel + 0.004 + errorcor * 0.052,
-          (1.0 - rivers) * damping *
-              smoothstep(0.7, 0.68,
-                         seaLevel)); // dampen rivers at high seaLevel because
-                                     // they become wider and more like cracks
-                                     // even with error correction.
+  height = min(mix(height, seaLevel + 0.019 + errorcor * 0.042,
+                   (1.0 - valleys) * damping),
+               height);
+  height = min(mix(height, seaLevel + 0.004 + errorcor * 0.052,
+                   (1.0 - rivers) * damping * smoothstep(0.7, 0.68, seaLevel)),
+               height); // dampen rivers at high seaLevel because
+                        // they become wider and more like cracks
+                        // even with error correction.
 }
 
 void _PseudoCracks(vec3 point, float damping, inout float height) {
@@ -173,8 +172,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   float venus = 0.0;
 
   noiseOctaves = 4;
-  distort = JordanTurbulence3D(p * 0.2 + (point + Randomize) * 0.0, 0.8,
-                               0.5, 0.6, 0.35, 0.0, 1.8, 1.0) *
+  distort = JordanTurbulence3D(p * 0.2 + (point + Randomize) * 0.0, 0.8, 0.5,
+                               0.6, 0.35, 0.0, 1.8, 1.0) *
             (1.5 + venusMagn);
   noiseOctaves = 6;
   venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
@@ -521,8 +520,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   if (cracksOctaves > 0) {
     noiseH += 0.3;
   }
-  distort = JordanTurbulence3D((point + Randomize) * .07, 0.6, 0.6, 0.6,
-                               0.8, 0.0, 1.0, 3.0) *
+  distort = JordanTurbulence3D((point + Randomize) * .07, 0.6, 0.6, 0.6, 0.8,
+                               0.0, 1.0, 3.0) *
             (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
