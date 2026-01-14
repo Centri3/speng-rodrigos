@@ -720,11 +720,20 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	height = mix(height, height + 0.0001,vary);
 	
 	// height = max(height, seaLevel + 0.057);
+	
 	// ocean basins
-	height = min(smoothstep(seaLevel - 0.04, seaLevel + 0.084, height), height);
-	// reduce ocean depth near shore
-	float h = smoothstep(seaLevel - 0.53, seaLevel + 0.38, height);
-	height = mix(height, max(height, seaLevel + 0.0595), h);
+	if (venusMagn < 0.05 || venusFreq < 0.5)
+	{
+		height = min(smoothstep(seaLevel - 0.08, seaLevel + 0.164, height), height); // reduce ocean depth near shore
+		float h = smoothstep(seaLevel - 1.03, seaLevel + 0.18, height);
+		height = mix(height, max(height, seaLevel + 0.0595), h);
+	}
+	else
+	{
+		height = min(smoothstep(seaLevel - 0.16, seaLevel + 0.184, height), height); // reduce ocean depth near shore
+		float h = smoothstep(seaLevel - 1.23, seaLevel + 0.38, height);
+		height = mix(height, max(height, seaLevel + 0.0595), h);
+	}
 
     // smoothly limit the height
     height = softPolyMin(height, 0.99, 0.3);

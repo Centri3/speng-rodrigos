@@ -357,7 +357,7 @@ float   HeightMapSelena(vec3 point)
     noiseH = 1.0;
     // noiseLacunarity = 2.3;  // Caused offset
     noiseOffset = montesSpiky;
-	float rocks = iqTurbulence(point * 80.0, 1.0); 
+	float rocks = -0.005 * iqTurbulence(point * 80.0, 1.0) * smoothstep(2, 1, volcanoActivity); 
 
     noiseOctaves = 4.0;
     distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
@@ -366,7 +366,7 @@ float   HeightMapSelena(vec3 point)
 	noiseOctaves = 12.0;
     // float global = 1.0 - Cell3Noise(p + distort);
 	// float global = 1 - JordanTurbulence(p * 0.2 + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0);
-	float global = 1.0 - iqTurbulence(point * 0.001 * _hillsFreq + Randomize, 0.55);
+	float global = 1.0 - iqTurbulence(point * 0.001 * _hillsFreq + Randomize, _hillsMagn);
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 	
     // GlobalModifier // Venus
