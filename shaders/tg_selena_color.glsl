@@ -315,15 +315,22 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 	bool aquaria = (bottomAlpha == 0.001);
 
 
+	float _cracksOctaves = cracksOctaves;
+	
+//	if (bottomAlpha != 0 && cracksOctaves == 0)
+//	{
+//		_cracksOctaves = _cracksOctaves + 1;
+//	}
+
 
 	// Fetch variables // Planet types
 		// 21-10-2024 by Sp_ce // Added europaLikeness
-	bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq < 0.6));
-    bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6));
+	bool enceladusLike = ((_cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq < 0.6));
+    bool europaLike = ((_cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6));
 	
 	//bool enceladusLike = (cracksMagn > 0.077);
 	//bool enceladusLike = ((volcanoActivity > 0.004) && (volcanoActivity < 0.01));
-	//bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6) && !enceladusLike);
+	//bool europaLike = ((_cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6) && !enceladusLike);
 	float europaLikeness;
 	if (riftsSin < 6.0) {
 		europaLikeness = 1.0;
@@ -449,12 +456,6 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 	
     // GlobalModifier // ColorVary setup
     
-	float _cracksOctaves = cracksOctaves;
-	
-	if (aquaria)
-	{
-		_cracksOctaves = cracksOctaves + 1;
-	}	
 	
 	vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
 	noiseOctaves = 14.0;
@@ -462,7 +463,7 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 	
 	if (_cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-			albedoVaryDistort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			albedoVaryDistort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 	}
 	else if (_cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
@@ -472,7 +473,7 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 	else if (_cracksOctaves > 0)
 	{
 	
-		albedoVaryDistort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
+		albedoVaryDistort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
 	}
 
 	if (europaLike)
@@ -504,7 +505,7 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
     // TerrainFeature // Ice cracks
 		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
     float mask = 1.0;
-    if (cracksOctaves > 0.0)
+    if (_cracksOctaves > 0.0)
 	{
 		vary *= CrackColorNoise(point, mask);	// CrackColorNoise(point, mask);
 	}
@@ -531,12 +532,12 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 	
 	
 	// PlanetTypes // Europalike terrain
-		// 8-10-2024 by Sp_ce // Changed cracksOctaves to +2 instead of +3
+		// 8-10-2024 by Sp_ce // Changed _cracksOctaves to +2 instead of +3
 		// 21-10-2024 by Sp_ce // Low europaLikeness decreases white down to minimum 50%
 		// 22-10-2024 by Sp_ce // Reverted europaLikeness, added white cracks
 		// 23-10-2024 by Sp_ce // Changed vec3(1.0) to iceColor
 		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
-		// 07-12-2025 Donatelo200 // perfomance still rough but a bit better by reducing cracksOctaves
+		// 07-12-2025 Donatelo200 // perfomance still rough but a bit better by reducing _cracksOctaves
   else if (europaLike) 
   {
     vec3 europaP = (point + Randomize) * cracksFreq * 0.5;
@@ -553,7 +554,7 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
                          Fbm3D(1.8 * europaP * 8.0) * 0.4 +
                          Fbm3D(1.8 * europaP * 32.0) * 0.1;
 
-    float europaCracksOctaves = cracksOctaves + 6;
+    float europaCracksOctaves = _cracksOctaves + 6;
     vary *= EuropaCrackColorNoise(europaP, europaCracksOctaves + 1, mask,
                                   europaDistort) *
             (0.2 * EuropaCrackColorNoise(europaP * 2.0, europaCracksOctaves,

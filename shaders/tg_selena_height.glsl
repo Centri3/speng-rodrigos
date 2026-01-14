@@ -304,17 +304,26 @@ float   HeightMapSelena(vec3 point)
 	float bottomAlpha = bottomColorHSL.w;
 	bool aquaria = (bottomAlpha == 0.001);
 	
-if (cracksOctaves > 0)
+
+	float _cracksOctaves = cracksOctaves;
+	
+//	if (bottomAlpha != 0 && cracksOctaves == 0)
+//	{
+//		_cracksOctaves = cracksOctaves + 1;
+//	}
+
+
+if (_cracksOctaves > 0)
 {
 	_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  //Let aquarias have some fun
 }
 
-if (volcanoActivity < 1 && cracksOctaves == 0)
+if (volcanoActivity < 1 && _cracksOctaves == 0)
 {
 	_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 2 + 1);  //Lower hillsFreq for smooter plains?
 }
 
-if (volcanoActivity >= 1 && cracksOctaves == 0)
+if (volcanoActivity >= 1 && _cracksOctaves == 0)
 {
 	_hillsFreq = hillsFreq * (pow(0.99,(1 / (5 - volcanoActivity * 2) * hillsFreq)) * 2 + 1);   // / (volcanoActivity * 2 - 1) ;  //Lower hillsFreq for smooter plains?
 }
@@ -330,11 +339,11 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 
 	// Fetch variables // Planet types
 		// 21-10-2024 by Sp_ce // Added europaLikeness
-	bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq < 0.6));
-    bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6));
+	bool enceladusLike = ((_cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq < 0.6));
+    bool europaLike = ((_cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6));
 	
 	//bool enceladusLike = (cracksMagn > 0.077);
-	//bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6) && !enceladusLike);
+	//bool europaLike = ((_cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6) && !enceladusLike);
 	float europaLikeness;
 	if ((riftsSin > 8.0) || !europaLike) {
 		europaLikeness = 0.0;
@@ -521,7 +530,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 
 	// TerrainFeature // Ice cracks
 		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
-    if (cracksOctaves > 0.0 && !europaLike)
+    if (_cracksOctaves > 0.0 && !europaLike)
 	{
 		height += 0.5*CrackNoise(point, mask);     //height += 0.5*CrackNoise(point, mask);
 	}
@@ -579,12 +588,12 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 
 
 	// PlanetTypes // Europalike terrain
-		// 8-10-2024 by Sp_ce // Changed cracksOctaves to +2 instead of +3
+		// 8-10-2024 by Sp_ce // Changed _cracksOctaves to +2 instead of +3
 		// 21-10-2024 by Sp_ce // Low europaLikeness keeps original height
 		// 22-10-2024 by Sp_ce // Reverted europaLikeness, added white cracks
 		// 21-10-2024 by Sp_ce // 1.0 europaLikeness 30% height, 0.0 europaLikeness 60% height
 		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
-		// 07-12-2025 Donatelo200 // perfomance still rough but a bit better by reducing cracksOctaves
+		// 07-12-2025 Donatelo200 // perfomance still rough but a bit better by reducing _cracksOctaves
   else if (europaLike) 
   {
     vec3 europaP = point = (point + Randomize) * cracksFreq * 0.5;
@@ -601,7 +610,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
                          Fbm3D(1.8 * europaP * 8.0) * 0.4 +
                          Fbm3D(1.8 * europaP * 32.0) * 0.1;
 
-    float europaCracksOctaves = cracksOctaves + 6;
+    float europaCracksOctaves = _cracksOctaves + 6;
     height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
     height += 3.5 * EuropaCrackNoise(europaP, europaCracksOctaves + 1, mask,
                                      europaDistort);
@@ -698,7 +707,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	float _colorDistMagn = colorDistMagn;
 	float colorDistMin = 0.065;
 	
-	if (cracksOctaves > 0)  // Prevent some planets from becoming chaos
+	if (_cracksOctaves > 0)  // Prevent some planets from becoming chaos
 	{
 		colorDistMin = 0.058;
 	}
@@ -708,20 +717,13 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 		_colorDistMagn = colorDistMin;
 	}
 	
-	
-	float _cracksOctaves = cracksOctaves;
-	
-//	if (aquaria)
-//	{
-//		_cracksOctaves = cracksOctaves + 1;
-//	}
-	
+		
 	noiseOctaves    = 14.0;
 	noiseLacunarity = 2.218281828459;
 	noiseH = 0.55 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;   //Fbm3D((point + Randomize) * 0.07) * 1.5;  
 	float SmallDistort = 0;
-	if (cracksOctaves > 0) 
+	if (_cracksOctaves > 0) 
 	{
 		//noiseH += 0.3;
 		noiseH = 0.6 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.8;
@@ -729,8 +731,8 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 	
 	if (_cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-			distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
-			SmallDistort = saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1) + rocks;
+			distort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			SmallDistort = saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1) + rocks;
 	
 	}
 	else if (_cracksOctaves == 0 && volcanoActivity < 1.0)
@@ -742,7 +744,7 @@ if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet 
 		else if (_cracksOctaves > 0)
 	{
 	
-		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
+		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);
 	}
 	
 	float vary = 1.0 - 5*(Fbm((point + distort + (SmallDistort * 0.015)) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));

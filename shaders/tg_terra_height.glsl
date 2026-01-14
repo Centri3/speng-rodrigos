@@ -167,10 +167,16 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 
 float _hillsFreqq = hillsFreq;
 
-if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)   // exclude icy and small planets
+if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)// || riversMagn == 0.0 && cracksOctaves > 0)   // exclude icy and small planets
 	{
 		_hillsFreqq = hillsFreq*5;
 	}
+
+	else if (riversMagn == 0.0 && cracksOctaves > 0 && oceanType < 0.5)
+		{
+			_hillsFreqq = hillsFreq*(1 - volcanoActivity / 6) *3;
+		}
+
 	else if (riversMagn > 0.0 && cracksOctaves > 0 && texScale > 8200)
 		{
 			_hillsFreqq = hillsFreq *(1 - volcanoActivity / 4);
@@ -483,8 +489,8 @@ if (cracksOctaves > 0)
 	
 if (cracksOctaves == 0 && volcanoActivity > 1.0)
 	{
-		distort = (saturate(iqTurbulence(point, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 0) * (2 - volcanoActivity);  //Io like on atmosphered planets
-		SmallDistort = saturate(iqTurbulence(point, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1);
+		distort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 0) * (2 - volcanoActivity);  //Io like on atmosphered planets
+		SmallDistort = saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1);
 	}
 	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
@@ -494,11 +500,17 @@ if (cracksOctaves == 0 && volcanoActivity > 1.0)
 	else if (cracksOctaves > 0) //&& riversMagn == 0)
 	{
 	
-		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
+		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);
 	}
 
 float vary = 1.0 - 5*(Fbm((point + distort + (SmallDistort * 0.015)) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
 //vary *= 0.5 * vary * vary;	
+
+if (oceanType > 0.5)  
+  {
+    height = mix(height, height, vary) - seaLevel;
+  }
+
 if (cracksOctaves > 0)  
   {
     height = mix(height, height + 0.1, vary) - 0.1;
@@ -556,8 +568,15 @@ if (riversMagn > 0.0)
 	height = height + (0.3 * seaLevel + icecapHeight) * iceCap; // donatelo version
 
 	// smoothly limit the height
-    height = softPolyMin(height, 0.99, 0.3);
+	height = softPolyMin(height, 0.99, 0.3);
 	height = softPolyMax(height, 0.0, 0.3);
+
+    if (oceanType > 0.5)  
+	{
+		height = softPolyMin(height, 0.01, 0.5);
+		height = softPolyMax(height, 0.0, 0.3);
+	}
+	
 	
 
 
