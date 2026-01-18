@@ -2,6 +2,27 @@
 
 #ifdef _FRAGMENT_
 
+Surface _BlendMaterials(Surface s0, Surface s1, float t) {
+  // edited: higher softness
+  const float softness = 1.0;
+
+  float a0 = s0.height + 1.0 - t;
+  float a1 = s1.height + t;
+  float ma = max(a0, a1) - softness;
+  float b0 = max(a0 - ma, 0);
+  float b1 = max(a1 - ma, 0);
+  ma = 1.0 / (b0 + b1);
+  b0 *= ma;
+  b1 *= ma;
+  Surface res;
+  res.color = s0.color * b0 + s1.color * b1;
+  res.height = s0.height * b0 + s1.height * b1;
+
+  // Save id of the most "strong" biome
+  res.matIDs = (b0 > b1) ? s0.matIDs : s1.matIDs;
+  return res;
+}
+
 Surface _GetBaseSurface(vec3 point, float height, vec2 detUV) {
   noiseOctaves = 12;
   noiseLacunarity = 3.0;
@@ -22,7 +43,7 @@ Surface _GetBaseSurface(vec3 point, float height, vec2 detUV) {
   // interpolate between two heights
   Surface surfH0 = DetailTextureMulti(detUV, h0);
   Surface surfH1 = DetailTextureMulti(detUV, h1);
-  return BlendMaterials(surfH0, surfH1, dh);
+  return _BlendMaterials(surfH0, surfH1, dh);
 }
 
 //-----------------------------------------------------------------------------
