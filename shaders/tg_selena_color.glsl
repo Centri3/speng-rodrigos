@@ -591,7 +591,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
   // BUG: negative snowLevel results in black snow. But it looks too cool to not
   // keep.
-  float snow = float(slope / snowLevel);
+  float snow = float(clamp(slope / snowLevel, -1.0, 1.0));
   if (snowLevel == 2.0) {
     snow = 0.0;
   }
