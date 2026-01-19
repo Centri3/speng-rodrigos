@@ -71,11 +71,11 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   float montHeight =
       saturate((biomeData.height - seaLevel) / (snowLevel - seaLevel));
   climate = min(climate + heightTempGrad * montHeight, climatePole - 0.03);
-  climate = mix(climate, climatePole, saturate((snowLine - snowLevel) * 100.0));
+  climate = mix(climate, climatePole, saturate((snowLine - snowLevel) * 5.0));
 
   // Ice caps
   float iceCap =
-      saturate((latitude / latIceCaps - 0.8) * 50.0); // 0.984 -> 1.0 old
+      saturate((latitude / latIceCaps - 0.8) * 5.0); // 0.984 -> 1.0 old
   climate = mix(climate, climatePole, iceCap);
 
   // Surpress vegetation in deserts
@@ -216,9 +216,9 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   }
 
   // Mountain/winter snow
-  if (climate > 0.93) {
+  if (climate > 0.8) {
     float snowTransition = smoothstep(
-        0.93, 0.96, climate); // * smoothstep(0.75, 0.65, biomeData.slope);
+        0.8, 1.0, climate); // * smoothstep(0.75, 0.65, biomeData.slope);
     Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
     surf = BlendMaterials(surf, snow, snowTransition);
   }
