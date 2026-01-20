@@ -762,13 +762,16 @@ if (_cracksOctaves > 0)
 	// TerrainFeature // Shield volcano
     if (volcanoOctaves > 0)
 	{
-        height = VolcanoNoise(point, global, height);
+        height = _VolcanoNoise(point, global, height);
 	}	
+	// Io-like Cauldera
+	//height = mix(height, height-0.1, smoothstep(0.7, 1.0, Fbm(point * 50.0)));
 	
 	// GlobalModifier // Soften max/min height
 	height = softPolyMin(height, 0.99, 0.3);
     height = softPolyMax(height, 0.00, 0.3);
-
+	
+	
 
 	
 	// Return height

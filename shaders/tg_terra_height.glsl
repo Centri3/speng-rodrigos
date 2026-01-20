@@ -1,4 +1,4 @@
-#include "tg_common.glh" 
+#include "tg_rmr.glh" 
  
 #ifdef _FRAGMENT_
 
@@ -503,7 +503,8 @@ if (cracksOctaves == 0 && volcanoActivity > 1.0)
 		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);
 	}
 
-float vary = 1.0 - 5*(Fbm((point + distort + (SmallDistort * 0.015)) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
+float vary = 1.0 - 5*(Fbm((point + distort + (SmallDistort * 0.02)) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));  // + (SmallDistort * 0.015)
+//float smallvary = 1.0 - 0.15*(Fbm((point + SmallDistort) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
 //vary *= 0.5 * vary * vary;	
 
 if (oceanType > 0.5)  
@@ -519,6 +520,7 @@ if (cracksOctaves > 0)
   else   
   {
   height = mix(height, height + 0.05, vary) - 0.05;    //0.0015
+ 
   }
 
 
@@ -559,8 +561,9 @@ if (riversMagn > 0.0)
 		_PseudoRivers(point, global, damping, height);
 	}
 
+	// Shield volcano
     if (volcanoOctaves > 0) //&& cracksOctaves == 0)
-        height = VolcanoNoise(point, global, height);
+        height = _VolcanoNoise(point, global, height);
 
     // Apply ice caps
     // Suppress everything except ice caps in oceanic planets
