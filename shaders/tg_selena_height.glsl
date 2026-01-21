@@ -120,7 +120,7 @@ float _MareHeightFunc(vec3 point, float lastLand, float lastlastLand,
   float t;
 
   if (r < radInner) { // crater bottom
-    mareFloor = 1.0;
+    mareFloor = 1.0 / mareFreq;
 
     noiseOctaves = 6.0;
     // noiseLacunarity  = 2.218281828459;       //Caused offset
@@ -131,16 +131,16 @@ float _MareHeightFunc(vec3 point, float lastLand, float lastlastLand,
                    12.5 * Fbm3D(point * 0.1);
     vec2 cell = Cell3Noise2(0.05 * canyonsFreq * p + distort);
     float rimaBottom = 2 - 20.0 * saturate(abs(cell.y - cell.x) * canyonsMagn);
-    rimaBottom = smoothstep(0.0, 1.0, 0.2 * rimaBottom);
+    rimaBottom = smoothstep(0.0, 1.0, 0.2 * rimaBottom) * 0.2;
 
     float newHeight = lastlastLand + height * heightFloor;
-    return newHeight;
-    // return mix(newHeight, newHeight - 0.08, rimaBottom * (1 - pow(r, 4) /
-    // pow(radInner, 4)));
+    // return newHeight;
+    return mix(newHeight, newHeight - 0.08,
+               rimaBottom * (1 - pow(r, 4) / pow(radInner, 4)));
   } else if (r < radRim) { // inner rim
     t = (r - radInner) / (radRim - radInner);
     t = smoothstep(0.0, 1.0, t);
-    mareFloor = 1.0 - t;
+    mareFloor = (1.0 - t) / mareFreq;
     return mix(lastlastLand + height * heightFloor,
                lastLand + height * heightRim * craterDistortion, t);
   } else if (r < radOuter) { // outer rim
