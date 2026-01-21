@@ -418,14 +418,6 @@ float HeightMapSelena(vec3 point) {
     noiseLacunarity = 2.0;
     crater = 0.25 * crater +
              0.05 * crater * iqTurbulence(point * montesFreq + Randomize, 0.55);
-
-    // Suppress Young Craters
-    noiseOctaves = 4.0;
-    vec3 youngDistort = Fbm3D((point - Randomize) * 0.07) * 1.1;
-    noiseOctaves = 8.0;
-    float young = 1.0 - Fbm(point + youngDistort);
-    young = smoothstep(0.0, 1.0, young * young * young);
-    crater *= young;
   }
 
   // TerrainFeature // Driven darkening material buildup
