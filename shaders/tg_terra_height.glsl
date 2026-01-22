@@ -180,7 +180,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseOctaves = 4;
   distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
   noiseOctaves = 12;
-  float global = 1 - Cell3Noise(p + distort);
+  float global = 1.1 - JordanTurbulence(p + distort, 0.1, 0.7, 1.0 + venusMagn, 1.0, 3.0, 3.0, 1.0);
   // NOTE: noiseH is not used in iqTurbulence, so make sure to keep continental
   // variedness by passing colorDistMagn
   float globalVolcanic =
