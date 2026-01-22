@@ -160,7 +160,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   float global =
       1.0 - smoothstep(0.0, 1.0,
                        iqTurbulence(p + distort + Randomize,
-                                    smoothstep(0.1, 0.0, colorDistMagn) * 1.1));
+                                    smoothstep(0.1, 0.0, colorDistMagn)));
   noiseOctaves = 12;
 
   // Make sea bottom more flat; shallow seas resembles those on Titan;

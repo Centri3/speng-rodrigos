@@ -123,7 +123,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
   // GlobalModifier // ColorVary setup
   noiseOctaves = 14.0;
-  noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
+  noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.4;
   noiseOctaves = 14.0;
   vec3 albedoVaryDistort =
       JordanTurbulence3D((point + Randomize) * .07, 0.6, 0.6, 0.6, 0.8,
