@@ -185,8 +185,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseOctaves = 6;
   venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
 
-  // TODO: Make venus increase height again, but only up to a certain point.
-  global = (global + min(venus, 0.0) - seaLevel) * 0.5 + seaLevel;
+  global = (global + venus - seaLevel) * 0.5 + seaLevel;
+  global = clamp(global, seaLevel - 0.1, seaLevel + 0.1);
   float shore = saturate(70.0 * (global - seaLevel));
 
   // Biome domains
