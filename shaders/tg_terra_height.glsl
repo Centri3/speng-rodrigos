@@ -151,7 +151,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   vec3 p = point * mainFreq + Randomize;
 
   // TODO: Make a utils function for this.
-  // Give the global landscape a random angle to reduce chances of "vertical" continents
+  // Give the global landscape a random angle to reduce chances of "vertical"
+  // continents
   float angleX = Randomize.x * 6.283185;
   float angleY = Randomize.y * 6.283185;
   float angleZ = Randomize.z * 6.283185;
@@ -180,13 +181,16 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseOctaves = 4;
   distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
   noiseOctaves = 12;
-  float global = 1.1 - JordanTurbulence(p + distort, 0.1, 0.7, 1.0 + venusMagn, 1.0, 3.0, 3.0, 1.0);
+  float global = (0.45 + seaLevel * 0.45) -
+                 JordanTurbulence(p + distort, 0.1, 0.7, 1.0 + venusMagn, 1.0,
+                                  3.0, 3.0, 1.0);
   // NOTE: noiseH is not used in iqTurbulence, so make sure to keep continental
   // variedness by passing colorDistMagn
   float globalVolcanic =
-      1.0 - smoothstep(0.0, 1.0,
-                       iqTurbulence(p + distort,
-                                    0.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.2));
+      1.0 -
+      smoothstep(0.0, 1.0,
+                 iqTurbulence(p + distort,
+                              0.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.2));
 
   global = mix(global, globalVolcanic, smoothstep(1.0, 2.0, volcanoActivity));
 
@@ -207,8 +211,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
   noiseOctaves = 12;
   noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.3;
-  distort = JordanTurbulence3D(p * 0.2, 0.8, 0.5,
-                               0.6, 0.35, 0.0, 1.8, 1.0) *
+  distort = JordanTurbulence3D(p * 0.2, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) *
             (1.5 + venusMagn);
   noiseOctaves = 6;
   venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
