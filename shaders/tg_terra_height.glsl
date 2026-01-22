@@ -154,19 +154,21 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   vec3 distort = 0.35 * Fbm3D(p * 0.73);
   noiseOctaves = 4;
   distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
-  float global = 1 - Cell3Noise(p + distort);
+  float global =
+      1.0 -
+      smoothstep(0.0, 1.0, iqTurbulence(p + distort + Randomize, _hillsMagn));
 
   // Make sea bottom more flat; shallow seas resembles those on Titan;
   // but this shrinks out continents, so value larger than 1.5 is unwanted
   global = softPolyMax(global, 0.0, 0.1);
   global = pow(global, 1.5);
 
-  // Reduce height of land to allow rivers to appear at "higher" latitudes;
+  // Reduce height of land to allow rivers to appear at "higher" altitudes;
   // seaLevel shouldn't be just a sphere, this is a workaround! Use smoothstep
   // to avoid "islands" where low values that are otherwise oceans become land
   // again, limit it to seaLevel.
-  global = mix(global + 0.1, pow(2.71828, global + 0.1) * 0.1,
-               smoothstep(seaLevel, 1.0, global));
+  global = mix(global + 0.1, pow(2.71828, global + 0.1) * _hillsMagn,
+               smoothstep(seaLevel, 1.2, global));
 
   // Venus-like structure
   float venus = 0.0;
