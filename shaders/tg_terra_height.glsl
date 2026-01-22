@@ -160,8 +160,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   float global =
       1.0 - smoothstep(0.0, 1.0,
                        iqTurbulence(p + distort + Randomize,
-                                    smoothstep(0.1, 0.0, colorDistMagn)));
-  noiseOctaves = 12;
+                                    0.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.2));
 
   // Make sea bottom more flat; shallow seas resembles those on Titan;
   // but this shrinks out continents, so value larger than 1.5 is unwanted
@@ -178,8 +177,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // Venus-like structure
   float venus = 0.0;
 
-  noiseOctaves = 4;
-  noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.3;
+  noiseOctaves = 12;
+  noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.3;
   distort = JordanTurbulence3D(p * 0.2 + (point + Randomize) * 0.0, 0.8, 0.5,
                                0.6, 0.35, 0.0, 1.8, 1.0) *
             (1.5 + venusMagn);
