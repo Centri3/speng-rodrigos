@@ -151,6 +151,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   vec3 p = point * mainFreq + Randomize;
 
   // TODO: Make a utils function for this.
+  // Give the global landscape a random angle to reduce chances of "vertical" continents
   float angleX = Randomize.x * 6.283185;
   float angleY = Randomize.y * 6.283185;
   float angleZ = Randomize.z * 6.283185;
@@ -179,12 +180,15 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseOctaves = 4;
   distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
   noiseOctaves = 12;
+  float global = 1 - Cell3Noise(p + distort);
   // NOTE: noiseH is not used in iqTurbulence, so make sure to keep continental
   // variedness by passing colorDistMagn
-  float global =
+  float globalVolcanic =
       1.0 - smoothstep(0.0, 1.0,
                        iqTurbulence(p + distort,
                                     0.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.2));
+
+  global = mix(global, globalVolcanic, smoothstep(1.0, 2.0, volcanoActivity));
 
   // Make sea bottom more flat; shallow seas resembles those on Titan;
   // but this shrinks out continents, so value larger than 1.5 is unwanted
