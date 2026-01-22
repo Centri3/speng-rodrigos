@@ -149,14 +149,19 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
   // Global landscape
   vec3 p = point * mainFreq + Randomize;
-  noiseOctaves = 5;
-  noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.4;
+  noiseOctaves = 12;
+  noiseH = 1.0;
   vec3 distort = 0.35 * Fbm3D(p * 0.73);
   noiseOctaves = 4;
   distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
+  noiseOctaves = 12;
+  // NOTE: noiseH is not used in iqTurbulence, so make sure to keep continental
+  // variedness by passing colorDistMagn
   float global =
-      1.0 -
-      smoothstep(0.0, 1.0, iqTurbulence(p + distort + Randomize, _hillsMagn));
+      1.0 - smoothstep(0.0, 1.0,
+                       iqTurbulence(p + distort + Randomize,
+                                    smoothstep(0.1, 0.0, colorDistMagn) * 1.1));
+  noiseOctaves = 12;
 
   // Make sea bottom more flat; shallow seas resembles those on Titan;
   // but this shrinks out continents, so value larger than 1.5 is unwanted
@@ -174,6 +179,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   float venus = 0.0;
 
   noiseOctaves = 4;
+  noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.3;
   distort = JordanTurbulence3D(p * 0.2 + (point + Randomize) * 0.0, 0.8, 0.5,
                                0.6, 0.35, 0.0, 1.8, 1.0) *
             (1.5 + venusMagn);
@@ -377,8 +383,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // seas
 
   // Ice caps
-  float iceCap = smoothstep(
-      0.0, 1.0, saturate((latitude / latIceCaps - 0.8)));
+  float iceCap = smoothstep(0.0, 1.0, saturate((latitude / latIceCaps - 0.8)));
 
   // Ice cracks
   float mask = 1.0;
