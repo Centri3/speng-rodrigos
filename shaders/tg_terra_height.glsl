@@ -378,7 +378,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
   // Ice caps
   float iceCap = smoothstep(
-      0.0, 1.0, saturate((latitude / latIceCaps - 0.8) * 50.0 * 0.02));
+      0.0, 1.0, saturate((latitude / latIceCaps - 0.8)));
 
   // Ice cracks
   float mask = 1.0;
