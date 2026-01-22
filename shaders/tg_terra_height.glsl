@@ -20,15 +20,15 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
 
   for (int i = 0; i < 3; i++) {
     vec3 p = point + i * mainFreq + Randomize;
-    vec3 distort = 0.325 * Fbm3D(p * seaLevel * riversSin * 0.3);
-    distort = 0.65 * Fbm3D(p * seaLevel * riversSin) + 0.03 * Fbm3D(p * seaLevel * riversSin * 2.0) +
+    vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.3);
+    distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 2.0) +
               0.01 * RidgedMultifractalErodedDetail(
-                         point * seaLevel * 0.1 * (canyonsFreq + 1000) *
+                         point * 0.1 * (canyonsFreq + 1000) *
                                  (0.5 * (1 / montesSpiky + 1)) +
                              Randomize,
                          8.0, erosion, 2);
 
-    vec2 cell = 2.5 * Cell3Noise2(riversFreq * seaLevel * 3.0 * p + 0.5 * distort);
+    vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * p + 0.5 * distort);
 
     valleys *= saturate(1.36 * abs(cell.y - cell.x) * riversMagn);
     rivers *= saturate(6.5 * abs(cell.y - cell.x) * riversMagn);
@@ -463,6 +463,31 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // Pseudo rivers
 
   if (riversMagn > 0.0) {
+    noiseOctaves = 12.0;
+    noiseH = 0.8;
+    noiseLacunarity = 2.3;
+    p = point * 2.0 * mainFreq + Randomize;
+    distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) +
+              0.01 * RidgedMultifractalErodedDetail(
+                         point * 0.3 * (canyonsFreq + 1000) *
+                                 (0.5 * (inv2montesSpiky + 1)) +
+                             Randomize,
+                         8.0, erosion, montBiomeScale * 2);
+    cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
+    /*
+    float pseudoRivers2 = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) *
+    riversMagn)); pseudoRivers2 = smoothstep(0.25, 0.99, pseudoRivers2);
+        pseudoRivers2 *= 1.0 - smoothstep(0.135, 0.145, rodrigoDamping); //
+    disable rivers inside continents pseudoRivers2 *= 1.0 - smoothstep(0.000,
+    0.0001, seaLevel - height); // disable rivers inside oceans height =
+    mix(height, seaLevel+0.003, pseudoRivers2); cell = 2.5*
+    Cell3Noise2(riversFreq * p + 0.5*distort); float PseudoRivers = 1.0 -
+    (saturate(2.8 * abs(cell.y - cell.x) * riversMagn)); PseudoRivers =
+    smoothstep(0.0, 1.0, PseudoRivers); PseudoRivers *= 1.0 - smoothstep(0.055,
+    0.057, global-seaLevel); PseudoRivers *= 1.0 - smoothstep(0.00, 0.005,
+    seaLevel - height); // disable rivers inside oceans height = mix(height,
+    seaLevel-0.0035, PseudoRivers);
+    */
     damping =
         (smoothstep(0.01, 0.0,
                     seaLevel - height)) * // disable rivers inside continents
