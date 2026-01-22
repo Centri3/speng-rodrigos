@@ -159,7 +159,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // variedness by passing colorDistMagn
   float global =
       1.0 - smoothstep(0.0, 1.0,
-                       iqTurbulence(p + distort + Randomize,
+                       iqTurbulence(p + distort,
                                     0.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.2));
 
   // Make sea bottom more flat; shallow seas resembles those on Titan;
@@ -179,7 +179,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
   noiseOctaves = 12;
   noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.3;
-  distort = JordanTurbulence3D(p * 0.2 + (point + Randomize) * 0.0, 0.8, 0.5,
+  distort = JordanTurbulence3D(p * 0.2, 0.8, 0.5,
                                0.6, 0.35, 0.0, 1.8, 1.0) *
             (1.5 + venusMagn);
   noiseOctaves = 6;
