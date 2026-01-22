@@ -269,6 +269,102 @@ float coverage = cloudsCoverage;
 
 //-----------------------------------------------------------------------------
 
+vec4    CycloneNoiseRM974(vec3 point)
+{
+    vec3  twistedPoint = point;
+    vec3  p = point;
+    vec3  v;
+    vec4  cell;
+    float radius, dist, dist2, fi;
+    float freq   = cycloneFreq;
+    float dens   = 1.0 / cycloneDensity;
+    float offset = 0.0;
+    float offs   = 1.0;
+
+    for (int i=0; i<cycloneOctaves; i++)
+    {
+        cell = Cell3NoiseVec(p * freq, 0.6);
+        v = cell.xyz - p;
+        v.y *= 1.6;
+        radius = length(v) * dens;
+
+        if (radius < 1.0)
+        {
+            dist  = 1.0 - radius;
+            dist2 = 0.5 - radius;
+            fi    = pow(dist, 2.5) * (exp(-60.0 * dist2 * dist2) + 0.5);
+            twistedPoint = Rotate(cycloneMagn * sign(cell.y) * fi, cell.xyz, point);
+            offset += offs * fi;
+        }
+
+        freq *= 4.3;
+        dens *= 2.9;
+        offs *= 0.2;
+        point = twistedPoint;
+    }
+
+    return vec4(twistedPoint, offset);
+}
+
+//-----------------------------------------------------------------------------
+
+float   HeightMapCloudsGasGiantRM974(vec3 point)
+{
+    vec3  twistedPoint = point;
+
+    if (stripeFluct == 0.0)
+    {
+        //noiseOctaves = 10.0;
+        //twistedPoint *= vec3(1.0) + 0.337 * Fbm3D(point * 0.193);
+        noiseOctaves = 10.0;
+        twistedPoint *= vec3(1.0) + 0.337 * Fbm3D(point * 0.193);
+    }
+
+    float offset = 0.0;
+    float zone = Noise(vec3(0.0, twistedPoint.y * stripeZones * 0.5, 0.0)) * 2.0;
+    noiseOctaves = 10.0;
+	// noiseH       = 0.4;
+
+    // Compute cyclons
+    if (cycloneOctaves > 0.0)
+    {
+        vec4 cyclone = CycloneNoiseRM974(twistedPoint);
+        twistedPoint = cyclone.xyz;
+        offset = cyclone.w;
+    }
+
+    // Compute stripes
+    float turbulence, height;
+    if (stripeFluct == 0.0)
+    {
+        float ang = zone * stripeTwist;
+        float sina = sin(ang);
+        float cosa = cos(ang);
+        twistedPoint = vec3(cosa*twistedPoint.x-sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x+cosa*twistedPoint.z);
+        twistedPoint = twistedPoint * mainFreq + Randomize;
+        turbulence = Fbm(colorDistFreq * twistedPoint);
+        twistedPoint *= 500.0 + 5.0 * turbulence;
+        height = (Fbm(twistedPoint) + 0.7) * 0.7;
+    }
+    else
+    {
+        turbulence = Fbm(twistedPoint * 0.2);
+        twistedPoint = twistedPoint * mainFreq + Randomize;
+        twistedPoint.y *= 100.0 + turbulence * stripeTwist;
+        height = (Fbm(twistedPoint) + 0.7) * 0.7;
+    }
+
+    height = 0.5*(0.5+0.6*zone) + colorDistMagn * height + offset;
+
+    return height;
+
+    //height = 0.5*(0.5+0.6*zone) + colorDistMagn * height + offset;
+    //float alpha = abs(min(height, 1.0) - cloudsLayer) * cloudsNLayers;
+    //return height * alpha;
+}
+
+//-----------------------------------------------------------------------------
+
 void main()
 {
     if (cloudsLayer == 0.0)

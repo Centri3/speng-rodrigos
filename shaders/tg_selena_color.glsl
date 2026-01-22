@@ -395,17 +395,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	}
 	vary *= 0.5 * vary * vary;
 	
-	// TerrainModifier // Suppress Young Craters
-    if (craterSqrtDensity > 0.05)
-    {
-        noiseOctaves = 4.0;
-        vec3 youngDistort = Fbm3D((point - Randomize) * 0.07) * 1.1;
-        noiseOctaves = 8.0;
-        float young = 1.0 - Fbm(point + youngDistort);
-        young = smoothstep(0.0, 1.0, young * young * young);
-        vary = mix(0.0, vary, young);
-    }
-	
     // TerrainFeature // Ice cracks
 		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
     float mask = 1.0;
@@ -541,7 +530,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
     float slopedFactor = SlopedIceCaps(slope, latitude);
     float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
 	// float snow = float(slope * 1 > (snowLevel + 1.0) * 0.33); 
-	float snow = float(slope / snowLevel);
+	float snow = float(clamp(slope / snowLevel, -1.0, 1.0));
     if(snowLevel == 2.0) {
         snow = 0.0;
     }

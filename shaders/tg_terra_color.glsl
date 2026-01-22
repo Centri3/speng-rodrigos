@@ -117,7 +117,7 @@ vec4 ColorMapTerra(vec3 point, float height, float slope, in BiomeData biomeData
     // climate = mix(0.0, climate, dunes);
 
     // Ice caps
-    float iceCap = saturate((latitude / latIceCaps - 0.982) * 50.0 + Fbm((point + distort) * 5));  // TPE
+    float iceCap = saturate((latitude / latIceCaps - 0.8) * 5.0 + Fbm((point + distort) * 5));  // TPE
 	// float iceCap = saturate((latitude / latIceCaps - 0.982) * 50.0);  // Donetelo
     climate = mix(climate, climatePole, iceCap);
 	/*
@@ -287,9 +287,9 @@ vec4 ColorMapTerra(vec3 point, float height, float slope, in BiomeData biomeData
     }
 
     // Mountain/winter snow
-    if (climate > 0.9)
+    if (climate > 0.8)
     {
-        float snowTransition = smoothstep(0.9, 0.92, climate) * smoothstep(0.75, 0.65, biomeData.slope);
+        float snowTransition = smoothstep(0.8, 1.0, climate) * smoothstep(0.75, 0.65, biomeData.slope);
 		// float snowTransition = smoothstep( 0.93, 0.96, climate); // * smoothstep(0.75, 0.65, biomeData.slope);
         Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
         surf = BlendMaterials(surf, snow, snowTransition);

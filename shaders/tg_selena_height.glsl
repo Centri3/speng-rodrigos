@@ -131,8 +131,8 @@ float   _MareHeightFunc(vec3 point, float lastLand, float lastlastLand, float he
 		rimaBottom = smoothstep(0.0, 1.0, 0.2 * rimaBottom);
 		
         float newHeight = lastlastLand + height * heightFloor;
-		return newHeight;
-		// return mix(newHeight, newHeight - 0.08, rimaBottom * (1 - pow(r, 4) / pow(radInner, 4)));
+		// return newHeight;
+		return mix(newHeight, newHeight - 0.08, rimaBottom * (1 - pow(r, 4) / pow(radInner, 4)));
 		
         // return lastlastLand + height * heightFloor;
     }
@@ -250,7 +250,6 @@ float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtD
     float  radFactor = 1.0 / cratSqrtDensity;
 
     // Craters roundness distortion
-    noiseH           = 0.1 + smoothstep(0.0, 0.1, colorDistMagn) * 0.9;
     noiseLacunarity  = 2.218281828459;
     noiseOffset      = 0.8;
     noiseOctaves     = 3;
@@ -365,8 +364,9 @@ float   HeightMapSelena(vec3 point)
     float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
 	noiseOctaves = 12.0;
     // float global = 1.0 - Cell3Noise(p + distort);
-	// float global = 1 - JordanTurbulence(p * 0.2 + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0);
-	float global = 1.0 - iqTurbulence(point * 0.001 * _hillsFreq + Randomize, _hillsMagn);
+	float global = 1.0 - JordanTurbulence(p * _hillsMagn + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0); // Mine
+	// float global = 1.0 - JordanTurbulence(p * 0.2 + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0); // Centri
+	// float global = 1.0 - iqTurbulence(point * 0.001 * _hillsFreq + Randomize, _hillsMagn);
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 	
     // GlobalModifier // Venus
@@ -377,7 +377,7 @@ float   HeightMapSelena(vec3 point)
     venus = Fbm((point + distort + Randomize) * venusFreq + 0.1) * (venusMagn + 0.1);
 
 	noiseOctaves = 8;
-	global = (global + 0.8 * venus + (0.000006 * ((_hillsFreq + 1500)/_hillsMagn)) * fr - seaLevel) * 0.5 + seaLevel;
+	global = (global + 0.8 * venus + (0.000006 * ((_hillsFreq + 1500) / _hillsMagn)) * fr - seaLevel) * 0.5 + seaLevel;
 
 	float mr = 1.0 + 2 * Fbm(point + distort) + 7 * (1.5 - RidgedMultifractalEroded(pp * 0.8, 8.0, erosion)) - 6 * (1.5 - RidgedMultifractalEroded(pp * 0.1, 8.0, erosion));
 
@@ -387,6 +387,8 @@ float   HeightMapSelena(vec3 point)
 	mr = 0.1 * _hillsFreq * smoothstep(0.0, 1.0, mr);
 	global =  mix(global, global + 0.0003, mr);
 	float mask = 1.0;
+	
+	global = global + 0.001 * ((fr * mr) * _hillsMagn);
 	
 	// GlobalModifier // Set global height
 	float height = global;
@@ -453,14 +455,6 @@ float   HeightMapSelena(vec3 point)
         noiseOffset  = 1.0;
         crater = 0.5 * RidgedMultifractalDetail(point * 0.5 * montesFreq + Randomize, 2.0, 0.25 * crater);
 		*/
-		
-		// Suppress Young Craters
-        noiseOctaves = 4.0;
-        vec3 youngDistort = Fbm3D((point - Randomize) * 0.07) * 1.1;
-        noiseOctaves = 8.0;
-        float young = 1.0 - Fbm(point + youngDistort);
-        young = smoothstep(0.0, 1.0, young * young * young);
-        crater *= young;
     }
 	
 	// TerrainFeature // Driven darkening material buildup
@@ -492,7 +486,6 @@ float   HeightMapSelena(vec3 point)
             // TerrainFeature // Rimae
             noiseOctaves     = 3.0;
             noiseLacunarity  = 2.218281828459;
-            noiseH           = 0.9;
             noiseOffset      = 0.5;
             p = point * mainFreq + Randomize;
             distort  = 0.035 * Fbm3D(p * riversSin * 5.0);
