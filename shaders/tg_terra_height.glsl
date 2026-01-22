@@ -149,6 +149,30 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
   // Global landscape
   vec3 p = point * mainFreq + Randomize;
+
+  // TODO: Make a utils function for this.
+  float angleX = Randomize.x * 6.283185;
+  float angleY = Randomize.y * 6.283185;
+  float angleZ = Randomize.z * 6.283185;
+
+  // clang-format off
+  mat3x3 rotX = mat3x3(1.0, 0.0, 0.0,
+                        0.0, cos(angleX), -sin(angleX),
+                        0.0, sin(angleX), cos(angleX));
+
+  mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
+                        0.0, 1.0, 0.0,
+                        -sin(angleY), 0.0, cos(angleY));
+
+  mat3x3 rotZ = mat3x3(cos(angleZ), -sin(angleZ), 0.0,
+                        sin(angleZ), cos(angleZ), 0.0,
+                        0.0, 0.0, 1.0);
+  // clang-format on
+
+  p *= rotX;
+  p *= rotY;
+  p *= rotZ;
+
   noiseOctaves = 12;
   noiseH = 1.0;
   vec3 distort = 0.35 * Fbm3D(p * 0.73);
