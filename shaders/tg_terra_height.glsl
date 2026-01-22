@@ -550,7 +550,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   height = min(smoothstep(seaLevel - 0.03, seaLevel + 0.084, height), height);
   // reduce ocean depth near shore
   float h = smoothstep(seaLevel - 0.23, seaLevel + 0.08, height);
-  height = mix(height, max(height, seaLevel + 0.057), h);
+  height = mix(height, max(height, seaLevel + 0.05), h);
 
   if (riversMagn > 0.0) {
     HeightBiomeMap = vec4(height - 0.06);
