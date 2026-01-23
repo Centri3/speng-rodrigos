@@ -27,7 +27,7 @@ vec4  GlowMapSelena(vec3 point, BiomeData biomeData)
 
     float surfTemp = surfTemperature *
         (globTemp + venus * varyTemp * 0.04) *
-		saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * biomeData.height)) *
+		saturate(2.0 * (lavaCoverage * 0.6 + 0.4 - 0.8 * biomeData.height)) *
 		saturate((lavaCoverage - 0.01) * 25.0);
 
     // Io-like volcanoes
