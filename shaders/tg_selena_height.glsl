@@ -111,8 +111,8 @@ void EnceladusNoise(in vec3 point, inout float height, float europaLikeness) {
     p *= 1.1;
   }
 
-  height = mix(height, height + (0.23 * europaLikeness), cracks.x);
-  height = mix(height, height - (0.23 * europaLikeness), cracks.y);
+  height = mix(height, height + (0.13 * europaLikeness), cracks.x);
+  height = mix(height, height - (0.13 * europaLikeness), cracks.y);
 }
 
 float EuropaCrackHeightFunc(float land, float height, float r, vec3 p) {
