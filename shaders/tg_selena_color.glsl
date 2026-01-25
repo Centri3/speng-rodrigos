@@ -151,25 +151,27 @@ float EnceladusColorNoise(in vec3 point, float europaLikeness) {
   vec2 cracks = vec2(0.0);
   vec3 p = point * 0.1 + Randomize;
   vec3 distort = 0.3 * Fbm3D(p * 3.0) + 0.05 * Fbm3D(p * 6.0);
-  
+
   noiseOctaves = 8.0;
   noiseLacunarity = 2.3;
 
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
     distort += Fbm3D(p * 3.0) * 0.3;
 
     vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
-    float width = (0.35 + i * 0.01) * 80.0 * europaLikeness * abs(cell.y - cell.x);
+    float width = (0.35 + i * 0.01) * (unwrap_or(riftsMagn, 20.0) * 4.0) *
+                  europaLikeness * abs(cell.y - cell.x);
     cracks.x += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 1));
 
     p *= 1.1;
   }
-  
-  for (int i = 0; i < 16; i++) {
+
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
     distort += Fbm3D(p * 3.0) * 0.3;
 
     vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
-    float width = (0.35 + i * 0.01) * 80.0 * europaLikeness * abs(cell.y - cell.x);
+    float width = (0.35 + i * 0.01) * (unwrap_or(riftsMagn, 20.0) * 4.0) *
+                  europaLikeness * abs(cell.y - cell.x);
     cracks.y += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 1));
 
     p *= 1.1;

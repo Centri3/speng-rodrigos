@@ -2,17 +2,15 @@
 
 #ifdef _FRAGMENT_
 
-float unwrap_or_with_sentinel(float sentinel, float optional,
-                              float default_value) {
-  if (optional == sentinel) {
-    return default_value;
-  }
-
-  return optional;
+const float NO_DATA = -1e+38;
+float unwrap_or_with_sentinel(float optional, float default_value, float sentinel) {
+    if (optional == sentinel) {
+        return default_value;
+    } else {
+        return optional;
+    }
 }
-#define NO_DATA -1e+38f
-#define unwrap_or(optional, default_value)                                     \
-  unwrap_or_with_sentinel(NO_DATA, optional, default_value)
+#define unwrap_or(optional, default_value) unwrap_or_with_sentinel(optional, default_value, NO_DATA)
 
 vec3 iqTurbulence3D(vec3 point, float gain) {
   return vec3(iqTurbulence(point + vyd, gain), iqTurbulence(point + vzd, gain),

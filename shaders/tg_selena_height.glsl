@@ -87,21 +87,21 @@ void EnceladusNoise(in vec3 point, inout float height, float europaLikeness) {
   noiseOctaves = 8.0;
   noiseLacunarity = 2.3;
 
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
     distort += Fbm3D(p * 3.0) * 0.3;
 
     vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
-    float width = (0.35 + i * 0.01) * 20.0 * europaLikeness * abs(cell.y - cell.x);
+    float width = (0.35 + i * 0.01) * unwrap_or(riftsMagn, 20.0) * europaLikeness * abs(cell.y - cell.x);
     cracks.x += saturate(1.0 - 2.75 * width) / ((i + 2 )* 0.5);
 
     p *= 1.1;
   }
   
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
     distort += Fbm3D(p * 3.0) * 0.3;
 
     vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
-    float width = (0.35 + i * 0.01) * 20.0 * europaLikeness * abs(cell.y - cell.x);
+    float width = (0.35 + i * 0.01) * unwrap_or(riftsMagn, 20.0) * europaLikeness * abs(cell.y - cell.x);
     cracks.y += saturate(1.0 - 2.75 * width) / ((i + 2 )* 0.5);
 
     p *= 1.1;
