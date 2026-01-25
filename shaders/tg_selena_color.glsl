@@ -159,7 +159,8 @@ float EnceladusColorNoise(in vec3 point, float europaLikeness) {
     distort += Fbm3D(p * 3.0) * 0.3;
 
     vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
-    float width = (0.35 + i * 0.01) * (unwrap_or(riftsMagn, 20.0) * 4.0) *
+    float width = (0.35 + i * 0.01) *
+                  (unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) * 4.0) *
                   europaLikeness * abs(cell.y - cell.x);
     cracks.x += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 1));
 
@@ -170,7 +171,8 @@ float EnceladusColorNoise(in vec3 point, float europaLikeness) {
     distort += Fbm3D(p * 3.0) * 0.3;
 
     vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
-    float width = (0.35 + i * 0.01) * (unwrap_or(riftsMagn, 20.0) * 4.0) *
+    float width = (0.35 + i * 0.01) *
+                  (unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) * 4.0) *
                   europaLikeness * abs(cell.y - cell.x);
     cracks.y += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 1));
 
@@ -324,6 +326,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   // bool enceladusLike = ((volcanoActivity > 0.004) && (volcanoActivity <
   // 0.01)); bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) &&
   // (mareFreq < 1.7) && (cracksFreq >= 0.6) && !enceladusLike);
+  // FIXME: Should be named icyness.
   float europaLikeness;
   if (riftsSin < 6.0) {
     europaLikeness = 1.0;
@@ -500,12 +503,29 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
 
   // PlanetTypes // Enceladuslike terrain
   if (enceladusLike) {
-    // europaLikeness==0 puts ice everywhere. Limit it to 0.1.
-    float enceladus = EnceladusColorNoise(point, max(europaLikeness, 0.1));
-    surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.9);
-    surf.color.rgb = mix(surf.color.rgb, iceColor, enceladus * europaLikeness);
+    if (europaLikeness == 0.0) {
+      // Old algorithm
+      noiseOctaves = 6.0;
+      noiseLacunarity = 2.218281828459;
+      noiseH = 0.9;
+      noiseOffset = 0.5;
+      p = point * 0.5 * mainFreq + Randomize;
+      distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5;
+      Fbm3D(point * 0.1) * 12.5;
+      cell = Cell3Noise2(canyonsFreq * 0.05 * p + distort);
+      float rima2 = 2 - saturate(abs(cell.y - cell.x) * 250.0 * canyonsMagn);
+      rima2 = biomeScale * smoothstep(0.0, 1.0, rima2);
+      vary -= 1 - rima2;
+      surf.color = mix(vec4(0.75, 0.9, 1.0, 0.00), vec4(1.0), vary);
+    } else {
+      // New algorithm
+      float enceladus = saturate(EnceladusColorNoise(point, europaLikeness));
+      surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.9);
+      surf.color.rgb =
+          mix(surf.color.rgb, iceColor, enceladus * europaLikeness);
 
-    vary *= 0.3;
+      vary *= 0.3;
+    }
   }
 
   // PlanetTypes // Europalike terrain
@@ -557,7 +577,7 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
                                             0.5, 0.6, 0.35, 1.0, 0.8, 1.0));
   }
 
-  if (europaLike || enceladusLike) {
+  if (europaLike || enceladusLike && europaLikeness != 0.0) {
     vary = saturate(vary / europaLikeness);
   }
 
