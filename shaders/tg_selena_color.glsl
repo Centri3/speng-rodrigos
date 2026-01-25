@@ -160,7 +160,7 @@ float EnceladusColorNoise(in vec3 point, float europaLikeness) {
 
     vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
     float width = (0.35 + i * 0.01) * 80.0 * europaLikeness * abs(cell.y - cell.x);
-    cracks.x += saturate(1.0 - 2.75 * width) / ((i + 2 )* 0.4);
+    cracks.x += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 1));
 
     p *= 1.1;
   }
@@ -170,7 +170,7 @@ float EnceladusColorNoise(in vec3 point, float europaLikeness) {
 
     vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
     float width = (0.35 + i * 0.01) * 80.0 * europaLikeness * abs(cell.y - cell.x);
-    cracks.y += saturate(1.0 - 2.75 * width) / ((i + 2) * 0.4);
+    cracks.y += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 1));
 
     p *= 1.1;
   }
