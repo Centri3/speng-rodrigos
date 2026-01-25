@@ -75,6 +75,42 @@ void _RiftsNoise(vec3 point, float damping, inout float height) {
   }
 }
 
+void EnceladusNoise(in vec3 point, inout float height, float europaLikeness) {
+  noiseOctaves = 2;
+  noiseH = 1.0;
+  noiseLacunarity = 2.0;
+
+  vec2 cracks = vec2(0.0);
+  vec3 p = point * 0.1 + Randomize;
+  vec3 distort = 0.3 * Fbm3D(p * 3.0) + 0.05 * Fbm3D(p * 6.0);
+  
+  noiseOctaves = 8.0;
+  noiseLacunarity = 2.3;
+
+  for (int i = 0; i < 16; i++) {
+    distort += Fbm3D(p * 3.0) * 0.3;
+
+    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
+    float width = (0.35 + i * 0.01) * 20.0 * europaLikeness * abs(cell.y - cell.x);
+    cracks.x += saturate(1.0 - 2.75 * width) / ((i + 2 )* 0.5);
+
+    p *= 1.1;
+  }
+  
+  for (int i = 0; i < 16; i++) {
+    distort += Fbm3D(p * 3.0) * 0.3;
+
+    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
+    float width = (0.35 + i * 0.01) * 20.0 * europaLikeness * abs(cell.y - cell.x);
+    cracks.y += saturate(1.0 - 2.75 * width) / ((i + 2 )* 0.5);
+
+    p *= 1.1;
+  }
+
+  height = mix(height, height + (0.23 * europaLikeness), cracks.x);
+  height = mix(height, height - (0.23 * europaLikeness), cracks.y);
+}
+
 float EuropaCrackHeightFunc(float land, float height, float r, vec3 p) {
   p.x += 0.05 * r;
   float inner = smoothstep(0.0, 0.5, r);
@@ -311,7 +347,7 @@ float HeightMapSelena(vec3 point) {
   // bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) &&
   // (mareFreq < 1.7) && (cracksFreq >= 0.6) && !enceladusLike);
   float europaLikeness;
-  if ((riftsSin > 8.0) || !europaLike) {
+  if ((riftsSin > 8.0) || (!europaLike && !enceladusLike)) {
     europaLikeness = 0.0;
   } else if (riftsSin < 6.0) {
     europaLikeness = 1.0;
@@ -495,24 +531,8 @@ float HeightMapSelena(vec3 point) {
 
   // PlanetTypes // Enceladuslike terrain
   if (enceladusLike) {
-    height = saturate(height * 0.3);
-    noiseOctaves = 6.0;
-    noiseLacunarity = 2.218281828459;
-    noiseH = 0.9;
-    noiseOffset = 0.5;
-    p = point * 0.5 * mainFreq + Randomize;
-    distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5 +
-              Fbm3D(point * 0.1) * 12.5;
-    cell = Cell3Noise2(canyonsFreq * 0.05 * p + distort);
-    float rima2 = 2 - saturate(abs(cell.y - cell.x) * 250.0 * canyonsMagn);
-    rima2 = biomeScale * smoothstep(0.0, 1.0, rima2);
-    height = mix(height, height - 0.08, -rima2);
-
-    noiseOctaves = 1;
-    height -= 0.5 * CrackNoise(point, mask);
-    distort = Fbm3D(point * 0.1) * 3.5;
-    float venus2 = (Fbm(point + distort) * 1.5) * 0.5;
-    height = mix(height, height - 0.2, venus2);
+    height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
+    EnceladusNoise(point, height, europaLikeness);
   }
 
   // PlanetTypes // Europalike terrain
