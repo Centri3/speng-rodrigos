@@ -120,7 +120,7 @@ float _MareHeightFunc(vec3 point, float lastLand, float lastlastLand,
   float t;
 
   if (r < radInner) { // crater bottom
-    mareFloor = 1.0 / mareFreq;
+    mareFloor = 1.0 / max(mareFreq, 0.3); // divide by 0 error
 
     noiseOctaves = 6.0;
     // noiseLacunarity  = 2.218281828459;       //Caused offset
@@ -140,7 +140,7 @@ float _MareHeightFunc(vec3 point, float lastLand, float lastlastLand,
   } else if (r < radRim) { // inner rim
     t = (r - radInner) / (radRim - radInner);
     t = smoothstep(0.0, 1.0, t);
-    mareFloor = (1.0 - t) / mareFreq;
+    mareFloor = (1.0 - t) / max(mareFreq, 0.3);
     return mix(lastlastLand + height * heightFloor,
                lastLand + height * heightRim * craterDistortion, t);
   } else if (r < radOuter) { // outer rim
