@@ -361,7 +361,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     //	RODRIGO  - Edited mountains. Different mountains whithout erosion in
     // deserts. No terraces
 
-    if (riversMagn > 0.0) {
+    if (oceanType != 0.0) {
 
       noiseOctaves = 10.0;
       noiseH = 1.0;
