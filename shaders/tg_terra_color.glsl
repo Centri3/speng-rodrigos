@@ -216,7 +216,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   }
 
   // Mountain/winter snow
-  if (climate > 0.8) {
+  if (climate > 0.8 && snowLevel != 2.0) {
     float snowTransition = smoothstep(
         0.8, 1.0, climate); // * smoothstep(0.75, 0.65, biomeData.slope);
     Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
