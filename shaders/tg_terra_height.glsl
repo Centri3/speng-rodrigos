@@ -179,7 +179,10 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseH = 1.0;
   vec3 distort = 0.35 * Fbm3D(p * 0.73);
   noiseOctaves = 4;
-  distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
+  distort +=
+      0.005 * (1.0 - abs(smoothstep(0.2, 0.01,
+                                    JordanTurbulence3D(p * 132.3, 0.8, 0.5, 0.6,
+                                                       0.35, 0.0, 1.8, 1.0))));
   noiseOctaves = 12;
   float global = (0.45 + seaLevel * 0.45) -
                  JordanTurbulence(p + distort, 0.1, 0.7, 1.0 + venusMagn, 1.0,
@@ -203,8 +206,10 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // seaLevel shouldn't be just a sphere, this is a workaround! Use smoothstep
   // to avoid "islands" where low values that are otherwise oceans become land
   // again, limit it to seaLevel.
-  global = mix(global + 0.1, pow(2.71828, global + 0.1) * _hillsMagn,
-               smoothstep(seaLevel, 1.2, global));
+  if (oceanType != 0.0) {
+    global = mix(global + 0.1, pow(2.71828, global + 0.1) * _hillsMagn,
+                 smoothstep(seaLevel, 1.2, global));
+  }
 
   // Venus-like structure
   float venus = 0.0;
@@ -580,8 +585,10 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   // ocean basins
   height = min(smoothstep(seaLevel - 0.03, seaLevel + 0.084, height), height);
   // reduce ocean depth near shore
-  float h = smoothstep(seaLevel - 0.23, seaLevel + 0.08, height);
-  height = mix(height, max(height, seaLevel + 0.05), h);
+  if (oceanType != 0.0) {
+    float h = smoothstep(seaLevel - 0.23, seaLevel + 0.08, height);
+    height = mix(height, max(height, seaLevel + 0.05), h);
+  }
 
   if (riversMagn > 0.0) {
     HeightBiomeMap = vec4(height - 0.06);
