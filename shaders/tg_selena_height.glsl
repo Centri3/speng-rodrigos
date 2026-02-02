@@ -119,7 +119,7 @@ float _MareHeightFunc(vec3 point, float lastLand, float lastlastLand,
                       float height, float r, inout float mareFloor) {
   float t;
 
-  if (r < radInner) { // crater bottom
+  if (r < radInner) {                     // crater bottom
     mareFloor = 1.0 / max(mareFreq, 0.3); // divide by 0 error
 
     noiseOctaves = 6.0;
@@ -191,35 +191,9 @@ float _MareNoise(vec3 point, float globalLand, float bottomLand,
 
 //-----------------------------------------------------------------------------
 
-// Function // Altered Crater Height Formula
-float _CraterHeightFunc(float lastlastLand, float lastLand, float height,
-                        float r, float cratOctaves, float i,
-                        float mareSuppress) {
-  float distHeight = 0.0;
-
-  float t = 1.0 - r / radPeak;
-  float peak = heightPeak * craterDistortion * smoothstep(0.0, 1.0, t);
-
-  t = smoothstep(0.0, 1.0, (r - radInner) / (radRim - radInner));
-  float inoutMask = t * t * t;
-  float innerRim = heightRim * distHeight * smoothstep(0.0, 1.0, inoutMask);
-
-  t = smoothstep(0.0, 1.0, (radOuter - r) / (radOuter - radRim));
-  float outerRim = distHeight * mix(0.05, heightRim, t * t);
-
-  t = saturate((1.0 - r) / (1.0 - radOuter));
-  float halo = 0.05 * distHeight * t;
-
-  return mix(lastlastLand + height * heightFloor + peak + innerRim,
-             lastLand + outerRim + halo, inoutMask);
-}
-
-//-----------------------------------------------------------------------------
-
 // Function // Altered Crater Noise
 float _CraterNoise(vec3 point, float cratMagn, float cratFreq,
-                   float cratSqrtDensity, float cratOctaves,
-                   float mareSuppress) {
+                   float cratSqrtDensity, float cratOctaves) {
   // craterSphereRadius = cratFreq * cratSqrtDensity;
   // point *= craterSphereRadius;
   point = (point * cratFreq + Randomize) * cratSqrtDensity;
@@ -230,9 +204,10 @@ float _CraterNoise(vec3 point, float cratMagn, float cratFreq,
   float lastlastlastLand = 0.0;
   float amplitude = 1.0;
   float cell;
-  float radFactor = 1.0 / cratSqrtDensity;
+  float radFactor = 0.8 / cratSqrtDensity;
 
   // Craters roundness distortion
+  noiseH = 0.5;
   noiseLacunarity = 2.218281828459;
   noiseOffset = 0.8;
   noiseOctaves = 3;
@@ -241,10 +216,10 @@ float _CraterNoise(vec3 point, float cratMagn, float cratFreq,
 
   radPeak = 0.03;
   radInner = 0.15;
-  radRim = 0.2;
+  radRim = 0.4;
   radOuter = 0.8;
 
-  for (int i = 0; i < cratOctaves; i++) {
+  for (int i = 0; i < cratOctaves * 8; i++) {
     lastlastlastLand = lastlastLand;
     lastlastLand = lastLand;
     lastLand = newLand;
@@ -254,20 +229,19 @@ float _CraterNoise(vec3 point, float cratMagn, float cratFreq,
     // craterSphereRadius *= 1.83;
     cell = Cell3Noise(point + craterRoundDist * Fbm3D(point * 2.56));
     newLand = _CraterHeightFunc(lastlastlastLand, lastLand, amplitude,
-                                cell * radFactor, cratOctaves, i, mareSuppress);
+                               cell * radFactor, 20.0);
 
     // cell = inverseSF(point + 0.2 * craterRoundDist * Fbm3D(point*2.56),
     // fibFreq); rad = hash1(cell.x * 743.1) * 0.9 + 0.1; newLand =
-    // CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y *
-    // radFactor / rad); fibFreq   *= craterFreqPower; radFactor *=
-    // craterRadFactorPower;
+    // CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y * radFactor
+    // / rad); fibFreq   *= craterFreqPower; radFactor *= craterRadFactorPower;
 
     if (cratOctaves > 1) {
-      point *= craterFreqPower;
-      amplitude *= craterAmplPower;
-      heightPeak *= craterPeakPower;
-      heightFloor *= craterFloorPower;
-      radInner *= craterRadiusPower;
+      point = point * 1.8 + Randomize;
+      amplitude *= 0.96;
+      heightPeak *= 0.96;
+      heightFloor *= 0.9;
+      radInner *= sqrt(1.8);
     }
   }
 
@@ -385,7 +359,7 @@ float HeightMapSelena(vec3 point) {
   float mare = height;
   float mareFloor = height;
   float mareSuppress = 1.0;
-  if (mareSqrtDensity > 0.05) {
+  if (mareSqrtDensity > 0.05 && mareFreq != 0.0) {
     noiseOctaves = 2;
     mareFloor = 0.6 * (1.0 - Cell3Noise(0.3 * p));
     craterDistortion = 1.0;
@@ -403,17 +377,17 @@ float HeightMapSelena(vec3 point) {
         max(craterSqrtDensity * (0.2 + 0.8 * (1.0 - europaLikeness)),
             10 * (craterSqrtDensity - 0.9));
 
-    heightFloor = -0.1;
-    heightPeak = 0.6;
+    heightFloor = -0.25 * craterMagn;
+    heightPeak = 0.1;
     heightRim = 1.0;
     // crater = _CraterNoise(point, craterMagn, craterFreq, craterSqrtDensity,
-    // craterOctaves, mareSuppress); // NEW SUPPRESS
+    // craterOctaves, mareSuppress);
     crater = saturate(mareSuppress + Fbm(10 * point)) *
-             CraterNoise(point, craterMagn, craterFreq,
-                         (craterSqrtDensityAltered *
-                          (1 - (volcanoActivity /
-                                4.0))), // Supress craters on volcanic worlds
-                         craterOctaves);
+             _CraterNoise(point, craterMagn, craterFreq,
+                          (craterSqrtDensityAltered *
+                           (1 - (volcanoActivity /
+                                 4.0))), // Supress craters on volcanic worlds
+                          craterOctaves);
     noiseOctaves = 10.0;
     noiseLacunarity = 2.0;
     crater = 0.25 * crater +

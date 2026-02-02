@@ -279,7 +279,7 @@ float _RayedCraterColorNoise(vec3 point, float cratFreq, float cratSqrtDensity,
 
 // Function // This function's only purpose is to reduce height, heightFloor and
 // heightPeak by brightness.
-float _RayedCraterHeightFunc(float lastlastLand, float lastLand, float height,
+float _CraterHeightFunc(float lastlastLand, float lastLand, float height,
                              float r, float brightness) {
   // FIXME: Why does this need to be 0.0? we get crazy discontinuities if it's
   // not.
@@ -379,7 +379,7 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
     rad = hash1(cell.x * 743.1) * 1.4 + 0.1;
 
     float brightness = pow(Fbm(cellCenter * 1000.0), 2.0) * 8.0;
-    newLand = _RayedCraterHeightFunc(lastlastlastLand, lastLand, amplitude,
+    newLand = _CraterHeightFunc(lastlastlastLand, lastLand, amplitude,
                                      cell.y * radFactor / rad, brightness);
 
     if (cratOctaves > 1) {
