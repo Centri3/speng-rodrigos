@@ -396,7 +396,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     mare = global;
   } else {
 
-    if (mareSqrtDensity > 0.05) {
+    if (mareSqrtDensity > 0.05 && mareFreq != 0.0) {
       // noiseOctaves = 2;
       // mareFloor = 0.6 * (1.0 - Cell3Noise(0.3*p));
       noiseH = 0.5;

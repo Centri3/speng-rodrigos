@@ -385,7 +385,7 @@ float HeightMapSelena(vec3 point) {
   float mare = height;
   float mareFloor = height;
   float mareSuppress = 1.0;
-  if (mareSqrtDensity > 0.05) {
+  if (mareSqrtDensity > 0.05 && mareFreq != 0.0) {
     noiseOctaves = 2;
     mareFloor = 0.6 * (1.0 - Cell3Noise(0.3 * p));
     craterDistortion = 1.0;
