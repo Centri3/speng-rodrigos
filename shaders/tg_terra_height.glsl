@@ -178,15 +178,13 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseOctaves = 12;
   noiseH = 1.0;
   vec3 distort = 0.35 * Fbm3D(p * 0.73);
-  noiseOctaves = 4;
-  distort +=
-      0.005 * (1.0 - abs(smoothstep(0.2, 0.01,
-                                    JordanTurbulence3D(p * 132.3, 0.8, 0.5, 0.6,
-                                                       0.35, 0.0, 1.8, 1.0))));
+  // FIXME: Should be special distort noise function but it caused issues with
+  // JordanTurbulence, and regular Fbm3D has tiling issues.
+  distort += 0.0;
   noiseOctaves = 12;
-  float global = (0.45 + seaLevel * 0.45) -
-                 JordanTurbulence(p + distort, 0.1, 0.7, 1.0 + venusMagn, 1.0,
-                                  3.0, 3.0, 1.0);
+  float global =
+      (0.45 + seaLevel * 0.45) -
+      JordanTurbulence(p, 0.1, 0.7, 1.0 + venusMagn, 0.0, 3.0, 3.0, 1.0);
   // NOTE: noiseH is not used in iqTurbulence, so make sure to keep continental
   // variedness by passing colorDistMagn
   float globalVolcanic =
