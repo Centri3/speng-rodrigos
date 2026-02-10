@@ -135,8 +135,8 @@ float   _MareHeightFunc(vec3 point, float lastLand, float lastlastLand, float he
 		rimaBottom = smoothstep(0.0, 1.0, 0.2 * rimaBottom);
 		
         float newHeight = lastlastLand + height * heightFloor;
-		return newHeight;
-		//return mix(newHeight, newHeight - 0.08, rimaBottom * (1 - pow(r, 4) / pow(radInner, 4)));
+		//return newHeight;
+		return mix(newHeight, newHeight - 0.08, rimaBottom * (1 - pow(r, 4) / pow(radInner, 4)));
     }
     else if (r < radRim)
     {   // inner rim

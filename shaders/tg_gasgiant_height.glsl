@@ -102,7 +102,8 @@ float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones, float _stripeZones
     twistedPoint = twistedPoint * (0.43 * cloudsFreq) + Randomize + cloudsLayer;
     twistedPoint.y *= 9.0 + turbulence;
     float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
-
+	
+	
     return zones + height + offset;
 }
 //-----------------------------------------------------------------------------
@@ -127,6 +128,7 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
     twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
     twistedPoint.y *= 30.0 + turbulence;
     float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
+
 
     return zones + height + offset;
 }
@@ -154,6 +156,8 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
     twistedPoint.y *= 80.0 + turbulence;
     float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
+
+	
     return zones + height + offset;
 }
 
@@ -168,7 +172,7 @@ void main() {
             height = 3.0 * stripeFluct * HeightMapCloudsTerraAli(point) + HeightMapCloudsTerraAli2(point);
         }
     } else {
-        height = (HeightMapCloudsGasGiantGmail(point, true, stripeZones) + HeightMapCloudsGasGiantGmail2(point) + HeightMapCloudsGasGiantGmail3(point));
+        height = 0.95*(HeightMapCloudsGasGiantGmail(point, true, stripeZones) + 0.5 * HeightMapCloudsGasGiantGmail2(point) + 0.5* HeightMapCloudsGasGiantGmail3(point));
     }
     OutColor = vec4(height);
 }

@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 
-vec4  GlowMapSelena(vec3 point, BiomeData biomeData)
+vec4  GlowMapSelena(vec3 point, float height, float slope)
 {
 	// Thermal emission temperature (in thousand Kelvins)
     noiseOctaves = 5;
@@ -15,19 +15,10 @@ vec4  GlowMapSelena(vec3 point, BiomeData biomeData)
     noiseOctaves = 8;
 	float varyTemp = abs(Fbm(p + dist));
 
-    // Copied from height shader, for extra detail
-    float venus = 0.0;
-    
-    noiseOctaves = 4;
-    noiseH = 0.9;
-    vec3 distort = Fbm3D(point * 0.3) * 1.5;
-    noiseOctaves = 6;
-    venus = Fbm((point + distort) * 1.0) * (0.3);
-    
-
-    float surfTemp = surfTemperature *
-        (globTemp + venus * varyTemp * 0.04) *
-		saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * biomeData.height)) *
+	// Global surface melting
+	float surfTemp = surfTemperature *
+		(globTemp + varyTemp * 0.08) *
+		saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * height)) *
 		saturate((lavaCoverage - 0.01) * 25.0);
 
     // Io-like volcanoes
@@ -55,9 +46,12 @@ vec4  GlowMapSelena(vec3 point, BiomeData biomeData)
 void main()
 {
     vec3  point = GetSurfacePoint();
-    OutColor = GlowMapSelena(point, GetSurfaceBiomeData());
+    float height = 0, slope = 0;
+    GetSurfaceHeightAndSlope(height, slope);
+    OutColor = GlowMapSelena(point, height, slope);
 }
 
 //-----------------------------------------------------------------------------
 
 #endif
+

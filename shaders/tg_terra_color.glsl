@@ -1,4 +1,4 @@
-#include "tg_common.glh"  
+#include "tg_rmr.glh"  
 
 #ifdef _FRAGMENT_
 
@@ -75,7 +75,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
         noiseOctaves = 3.0;
         float volcActivity = saturate((Fbm(point * 1.37 + Randomize) - 1.0 + volcanoActivity) * 5.0);
         // Lava in volcano caldera and flows
-        volcMask = VolcanoGlowNoise(point);
+        volcMask = _VolcanoGlowNoise(point);
         volcMask.x *= volcActivity;
     }
 

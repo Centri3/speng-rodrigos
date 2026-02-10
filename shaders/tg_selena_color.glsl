@@ -429,20 +429,20 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
 
 
     // TerrainFeature // Shield volcano lava
-    if (volcanoOctaves > 0)
-    {
+    // Shield volcano lava
+    vec2 volcMask = vec2(0.0);
+    if(volcanoOctaves > 0) {
         // Global volcano activity mask
-        noiseOctaves = 3;
+        noiseOctaves = 3.0;
         float volcActivity = saturate((Fbm(point * 1.37 + Randomize) - 1.0 + volcanoActivity) * 5.0);
         // Lava in volcano caldera and flows
-	    vec2 volcMask = VolcanoGlowNoise(point);
+        volcMask = _VolcanoGlowNoise(point);
         volcMask.x *= volcActivity;
-		// Model lava as rocks texture
-		climate = mix(climate, 0.0, volcMask.x);
-		biomeData.slope = mix(biomeData.slope, 0.0, volcMask.x);
     }
 
-
+    // Model lava as rocks texture
+    climate = mix(climate, 0.375, volcMask.x);
+    biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
 
     // GlobalModifier // Scale detail texture UV and add a small distortion to it to fix pixelization
     vec2 detUV = (TexCoord.xy * faceParams.z + faceParams.xy) * texScale;

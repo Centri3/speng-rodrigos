@@ -124,7 +124,13 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
     noiseOctaves = 4;
     distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
     float global = 1- Cell3Noise(p + distort);
+	
 
+//	float global =
+//      1.0 - smoothstep(0.0, 1.0,
+//                       iqTurbulence(p + distort + Randomize,
+//                                    0.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.2));
+//									
     // Make sea bottom more flat; shallow seas resembles those on Titan;
     // but this shrinks out continents, so value larger than 1.5 is unwanted
     global = softPolyMax(global, 0.0, 0.1);
