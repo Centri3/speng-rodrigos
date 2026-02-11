@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 
@@ -12,6 +12,16 @@ void main() {
 
   // Venus-like clouds
   if (cloudsCoverage == 1.0) {
+    // RDH gas giants
+    OutColor = GetGasGiantCloudsColor(
+                   max(height * stripeFluct * 0.5, 1.0 - float(BIOME_CLOUD_LAYERS - 1) /
+                                         float(BIOME_SURF_LAYERS))) *
+                   0.3 +
+               0.4 * GetGasGiantCloudsColor(
+                         min(height * stripeFluct * 0.5, 0.7 - float(BIOME_CLOUD_LAYERS - 1) /
+                                               float(BIOME_SURF_LAYERS)));
+    OutColor.rgb *= (pow(OutColor.rgb, vec3(height) * 0.1));
+
     if (cloudsLayer == 0) {
       OutColor.a = 1.0;
     } else {

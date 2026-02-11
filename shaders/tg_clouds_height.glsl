@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 
@@ -64,8 +64,8 @@ float HeightMapCloudsTerraR(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
-float HeightMapCloudsTerraTPE(vec3 point) {
-  float zones = -cos(point.y * 1.75 * (pow(stripeTwist + 0.2, 0.3) + 0.2) *
+float HeightMapCloudsTerraTPE(vec3 point, float _stripeTwist) {
+  float zones = -cos(point.y * 1.75 * (pow(_stripeTwist + 0.2, 0.3) + 0.2) *
                      stripeZones * 0.3);
   float ang = zones * 2;
   vec3 twistedPoint = point;
@@ -127,9 +127,9 @@ float HeightMapCloudsTerraTPE(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
-float HeightMapCloudsTerraTPE2(vec3 point) {
+float HeightMapCloudsTerraTPE2(vec3 point, float _stripeTwist) {
   float zones =
-      -cos(point.y * 1.75 * pow(stripeTwist + 0.2, 0.3) * stripeZones * 0.3);
+      -cos(point.y * 1.75 * pow(_stripeTwist + 0.2, 0.3) * stripeZones * 0.3);
   float ang = zones * 2;
   vec3 twistedPoint = point;
   float coverage = cloudsCoverage;
@@ -340,10 +340,17 @@ float HeightMapCloudsTerraKham2(vec3 point) {
 //-----------------------------------------------------------------------------
 
 void main() {
+  float _stripeTwist;
+  if (cloudsCoverage == 1.0) {
+    _stripeTwist = stripeTwist;
+  } else {
+    _stripeTwist = stripeTwist;
+  }
+
   vec3 point = GetSurfacePoint();
-  float height = 2.0 * max(HeightMapCloudsTerraTPE(point) +
-                               HeightMapCloudsTerraTPE2(point),
-                           pow(HeightMapCloudsTerraA(point), 2.0) * 50.0);
+  float height = 2.0 * max(HeightMapCloudsTerraTPE(point, _stripeTwist) +
+                               HeightMapCloudsTerraTPE2(point, _stripeTwist),
+                           pow(HeightMapCloudsTerraA(point), 2.0) * 50.0) * stripeFluct;
   OutColor = vec4(height);
 }
 
