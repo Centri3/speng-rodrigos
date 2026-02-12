@@ -65,9 +65,13 @@ float HeightMapCloudsTerraR(vec3 point) {
 //-----------------------------------------------------------------------------
 
 float HeightMapCloudsTerraTPE(vec3 point) {
-  float zones = -cos(point.y * 1.75 * (pow(stripeTwist + 0.2, 0.3) + 0.2) *
+  float zones = -cos(point.y * 1.75 * (pow(abs(stripeTwist + 0.2), 0.3) + 0.2) *
                      stripeZones * 0.3);
   float ang = zones * 2;
+  // -0.2 because of the + 0.2
+  if(stripeTwist < -0.2) {
+    ang *= -1.0;
+  }
   vec3 twistedPoint = point;
   float coverage = cloudsCoverage * 0.1;
   float weight = 0.3;
@@ -129,8 +133,12 @@ float HeightMapCloudsTerraTPE(vec3 point) {
 
 float HeightMapCloudsTerraTPE2(vec3 point) {
   float zones =
-      -cos(point.y * 1.75 * pow(stripeTwist + 0.2, 0.3) * stripeZones * 0.3);
+      -cos(point.y * 1.75 * pow(abs(stripeTwist + 0.2), 0.3) * stripeZones * 0.3);
   float ang = zones * 2;
+  // -0.2 because of the + 0.2
+  if(stripeTwist < -0.2) {
+    ang *= -1.0;
+  }
   vec3 twistedPoint = point;
   float coverage = cloudsCoverage;
   float weight = 0.3;
@@ -187,6 +195,10 @@ float HeightMapCloudsTerraA(vec3 point) {
   float zones = -cos(point.y * 1.75 * pow(abs(stripeTwist + 0.3), 0.3) *
                      stripeZones * 0.3);
   float ang = zones * 2;
+  // -0.3 because of the + 0.3
+  if(stripeTwist < -0.3) {
+    ang *= -1.0;
+  }
   vec3 twistedPoint = point;
   float coverage = cloudsCoverage * 0.6;
   if (cloudsOctaves == 0) {
