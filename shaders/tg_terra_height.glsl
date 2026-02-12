@@ -20,15 +20,15 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
 
   for (int i = 0; i < 3; i++) {
     vec3 p = point + i * mainFreq + Randomize;
-    vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.3);
-    distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 2.0) +
+    vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.3 * seaLevel);
+    distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * seaLevel * Fbm3D(p * riversSin * 2.0) +
               0.01 * RidgedMultifractalErodedDetail(
                          point * 0.1 * (canyonsFreq + 1000) *
                                  (0.5 * (1 / montesSpiky + 1)) +
                              Randomize,
                          8.0, erosion, 2);
 
-    vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * p + 0.5 * distort);
+    vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * seaLevel * p + 0.5 * distort);
 
     valleys *= saturate(1.36 * abs(cell.y - cell.x) * riversMagn);
     rivers *= saturate(6.5 * abs(cell.y - cell.x) * riversMagn);
@@ -253,11 +253,12 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
   noiseOctaves = 12.0;
   distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 
-noiseOctaves = 10.0;
-noiseH       = 1.0;
-noiseLacunarity = 2.3;
-noiseOffset  = montesSpiky;
-float rocks = -0.005 * iqTurbulence(point * 20.0, 1.0);  //-0.005 * iqTurbulence(point * 200.0, 1.0);
+  noiseOctaves = 10.0;
+  noiseH = 1.0;
+  noiseLacunarity = 2.3;
+  noiseOffset = montesSpiky;
+  float rocks = -0.005 * iqTurbulence(point * 20.0, 1.0) *
+                smoothstep(2, 1, volcanoActivity);
 
   // small terrain elevations
   noiseOctaves = 12.0;
@@ -543,72 +544,7 @@ float rocks = -0.005 * iqTurbulence(point * 20.0, 1.0);  //-0.005 * iqTurbulence
                         // (mostly works but some edge cases still break
   }
 
-  //	RODRIGO - Terrain noise matching albedo noise
 
-  float _colorDistMagn = colorDistMagn;
-  float colorDistMin = 0.065;
-
-  if (colorDistMagn <= colorDistMin &&
-      cracksOctaves >= 0) // Prevent some planets from becoming chaos
-  {
-    _colorDistMagn = colorDistMin;
-  }
-
-  noiseOctaves = 14.0;
-  noiseLacunarity = 2.218281828459;
-  noiseH = 0.55 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
-  distort = Fbm3D((point + Randomize) * 1.0) *
-            0.0; // Fbm3D((point + Randomize) * 0.07) * 1.5  useless terrain
-                 // elevation imo
-  float SmallDistort = 0;
-  if (cracksOctaves > 0) {
-    noiseH = 0.6 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
-    ;
-  }
-
-  if (cracksOctaves == 0 && volcanoActivity > 1.0) {
-    distort = (saturate(iqTurbulence(point + Randomize, 0.55) *
-                        (2 * (volcanoActivity - 1)))) *
-                  (volcanoActivity - 1) +
-              (Fbm3D((point + Randomize) * 0.07) * 0) *
-                  (2 - volcanoActivity); // Io like on atmosphered planets
-    SmallDistort = saturate(iqTurbulence(point + Randomize, 0.75) *
-                            (2 * (volcanoActivity - 1))) *
-                   (volcanoActivity - 1);
-  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
-    distort = Fbm3D((point + Randomize) * 0.07) *
-              0; // Normal non-volcanic (also useless noise but shader breaks if
-                 // removed
-  }
-
-  else if (cracksOctaves > 0) //&& riversMagn == 0)
-  {
-
-    distort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
-                  (1.5 + venusMagn) +
-              saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);
-  }
-
-  float vary =
-      1.0 - 5 * (Fbm((point + distort + (SmallDistort * 0.02)) *
-                     (1.5 - RidgedMultifractal(pp, 8.0) +
-                      RidgedMultifractal(pp * 0.999,
-                                         8.0)))); // + (SmallDistort * 0.015)
-  // float smallvary = 1.0 - 0.15*(Fbm((point + SmallDistort) * (1.5 -
-  // RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0)))); vary *=
-  // 0.5 * vary * vary;
-
-  if (oceanType > 0.5) {
-    height = mix(height, height, vary) - seaLevel;
-  }
-
-  if (cracksOctaves > 0) {
-    height = mix(height, height + 0.1, vary) - 0.1;
-  }
-
-  else {
-    height = mix(height, height + 0.05, vary) - 0.05; // 0.0015
-  }
   // height = max(height, seaLevel + 0.057);
   // ocean basins
   height = min(smoothstep(seaLevel - 0.03, seaLevel + 0.084, height), height);
