@@ -350,7 +350,7 @@ void main() {
   vec3 point = GetSurfacePoint();
   float height = 2.0 * max(HeightMapCloudsTerraTPE(point, _stripeTwist) +
                                HeightMapCloudsTerraTPE2(point, _stripeTwist),
-                           pow(HeightMapCloudsTerraA(point), 2.0) * 50.0) * stripeFluct;
+                           pow(HeightMapCloudsTerraA(point), 2.0) * 50.0) * unwrap_or(stripeFluct, 0.6);
   OutColor = vec4(height);
 }
 
