@@ -119,7 +119,7 @@ float _MareHeightFunc(vec3 point, float lastLand, float lastlastLand,
                       float height, float r, inout float mareFloor) {
   float t;
 
-  if (r < radInner) { // crater bottom
+  if (r < radInner) {                     // crater bottom
     mareFloor = 1.0 / max(mareFreq, 0.3); // divide by 0 error
 
     noiseOctaves = 6.0;
@@ -293,6 +293,13 @@ float HeightMapSelena(vec3 point) {
   float bottomAlpha = bottomColorHSL.w;
   bool aquaria = (bottomAlpha == 0.001);
 
+  float _cracksOctaves = cracksOctaves;
+
+  //	if (bottomAlpha != 0 && cracksOctaves == 0)
+  //	{
+  //		_cracksOctaves = cracksOctaves + 1;
+  //	}
+
   // Fetch variables // Planet types
   // 21-10-2024 by Sp_ce // Added europaLikeness
   bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) &&
@@ -334,7 +341,8 @@ float HeightMapSelena(vec3 point) {
   noiseH = 1.0;
   // noiseLacunarity = 2.3; // Caused offset
   noiseOffset = montesSpiky;
-  float rocks = iqTurbulence(point * 80, 1);
+  float rocks =
+      -0.01 * iqTurbulence(point * 80, 1); // iqTurbulence(point * 80, 1)
 
   noiseOctaves = 4;
   distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
@@ -607,40 +615,63 @@ ridgeModulate;
   }
 
   // GlobalModifier // Terrain noise match colorvary
+
+  float _colorDistMagn = colorDistMagn;
+  float colorDistMin = 0.065;
+
+  if (_cracksOctaves > 0) // Prevent some planets from becoming chaos
+  {
+    colorDistMin = 0.058;
+  }
+
+  if (colorDistMagn <= colorDistMin) // Prevent some planets from becoming chaos
+  {
+    _colorDistMagn = colorDistMin;
+  }
+
   noiseOctaves = 14.0;
   noiseLacunarity = 2.218281828459;
-  noiseH = 0.6 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-  if (cracksOctaves > 0) {
-    noiseH += 0.3;
+  noiseH = 0.55 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
+  distort = Fbm3D((point + Randomize) * 0.07) *
+            1.5; // Fbm3D((point + Randomize) * 0.07) * 1.5;
+  float SmallDistort = 0;
+  if (_cracksOctaves > 0) {
+    // noiseH += 0.3;
+    noiseH = 0.6 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.8;
   }
-  distort = JordanTurbulence3D(((point) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8,
-                               0.0, 1.0, 3.0) *
-            (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
-  if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
-    distort = (saturate(iqTurbulence3D(point + Randomize, 0.65)) *
-               (2 * (min(volcanoActivity, 1.6) - 1))) *
-              saturate(min(volcanoActivity, 1.6) - 0.5) * 2.0;
-  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
+  if (_cracksOctaves == 0 && volcanoActivity >= 1.0) {
+    distort = (saturate(iqTurbulence(point + Randomize, 0.55) *
+                        (2 * (volcanoActivity - 1)))) *
+                  (volcanoActivity - 1) +
+              (Fbm3D((point + Randomize) * 0.07) * 1.5) *
+                  (2 - volcanoActivity); // Io like on atmosphered planets
+    SmallDistort = saturate(iqTurbulence(point + Randomize, 0.75) *
+                            (2 * (volcanoActivity - 1))) *
+                       (volcanoActivity - 1) +
+                   rocks;
+
+  } else if (_cracksOctaves == 0 && volcanoActivity < 1.0) {
     distort = Fbm3D((point + Randomize) * 0.07) *
               1.5; // Io like on airless planets donatelo200 12/09/2025
+    SmallDistort = rocks;
   }
 
-  else if (cracksOctaves > 0) {
+  else if (_cracksOctaves > 0) {
 
     distort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
                   (1.5 + venusMagn) +
-              saturate(iqTurbulence(point, 0.15) * volcanoActivity);
+              saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);
   }
 
-  float vary =
-      1.0 -
-      5 * (Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) +
-                                    RidgedMultifractal(pp * 0.999, 8.0))));
-  if (cracksOctaves > 0) {
-    height = mix(height, height + 0.1, vary);
+  float vary = 1.0 - 5 * (Fbm((point + distort + (SmallDistort * 0.015)) *
+                              (1.5 - RidgedMultifractal(pp, 8.0) +
+                               RidgedMultifractal(pp * 0.999, 8.0))));
+
+  if (_cracksOctaves > 0) {
+    height = mix(height, height + 0.1, vary - 0.1);
   } else {
-    height = mix(height, height + 0.0017 + volcanoActivity * 0.013, vary);
+    height = mix(height, height + 0.05, vary) - 0.05; // 0.0015
   }
 
   // GlobalModifier // Soften max/min height

@@ -121,42 +121,37 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
   // climate = mix(climate, 0.375, volcMask.x);
   // biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
 
-  // GlobalModifier // ColorVary setup
+  // Global albedo variations
+  // RODRIGO - modify albedo noise
   noiseOctaves = 14.0;
-  noiseH = 0.3 + smoothstep(0.0, 0.1, colorDistMagn) * 0.4;
-  noiseOctaves = 14.0;
-  vec3 albedoVaryDistort =
-      JordanTurbulence3D((point + Randomize) * .07, 0.6, 0.6, 0.6, 0.8,
-                         0.0, 1.0, 3.0) *
-      (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
+  distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 
   if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
-    distort.x *= 2.0;
-    albedoVaryDistort =
-        (saturate(iqTurbulence3D(point + Randomize, 0.65)) *
-         (2 * (min(volcanoActivity, 1.6) - 1))) *
-        saturate(min(volcanoActivity, 1.6) - 0.5);
-  } else if (cracksOctaves > 0) {
-    albedoVaryDistort =
-        Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
-            (1.5 + venusMagn) +
-        iqTurbulence3D(point + Randomize, 0.15) * volcanoActivity;
-    // albedoVaryDistort =Fbm3D((point *
-    // volcanoActivity + Randomize) *
-    // volcanoActivity) * (1.5 + venusMagn );
+    distort = (saturate(iqTurbulence(point + Randomize, 0.55) *
+                        (2 * (volcanoActivity - 1))) +
+               saturate(iqTurbulence(point + Randomize, 0.75) *
+                        (2 * (volcanoActivity - 1)))) *
+                  (volcanoActivity - 1) +
+              (Fbm3D((point + Randomize) * 0.07) * 1.5) *
+                  (2 - volcanoActivity); // Io like on atmosphered planets
+  } else if (cracksOctaves == 0 && volcanoActivity < 1.0) {
+    distort =
+        Fbm3D((point + Randomize) * 0.07) * 1.5; // For less Volcanic planets
   }
 
-  // else if (cracksOctaves > 0)  // Test Ice planets later
-  //{
-  //	distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) *
-  //(1.5 + venusMagn ) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
-  ////albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) *
-  // volcanoActivity) * (1.5 + venusMagn );
-  //}
+  else if (cracksOctaves > 0) // Test Ice planets later
+  {
+    distort =
+        Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
+            (1.5 + venusMagn) +
+        saturate(iqTurbulence(point + Randomize, 0.15) *
+                 volcanoActivity); // albedoVaryDistort =Fbm3D((point *
+                                   // volcanoActivity + Randomize) *
+                                   // volcanoActivity) * (1.5 + venusMagn );
+  }
 
-  vary = 1.0 - Fbm((point + albedoVaryDistort) *
-                   (1.5 - RidgedMultifractal(pp, 8.0) +
-                    RidgedMultifractal(pp * 0.999, 8.0)));
+  vary = 1.0 - Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) +
+                                        RidgedMultifractal(pp * 0.999, 8.0)));
   vary *= 0.5 * vary * vary;
 
   // Scale detail texture UV and add a small distortion to it to fix

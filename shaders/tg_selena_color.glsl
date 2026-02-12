@@ -269,6 +269,13 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   float bottomAlpha = bottomColorHSL.w;
   bool aquaria = (bottomAlpha == 0.001);
 
+  float _cracksOctaves = cracksOctaves;
+
+  //	if (bottomAlpha != 0 && cracksOctaves == 0)
+  //	{
+  //		_cracksOctaves = _cracksOctaves + 1;
+  //	}
+
   // Fetch variables // Planet types
   // 21-10-2024 by Sp_ce // Added europaLikeness
   bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) &&
@@ -388,32 +395,41 @@ vec4 ColorMapSelena(vec3 point, in BiomeData biomeData) {
   surf = _GetBaseSurface(point, biomeData.height, detUV);
 
   // GlobalModifier // ColorVary setup
+
   vec3 zz =
       (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
   noiseOctaves = 14.0;
-  noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-  noiseOctaves = 14.0;
   vec3 albedoVaryDistort =
-      JordanTurbulence3D((point + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0,
-                         1.0, 3.0) *
+      Fbm3D((point * 1 + Randomize) * .07) *
       (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
-  if (cracksOctaves == 0 && volcanoActivity >= 1.0) {
-    distort.x *= 2.0;
-    albedoVaryDistort = (saturate(iqTurbulence3D(point + Randomize, 0.65)) *
-                         (2 * (min(volcanoActivity, 1.6) - 1))) *
-                        saturate(min(volcanoActivity, 1.6) - 0.5);
-  } else if (cracksOctaves > 0) {
+  if (_cracksOctaves == 0 && volcanoActivity >= 1.0) {
+    albedoVaryDistort =
+        (saturate(iqTurbulence(point + Randomize, 0.55) *
+                  (2 * (volcanoActivity - 1))) +
+         saturate(iqTurbulence(point + Randomize, 0.75) *
+                  (2 * (volcanoActivity - 1)))) *
+            (volcanoActivity - 1) +
+        (Fbm3D((point + Randomize) * 0.07) * 1.5) *
+            (2 - volcanoActivity); // Io like on atmosphered planets
+  } else if (_cracksOctaves == 0 && volcanoActivity < 1.0) {
+    albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) *
+                        1.5; // Io like on atmosphered planets
+  }
+
+  else if (_cracksOctaves > 0) {
+
     albedoVaryDistort =
         Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) *
             (1.5 + venusMagn) +
-        saturate(iqTurbulence3D(point + Randomize, 0.15) * volcanoActivity);
-    // albedoVaryDistort =Fbm3D((point *
-    // volcanoActivity + Randomize) *
-    // volcanoActivity) * (1.5 + venusMagn );
+        saturate(iqTurbulence(point + Randomize, 0.15) *
+                 volcanoActivity); // albedoVaryDistort =Fbm3D((point *
+                                   // volcanoActivity + Randomize) *
+                                   // volcanoActivity) * (1.5 + venusMagn );
   }
 
   if (europaLike) {
+    albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;
     vary = 1.0 - Fbm(0.5 * (point + albedoVaryDistort) *
                      (1.5 - RidgedMultifractal(zz, 8.0) +
                       RidgedMultifractal(zz * 0.999, 8.0)));
