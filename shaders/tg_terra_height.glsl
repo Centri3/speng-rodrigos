@@ -20,15 +20,15 @@ void _PseudoRivers(vec3 point, float damping, inout float height) {
 
   for (int i = 0; i < 3; i++) {
     vec3 p = point + i * mainFreq + Randomize;
-    vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.3 * seaLevel);
-    distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * seaLevel * Fbm3D(p * riversSin * 2.0) +
+    vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.3);
+    distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 2.0) +
               0.01 * RidgedMultifractalErodedDetail(
                          point * 0.1 * (canyonsFreq + 1000) *
                                  (0.5 * (1 / montesSpiky + 1)) +
                              Randomize,
-                         8.0, erosion, 2);
+                         8.0, erosion, 2) * seaLevel;
 
-    vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * seaLevel * p + 0.5 * distort);
+    vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * seaLevel * 0.2 * p + 0.5 * distort);
 
     valleys *= saturate(1.36 * abs(cell.y - cell.x) * riversMagn);
     rivers *= saturate(6.5 * abs(cell.y - cell.x) * riversMagn);
