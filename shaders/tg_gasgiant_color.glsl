@@ -35,7 +35,7 @@ void main() {
   if (volcanoActivity != 0.0) {
     float latitude = abs(GetSurfacePoint().y);
     // Drown out poles
-    OutColor.rgb = pow(OutColor.rgb, 1.0 - vec3(saturate(latitude - 0.4)));
+    OutColor.rgb = mix(GetGasGiantCloudsColor(0.0).rgb, OutColor.rgb, 1.0 - vec3(saturate(latitude - 0.1)));
   }
 
   // GlobalModifier // Output color
