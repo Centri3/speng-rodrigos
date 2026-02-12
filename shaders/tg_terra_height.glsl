@@ -554,6 +554,13 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
     height = mix(height, max(height, seaLevel + 0.05), h);
   }
 
+
+if (oceanType == 1.0)  
+    {
+        height = softPolyMin(height, 0.01, 0.5);
+        height = softPolyMax(height, 0.0, 0.3);
+    }
+
   if (riversMagn > 0.0) {
     HeightBiomeMap = vec4(height - 0.06);
   }
