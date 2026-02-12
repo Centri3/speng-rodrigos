@@ -364,7 +364,7 @@ void main() {
                      HeightMapCloudsTerraTPE2(point),
                  pow(HeightMapCloudsTerraA(point), 2.0) * 50.0);
   }
-  height *= unwrap_or(stripeFluct, 0.6);
+  height *= unwrap_or(stripeFluct, 1.0) * 0.33333;
   OutColor = vec4(height);
 }
 

@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = unwrap_or(stripeFluct, 0.6);
+  float _stripeFluct = unwrap_or(stripeFluct, 1.0);
 
   float height = GetSurfaceHeight();
 
@@ -16,29 +16,26 @@ void main() {
   if (cloudsCoverage == 1.0) {
     // RDH gas giants
     OutColor =
+        0.1 +
         GetGasGiantCloudsColor(max(height * _stripeFluct * 0.5,
                                    1.0 - float(BIOME_CLOUD_LAYERS - 1) /
-                                             float(BIOME_SURF_LAYERS))) *
-            0.3 +
-        0.4 * GetGasGiantCloudsColor(min(height * _stripeFluct * 0.5,
+                                             float(BIOME_SURF_LAYERS))) +
+        0.1 * GetGasGiantCloudsColor(min(height * _stripeFluct * 0.5,
                                          0.7 - float(BIOME_CLOUD_LAYERS - 1) /
                                                    float(BIOME_SURF_LAYERS)));
-    OutColor.rgb *= (pow(OutColor.rgb, vec3(height) * 0.1));
+    OutColor.rgb *= (pow(OutColor.rgb, vec3(height * _stripeFluct)));
 
     if (cloudsLayer == 0) {
       OutColor.a = 1.0;
     } else {
-      OutColor.a *= modulate;
+      OutColor.a *= height;
     }
 
     float latitude = abs(GetSurfacePoint().y);
     // Drown out poles
     // TODO: Occasionally make the equator drowned out, like Titan
-    OutColor.rgb = mix(GetCloudsColor(0.0).rgb, OutColor.rgb, 1.0 - vec3(saturate(latitude - 0.4)));
-
-    if (cloudsLayer == 0.0 && cloudsNLayers != 1) {
-      OutColor.a = 0.0;
-    }
+    OutColor.rgb = mix(GetCloudsColor(0.0).rgb, OutColor.rgb,
+                       1.0 - vec3(saturate(latitude - 0.4)));
   } else {
     OutColor *= modulate;
   }

@@ -108,7 +108,8 @@ float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones,
   float turbulence = Fbm(twistedPoint * 0.03);
   twistedPoint = twistedPoint * (0.43 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= 9.0 + turbulence;
-  float height = unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
+  float height =
+      unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
 
   return zones + height + offset;
 }
@@ -136,7 +137,8 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
   float turbulence = Fbm(twistedPoint * 0.01);
   twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= 30.0 + turbulence;
-  float height = unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
+  float height =
+      unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
   return zones + height + offset;
 }
@@ -165,7 +167,8 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
   float turbulence = Fbm(twistedPoint * 8.86);
   twistedPoint = twistedPoint * (1.12 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= 80.0 + turbulence;
-  float height = unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
+  float height =
+      unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
   return zones + height + offset;
 }
@@ -174,14 +177,12 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
 
 void main() {
   vec3 point = GetSurfacePoint();
-  float height = 0.0;
+  float height;
   if (volcanoActivity !=
       0.0) // volcanoActivity != 0.0 && colorDistFreq < 200000000
   {
-    if (cloudsLayer == 0.0) {
-      height = 3.0 * stripeFluct * HeightMapCloudsTerraAli(point) +
-               HeightMapCloudsTerraAli2(point);
-    }
+    height = 3.0 * stripeFluct * HeightMapCloudsTerraAli(point) +
+             HeightMapCloudsTerraAli2(point);
   } else {
     height = 0.95 * (HeightMapCloudsGasGiantGmail(point, true, stripeZones) +
                      0.5 * HeightMapCloudsGasGiantGmail2(point) +
