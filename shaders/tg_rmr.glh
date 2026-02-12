@@ -413,8 +413,13 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
 }
 
 float HeightMapCloudsTerraAli(vec3 point) {
+  float stripeTwistMult = 0.2;
+  if(cloudsCoverage == 1.0) {
+    stripeTwistMult = 1.4;
+  }
+
   float zones = cos(stripeZones * point.y * 1.75);
-  float ang = zones * pow(abs(stripeTwist * 0.2), 0.6);
+  float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
   if (stripeTwist < 0.0) {
     ang *= -1.0;
   }
@@ -454,8 +459,13 @@ float HeightMapCloudsTerraAli(vec3 point) {
 //-----------------------------------------------------------------------------
 
 float HeightMapCloudsTerraAli2(vec3 point) {
+  float stripeTwistMult = 0.2;
+  if(cloudsCoverage == 1.0) {
+    stripeTwistMult = 1.4;
+  }
+
   float zones = cos(stripeZones * point.y * 1.75);
-  float ang = zones * pow(abs(stripeTwist * 0.2), 0.6);
+  float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
   // HACK: Reverse stripe thingy once we reach negative stripeTwist, it's a bug
   // that it becomes white normally and I don't feel like fixing it correctly
   if (stripeTwist < 0.0) {
