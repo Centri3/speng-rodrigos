@@ -108,7 +108,7 @@ float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones,
   float turbulence = Fbm(twistedPoint * 0.03);
   twistedPoint = twistedPoint * (0.43 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= 9.0 + turbulence;
-  float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
+  float height = unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
 
   return zones + height + offset;
 }
@@ -136,7 +136,7 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
   float turbulence = Fbm(twistedPoint * 0.01);
   twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= 30.0 + turbulence;
-  float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
+  float height = unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
   return zones + height + offset;
 }
@@ -165,7 +165,7 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
   float turbulence = Fbm(twistedPoint * 8.86);
   twistedPoint = twistedPoint * (1.12 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= 80.0 + turbulence;
-  float height = max(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
+  float height = unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
   return zones + height + offset;
 }
