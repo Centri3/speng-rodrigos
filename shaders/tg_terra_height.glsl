@@ -177,6 +177,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap) {
 
   noiseOctaves = 12;
   noiseH = 1.0;
+  // noiseH is not used on JordanTurbulence and iqTurbulence
+  noiseLacunarity = 2.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.5;
   vec3 distort = 0.35 * Fbm3D(p * 0.73);
   // FIXME: Should be special distort noise function but it caused issues with
   // JordanTurbulence, and regular Fbm3D has tiling issues.
