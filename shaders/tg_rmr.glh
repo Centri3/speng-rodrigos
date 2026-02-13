@@ -182,7 +182,7 @@ vec2 _VolcanoGlowNoise(vec3 point) {
     point *= rotY;
     point *= rotZ;
     noiseOctaves = 4;
-    vec3 p = cellCenter * mainFreq + Randomize;
+    vec3 p = point + distMagn * Fbm3D(point * distFreq);
 
     cell = inverseSF(p, frequency, cellCenter);
 
