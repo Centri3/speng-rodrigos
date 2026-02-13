@@ -2,6 +2,16 @@
 
 #ifdef _FRAGMENT_
 
+const float NO_DATA = -1e+38;
+float unwrap_or_with_sentinel(float optional, float default_value, float sentinel) {
+    if (optional == sentinel) {
+        return default_value;
+    } else {
+        return optional;
+    }
+}
+#define unwrap_or(optional, default_value) unwrap_or_with_sentinel(optional, default_value, NO_DATA)
+
 vec3 iqTurbulence3D(vec3 point, float gain) {
   return vec3(iqTurbulence(point + vyd, gain), iqTurbulence(point + vzd, gain),
               iqTurbulence(point + vwd, gain));
@@ -69,9 +79,30 @@ float _VolcanoNoise(vec3 point, float globalLand, float localLand) {
     point *= rotZ;
 
     noiseOctaves = 4;
-    vec3 p = point + distMagn * Fbm3D(point * distFreq);
+    vec3 p = cellCenter * mainFreq + Randomize;
 
     cell = inverseSF(p, frequency, cellCenter);
+
+    noiseOctaves = 12;
+    noiseH = 1.0;
+    vec3 distort = 0.35 * Fbm3D(p * 0.73);
+    distort += 0.0;
+    noiseOctaves = 12;
+    float globalCellCenter =
+        (0.45 + seaLevel * 0.45) -
+        JordanTurbulence(p, 0.1, 0.7, 1.0 + venusMagn, 0.0, 3.0, 3.0, 1.0);
+    float globalVolcanic =
+        1.0 - smoothstep(0.0, 1.0,
+                         iqTurbulence(
+                             p + distort,
+                             0.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.2));
+
+    globalCellCenter = mix(globalCellCenter, globalVolcanic,
+                           smoothstep(1.0, 2.0, volcanoActivity));
+
+    if (globalCellCenter < seaLevel) {
+      continue;
+    }
 
     float h = hash1(cell.x);
     float r = 40.0 * cell.y;
@@ -151,9 +182,30 @@ vec2 _VolcanoGlowNoise(vec3 point) {
     point *= rotY;
     point *= rotZ;
     noiseOctaves = 4;
-    vec3 p = point + distMagn * Fbm3D(point * distFreq);
+    vec3 p = cellCenter * mainFreq + Randomize;
 
     cell = inverseSF(p, frequency, cellCenter);
+
+    noiseOctaves = 12;
+    noiseH = 1.0;
+    vec3 distort = 0.35 * Fbm3D(p * 0.73);
+    distort += 0.0;
+    noiseOctaves = 12;
+    float globalCellCenter =
+        (0.45 + seaLevel * 0.45) -
+        JordanTurbulence(p, 0.1, 0.7, 1.0 + venusMagn, 0.0, 3.0, 3.0, 1.0);
+    float globalVolcanic =
+        1.0 - smoothstep(0.0, 1.0,
+                         iqTurbulence(
+                             p + distort,
+                             0.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.2));
+
+    globalCellCenter = mix(globalCellCenter, globalVolcanic,
+                           smoothstep(1.0, 2.0, volcanoActivity));
+
+    if (globalCellCenter < seaLevel) {
+      continue;
+    }
 
     float h = hash1(cell.x);
     float r = 40.0 * cell.y;
@@ -398,6 +450,99 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
   }
 
   return cratMagn * newLand;
+}
+
+float HeightMapCloudsTerraAli(vec3 point) {
+  float stripeTwistMult = 0.2;
+  if(cloudsCoverage == 1.0) {
+    stripeTwistMult = 1.4;
+  }
+
+  float zones = cos(stripeZones * point.y * 1.75);
+  float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
+  if (stripeTwist < 0.0) {
+    ang *= -1.0;
+  }
+  vec3 twistedPoint = point;
+  float coverage = cloudsCoverage * 0.5;
+  float weight = 1.0;
+  noiseH = 0.75;
+
+  float offset = 0.0;
+
+  // Compute turbulence
+  twistedPoint = TurbulenceTerra(twistedPoint);
+
+  // Compute the Coriolis effect
+  float sina = sin(ang);
+  float cosa = cos(ang);
+  twistedPoint =
+      vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y,
+           sina * twistedPoint.x + cosa * twistedPoint.z);
+  twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+  // Compute the flow-like distortion
+  noiseLacunarity = 6.6;
+  noiseOctaves = 0.0;
+
+  vec3 distort = Fbm3D(twistedPoint * 2.8) * 3;
+  vec3 p = twistedPoint * cloudsFreq * 75.0;
+  vec3 q = p + Fbm3D(p);
+  vec3 r = p + Fbm3D(q);
+  float f = Fbm(r) * 4 + coverage;
+  float global = saturate(f) * weight *
+                 (Fbm(twistedPoint + distort) + 0.5 * (cloudsCoverage * 0.1));
+
+  return global;
+}
+
+//-----------------------------------------------------------------------------
+
+float HeightMapCloudsTerraAli2(vec3 point) {
+  float stripeTwistMult = 0.2;
+  if(cloudsCoverage == 1.0) {
+    stripeTwistMult = 1.4;
+  }
+
+  float zones = cos(stripeZones * point.y * 1.75);
+  float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
+  // HACK: Reverse stripe thingy once we reach negative stripeTwist, it's a bug
+  // that it becomes white normally and I don't feel like fixing it correctly
+  if (stripeTwist < 0.0) {
+    ang *= -1.0;
+  }
+  vec3 twistedPoint = point;
+  float coverage = cloudsCoverage;
+  float weight = 1.0;
+  noiseH = 0.75;
+
+  // Compute turbulence
+  twistedPoint = TurbulenceTerra(twistedPoint);
+
+  // Compute the Coriolis effect
+  float sina = sin(ang);
+  float cosa = cos(ang);
+  twistedPoint =
+      vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y,
+           sina * twistedPoint.x + cosa * twistedPoint.z);
+  twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+  // Compute the flow-like distortion
+  noiseLacunarity = 6.6 - cloudsFreq;
+  noiseOctaves = cloudsOctaves;
+
+  vec3 distort = Fbm3D(twistedPoint) * 2;
+
+  vec3 p = twistedPoint * cloudsFreq * 6.5;
+  vec3 q = p + Fbm3D(p);
+  vec3 r = p + Fbm3D(q);
+  noiseOctaves = 0.0;
+  float f = Fbm(r) * 4 + coverage;
+  noiseOctaves = cloudsOctaves;
+  float global =
+      saturate(f) * weight * (Fbm(twistedPoint + distort) + cloudsCoverage);
+
+  return global;
 }
 
 struct NoiseParams {

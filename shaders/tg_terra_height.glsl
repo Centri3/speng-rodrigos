@@ -22,10 +22,10 @@ void _PseudoRivers(vec3 point, float damping, inout float height)
 	for (int i = 0; i < 3; i++)
 	{
 		vec3 p = point + i * mainFreq + Randomize;
-		vec3 distort = 0.325 * Fbm3D(p * riversSin);
-		distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01 * RidgedMultifractalErodedDetail(point * 0.3 * (canyonsFreq+1000) * (0.5 * (1 / montesSpiky + 1)) + Randomize, 8.0, erosion, 2);
+		vec3 distort = 0.325 * Fbm3D(p * riversSin * 0.3);
+		distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01 * RidgedMultifractalErodedDetail(point * 0.3 * (canyonsFreq+1000) * (0.5 * (1 / montesSpiky + 1)) + Randomize, 8.0, erosion, 2) * seaLevel;
 
-		vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * p + 0.5 * distort);
+		vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * seaLevel * 0.2 * p + 0.5 * distort);
 		
 		valleys = saturate(1.36 * abs(cell.y - cell.x) * riversMagn);
 		// valleys = smoothstep(0.0, 1.0, valleys) * damping;
@@ -239,16 +239,47 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 
 	// Global landscape
 	vec3 p = point * mainFreq + Randomize;
+
+	// TODO: Make a utils function for this.
+	// Give the global landscape a random angle to reduce chances of "vertical"
+	// continents
+	float angleX = Randomize.x * 6.283185;
+	float angleY = Randomize.y * 6.283185;
+	float angleZ = Randomize.z * 6.283185;
+
+	// clang-format off
+	mat3x3 rotX = mat3x3(1.0, 0.0, 0.0, 0.0, cos(angleX), -sin(angleX), 0.0, sin(angleX), cos(angleX));
+
+	mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY), 0.0, 1.0, 0.0, -sin(angleY), 0.0, cos(angleY));
+
+	mat3x3 rotZ = mat3x3(cos(angleZ), -sin(angleZ), 0.0, sin(angleZ), cos(angleZ), 0.0, 0.0, 0.0, 1.0);
+	// clang-format on
+
+	p *= rotX;
+	p *= rotY;
+	p *= rotZ;
+
+	// Replace old baseline terrain with more complex features.
 	noiseOctaves = 5;
+	// noiseH is not used on JordanTurbulence and iqTurbulence
+	noiseLacunarity = 2.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.5;
 	vec3 distort = 0.35 * Fbm3D(p * 0.73);
 	noiseOctaves = 4;
-	// distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
 	distort += 0.005 * (1.0 - abs(smoothstep(0.2, 0.01, JordanTurbulence3D(p * 132.3, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0))));
-	// float global = 1.0 - Cell3Noise(p + distort);
 	float global = 1.0 - smoothstep(0.0, 1.0, iqTurbulence(p + distort + Randomize, smoothstep(0.1, 0.0, colorDistMagn) * mainFreq));
 	// float global = 1.0 - RidgedMultifractal(p + distort + Randomize, 1.0);
 	// float global = 1.0 - JordanTurbulence(p * _hillsMagn + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0); 
 	noiseOctaves = 12;
+	
+	// Custom Planets using volcanoes for "city lights" are extremely crinkly.
+	// Exclude special volcanism code when volcanoMagn is 0 for city lights generation.
+	float globalVolcanic;
+
+	if (volcanoMagn != 0.0)
+	{
+		globalVolcanic = (0.45 + seaLevel * 0.45) - JordanTurbulence(p + distort, 0.1, 0.7, 1.0 + venusMagn, 1.0, 3.0, 3.0, 1.0);
+		global = mix(global, globalVolcanic, smoothstep(1.0, 2.0, volcanoActivity));
+	}
 
 	// Make sea bottom more flat; shallow seas resembles those on Titan;
 	// but this shrinks out continents, so value larger than 1.5 is unwanted
@@ -259,7 +290,10 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	// seaLevel shouldn't be just a sphere, this is a workaround! Use smoothstep
 	// to avoid "islands" where low values that are otherwise oceans become land
 	// again, limit it to seaLevel.
-	global = mix(global + 0.1, pow(2.71828, global + 0.1) * _hillsMagn, smoothstep(seaLevel, 1.2, global));
+	if (oceanType != 0.0)
+	{
+		global = mix(global + 0.1, pow(2.71828, global + 0.1) * _hillsMagn, smoothstep(seaLevel, 1.2, global));
+	}
 
 	// Venus-like structure
 	float venus = 0.0;
@@ -271,6 +305,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
 
 	global = (global + venus - seaLevel) * 0.5 + seaLevel;
+	global = clamp(global, seaLevel - 0.1, seaLevel + 0.1);
 	float shore = saturate(70.0 * (global - seaLevel));
 
 	// Biome domains
@@ -300,9 +335,9 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 		vec3  pp = (point + Randomize) * (0.0005 * deNerf / (hillsMagn * hillsMagn));
 
 		noiseOctaves = 10.0;
-		noiseH	   = 1.0;
+		noiseH = 1.0;
 		noiseLacunarity = 2.3;
-		noiseOffset  = montesSpiky;
+		noiseOffset = montesSpiky;
 		float rocks = -0.005 * iqTurbulence(point * 200.0, 1.0) * smoothstep(2, 1, volcanoActivity);
 		// float rocks = -0.013 * iqTurbulence(point * 80 , 1);
 		rocks = smoothstep(-0.9, 0.1, rocks);
@@ -323,7 +358,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 		zr = smoothstep(0.0, 1.0, 0.2 * zr * zr);
 		zr *= 1 - smoothstep(0.0, 0.02, seaLevel - global);
 		zr = 0.1 * deNerf * smoothstep(0.0, 1.0, zr);
-		global =  mix(global,global+0.0006,zr);
+		global =  mix(global, global + 0.0006, zr);
 
 		noiseOctaves = 10.0;
 		noiseH = 1.0;
@@ -384,7 +419,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	else if (biome < hillsFraction)
 	{
 		// Mountains
-		if (erosion > 0.0)
+		if (oceanType != 0.0)
 		{
 			noiseOctaves = 10.0;
 			noiseH	   = 1.0;
@@ -404,7 +439,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	else if (biome < hills2Fraction)
 	{
 		// "Eroded" hills
-		if (erosion > 0.0)
+		if (oceanType != 0.0)
 		{
 			noiseOctaves = 10.0;
 			noiseH	   = 1.0;
@@ -420,7 +455,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	}
 	else if (biome < canyonsFraction)
 	{
-		if (erosion > 0.0)
+		if (oceanType != 0.0)
 		{
 			// TPE Canyons
 			noiseOctaves = 10.0;
@@ -454,7 +489,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	else
 	{
 		// Mountains
-		if (erosion > 0.0)
+		if (oceanType != 0.0)
 		{
 			noiseOctaves = 10.0;
 			noiseH	   = 1.0;
@@ -479,13 +514,13 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	float mareFloor = global;
 	float mareSuppress = 1.0;
 
-	if (riversMagn > 0.0)
+	if (oceanType != 0.0)
 	{
 		mare = global;
 	}
 	else
 	{
-		if (mareSqrtDensity > 0.05)
+		if (mareSqrtDensity > 0.05 && mareFreq != 0.0)
 		{
 			//noiseOctaves = 2;
 			//mareFloor = 0.6 * (1.0 - Cell3Noise(0.3*p));
@@ -712,22 +747,34 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	// height = max(height, seaLevel + 0.057);
 	
 	// ocean basins
-	if (venusMagn < 0.05 || venusFreq < 0.5)
+	if (oceanType != 0.0)
 	{
-		height = min(smoothstep(seaLevel - 0.08, seaLevel + 0.164, height), height); // reduce ocean depth near shore
-		float h = smoothstep(seaLevel - 1.03, seaLevel + 0.18, height);
-		height = mix(height, max(height, seaLevel + 0.0595), h);
+		if (venusMagn < 0.05 || venusFreq < 0.5)
+		{
+			height = min(smoothstep(seaLevel - 0.08, seaLevel + 0.164, height), height); // reduce ocean depth near shore
+			float h = smoothstep(seaLevel - 1.03, seaLevel + 0.18, height);
+			height = mix(height, max(height, seaLevel + 0.0595), h);
+		}
+		else
+		{
+			height = min(smoothstep(seaLevel - 0.16, seaLevel + 0.184, height), height); // reduce ocean depth near shore
+			float h = smoothstep(seaLevel - 1.23, seaLevel + 0.38, height);
+			height = mix(height, max(height, seaLevel + 0.0595), h);
+		}
 	}
+	
+	// Centri Super-Oceanic Fix
+	if (oceanType == 1.0)  
+    {
+        height = softPolyMin(height, 0.01, 0.5);
+        height = softPolyMax(height, 0.0, 0.3);
+    }
 	else
 	{
-		height = min(smoothstep(seaLevel - 0.16, seaLevel + 0.184, height), height); // reduce ocean depth near shore
-		float h = smoothstep(seaLevel - 1.23, seaLevel + 0.38, height);
-		height = mix(height, max(height, seaLevel + 0.0595), h);
+		// smoothly limit the height
+		height = softPolyMin(height, 0.99, 0.3);
+		height = softPolyMax(height, 0.05, 0.1);
 	}
-
-	// smoothly limit the height
-	height = softPolyMin(height, 0.99, 0.3);
-	height = softPolyMax(height, 0.05, 0.1);
 
 	if (riversMagn > 0.0)
 	{

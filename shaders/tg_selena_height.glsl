@@ -75,38 +75,83 @@ void	_RiftsNoise(vec3 point, float damping, inout float height)
 	}
 }
 
+void EnceladusNoise(in vec3 point, inout float height, float europaLikeness) {
+  noiseOctaves = 2;
+  noiseH = 1.0;
+  noiseLacunarity = 2.0;
+
+  vec2 cracks = vec2(0.0);
+  vec3 p = point * 0.1 + Randomize;
+  vec3 distort = 0.3 * Fbm3D(p * 3.0) + 0.05 * Fbm3D(p * 6.0);
+
+  noiseOctaves = 8.0;
+  noiseLacunarity = 2.3;
+
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
+    distort += Fbm3D(p * 3.0) * 0.3;
+
+    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
+    float width = (0.35 + i * 0.01) *
+                  unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) *
+                  europaLikeness * abs(cell.y - cell.x);
+    cracks.x += saturate(1.0 - 2.75 * width) / ((i + 2) * 0.5);
+
+    p *= 1.1;
+  }
+
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
+    distort += Fbm3D(p * 3.0) * 0.3;
+
+    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
+    float width = (0.35 + i * 0.01) *
+                  unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) *
+                  europaLikeness * abs(cell.y - cell.x);
+    cracks.y += saturate(1.0 - 2.75 * width) / ((i + 2) * 0.5);
+
+    p *= 1.1;
+  }
+
+  height = mix(height, height + (0.13 * europaLikeness), cracks.x);
+  height = mix(height, height - (0.13 * europaLikeness), cracks.y);
+}
+
+float EuropaCrackHeightFunc(float land, float height, float r, vec3 p) {
+  p.x += 0.05 * r;
+  float inner = smoothstep(0.0, 0.5, r);
+  float outer = smoothstep(0.5, 1.0, r);
+  float cracks =
+      height * (.4 * Noise(p * 625.7) * (1.0 - inner) + inner * (1.0 - outer));
+  return mix(cracks, land, outer);
+}
+
 //-----------------------------------------------------------------------------
 
 // Function // Europa Cracks Noise
 	// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
 	// 26-10-2024 by Sp_ce // Quadrupled octaves from doubled
 	// 26-10-2024 by Sp_ce // Reverted quadrupling back to doubling
-float   EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask, vec3 distort)
+float EuropaCrackNoise(vec3 point, float europaCracksOctaves, out float mask, vec3 distort)
 {
-	float  newLand = 0.0;
-	float  lastLand = 0.0;
-	float  lastlastLand = 0.0;
-	vec2   cell;
-	float  r;
-	float  ampl = 0.1 * cracksMagn;
+	float land = 0.0;
+	vec2 cell;
+	float r;
+	float ampl = 0.1 * cracksMagn;
 	mask = 1.0;
 
-	for (int i=0; i<europaCracksOctaves; i++)
+	for (int i = 0; i < europaCracksOctaves; i++)
 	{
 		for (int j = 0; j < 2; j++)
 		{
 			cell = Cell2Noise2(point + 0.02 * distort);
-			r	= smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
-			lastlastLand = lastLand;
-			lastLand = newLand;
-			newLand = CrackHeightFunc(lastlastLand, lastLand, ampl, r, point);
+			r = smoothstep(0.0, 1.0, 250.0 * abs(cell.y - cell.x));
+			land = EuropaCrackHeightFunc(land, ampl, r, point);
 			point += Randomize;
 			mask *= smoothstep(0.6, 1.0, r);
 		}
 		point = point * 1.1 + Randomize;
 	}
-	
-	return newLand;
+
+	return land;
 }
 
 //-----------------------------------------------------------------------------
@@ -140,7 +185,7 @@ float   _MareHeightFunc(vec3 point, float lastLand, float lastlastLand, float he
 	{   // inner rim
 		t = (r - radInner) / (radRim - radInner);
 		t = smoothstep(0.0, 1.0, t);
-		mareFloor = 1.0 - t;
+		mareFloor = (1.0 - t) / mareFreq;
 		return mix(lastlastLand + height * heightFloor, lastLand + height * heightRim * craterDistortion, t);
 	}
 	else if (r < radOuter)
@@ -316,6 +361,8 @@ float   HeightMapSelena(vec3 point)
 	float bottomAlpha = bottomColorHSL.w;
 	bool aquaria = (bottomAlpha == 0.001);
 	
+	float _cracksOctaves = cracksOctaves;
+	
 	// Fetch variables // Planet types
 		// 21-10-2024 by Sp_ce // Added europaLikeness
 	bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq < 0.6));
@@ -324,13 +371,16 @@ float   HeightMapSelena(vec3 point)
 	//bool enceladusLike = (cracksMagn > 0.077);
 	//bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6) && !enceladusLike);
 	float europaLikeness;
-	if ((riftsSin > 8.0) || !europaLike) {
+	if ((riftsSin > 8.0) || (!europaLike && !enceladusLike))
+	{
 		europaLikeness = 0.0;
 	} 
-	else if (riftsSin < 6.0){
+	else if (riftsSin < 6.0)
+	{
 		europaLikeness = 1.0;
 	} 
-	else {
+	else
+	{
 		europaLikeness = -(1.0/2.0)*riftsSin + 8.0/2.0;
 	}
 	
@@ -406,7 +456,7 @@ float   HeightMapSelena(vec3 point)
 	float mare = height;
 	float mareFloor = height;
 	float mareSuppress = 1.0;
-	if (mareSqrtDensity > 0.05)
+	if (mareSqrtDensity > 0.05 && mareFreq != 0.0)
 	{
 		noiseOctaves = 2.0;
 		mareFloor = 0.6 * (1.0 - Cell3Noise(0.3 * p));
@@ -424,6 +474,9 @@ float   HeightMapSelena(vec3 point)
 		
 		float craterSqrtDensityAltered = max(craterSqrtDensity * (0.2 + 0.8 * (1.0 - europaLikeness)), 10 * (craterSqrtDensity - 0.9));
 	
+		noiseOctaves = 3;  // Craters roundness distortion
+		craterDistortion = 1.0;
+		craterRoundDist  = 0.03;
 		heightFloor = -0.1;
 		heightPeak  =  0.6;
 		heightRim   =  1.0;
@@ -538,23 +591,33 @@ float   HeightMapSelena(vec3 point)
 	// PlanetTypes // Enceladuslike terrain
 	if (enceladusLike)
 	{
-		height =  saturate (height * 0.3);
-		noiseOctaves	 = 6.0;
-		noiseLacunarity  = 2.218281828459;
-		noiseH		   = 0.9;
-		noiseOffset	  = 0.5;
-		p = point * 0.5 * mainFreq + Randomize;
-		distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5 + Fbm3D(point * 0.1) * 12.5;
-		cell = Cell3Noise2(canyonsFreq * 0.05 * p + distort);
-		float rima2 = 2 - saturate(abs(cell.y - cell.x) * 250.0 * canyonsMagn);
-		rima2 = biomeScale * smoothstep(0.0, 1.0, rima2);
-		height = mix(height, height - 0.08, -rima2);
-		
-		noiseOctaves = 1;   
-		height -= 0.5 * CrackNoise(point, mask);
-		distort = Fbm3D(point * 0.1) * 3.5;
-		float venus2 = (Fbm(point + distort) * 1.5) * 0.5;
-		height = mix(height, height - 0.2, venus2);
+		if (europaLikeness == 0.0)
+		{
+			// Old algorithm
+			height = saturate(height * 0.3);
+			noiseOctaves = 6.0;
+			noiseLacunarity = 2.218281828459;
+			noiseH = 0.9;
+			noiseOffset = 0.5;
+			p = point * 0.5 * mainFreq + Randomize;
+			distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5 + Fbm3D(point * 0.1) * 12.5;
+			cell = Cell3Noise2(canyonsFreq * 0.05 * p + distort);
+			float rima2 = 2 - saturate(abs(cell.y - cell.x) * 250.0 * canyonsMagn);
+			rima2 = biomeScale * smoothstep(0.0, 1.0, rima2);
+			height = mix(height, height - 0.08, -rima2);
+
+			noiseOctaves = 1;
+			height -= 0.5 * CrackNoise(point, mask);
+			distort = Fbm3D(point * 0.1) * 3.5;
+			float venus2 = (Fbm(point + distort) * 1.5) * 0.5;
+			height = mix(height, height - 0.2, venus2);
+		}
+		else
+		{
+			// New algorithm
+			height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
+			EnceladusNoise(point, height, europaLikeness);
+		}
 	}
 	
 	// PlanetTypes // Europalike terrain
@@ -619,6 +682,9 @@ float   HeightMapSelena(vec3 point)
 	// TerrainFeature // Rayed craters
 	if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05)
 	{
+		noiseOctaves = 3;  // Craters roundness distortion
+		craterDistortion = 1.0;
+		craterRoundDist  = 0.03;
 		heightFloor = -1.5;
 		heightPeak  =  0.15;
 		heightRim   =  1.0;
@@ -630,36 +696,50 @@ float   HeightMapSelena(vec3 point)
 	}
 
 	// GlobalModifier // Terrain noise match colorvary
+	float _colorDistMagn = colorDistMagn;
+	float colorDistMin = 0.065;
+	if (_cracksOctaves > 0) // Prevent some planets from becoming chaos
+	{
+		colorDistMin = 0.058;
+	}
+
+	if (colorDistMagn <= colorDistMin) // Prevent some planets from becoming chaos
+	{
+		_colorDistMagn = colorDistMin;
+	}
+	
 	noiseOctaves	= 14.0;
 	noiseLacunarity = 2.218281828459;
-	noiseH = 0.6 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-	if (cracksOctaves > 0)
+	noiseH = 0.55 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
+	distort = Fbm3D((point + Randomize) * 0.07) * 1.5; // Fbm3D((point + Randomize) * 0.07) * 1.5;
+	float SmallDistort = 0;
+	if (_cracksOctaves > 0)
 	{
-		noiseH += 0.3;
+		// noiseH += 0.3;
+		noiseH = 0.6 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.8;
 	}
-	
-	distort = JordanTurbulence3D(((point) + Randomize) * .07, 0.6, 0.6, 0.6, 0.8, 0.0, 1.0, 3.0) * (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
-
-	if (cracksOctaves == 0 && volcanoActivity >= 1.0)
+	if (_cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-		distort = (saturate(iqTurbulence3D(point + Randomize, 0.65)) * (2 * (min(volcanoActivity, 1.6) - 1))) * saturate(min(volcanoActivity, 1.6) - 0.5) * 2.0;
+		distort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
+		SmallDistort = saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1) + rocks;
 	} 
-	else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+	else if (_cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
 		distort = Fbm3D((point + Randomize) * 0.07) * 1.5; // Io like on airless planets donatelo200 12/09/2025
+		SmallDistort = rocks;
 	}
-	else if (cracksOctaves > 0)
+	else if (_cracksOctaves > 0)
 	{
-		distort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) * (1.5 + venusMagn) + saturate(iqTurbulence(point, 0.15) * volcanoActivity);
+		distort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) * (1.5 + venusMagn) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);
 	}
 	
-	float vary = 1.0 - 5 * (Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) + RidgedMultifractal(pp * 0.999, 8.0))));
-	if (cracksOctaves > 0)
+	float vary = 1.0 - 5 * (Fbm((point + distort + (SmallDistort * 0.015)) * (1.5 - RidgedMultifractal(pp, 8.0) + RidgedMultifractal(pp * 0.999, 8.0))));
+	if (_cracksOctaves > 0)
 	{
-		height = mix(height, height + 0.1, vary);
+		height = mix(height, height + 0.1, vary - 0.1);
 	}
 	else {
-		height = mix(height, height + 0.0017 + volcanoActivity * 0.013, vary);
+		height = mix(height, height + 0.05, vary) - 0.05;
 	}
 	
 	// GlobalModifier // Soften max/min height
