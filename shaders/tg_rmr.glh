@@ -417,7 +417,7 @@ float HeightMapCloudsTerraAli(vec3 point) {
   }
 
   float zones = cos(stripeZones * point.y * 1.75);
-  float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
+  float ang = -zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
   if (stripeTwist < 0.0) {
     ang *= -1.0;
   }
@@ -463,7 +463,7 @@ float HeightMapCloudsTerraAli2(vec3 point) {
   }
 
   float zones = cos(stripeZones * point.y * 1.75);
-  float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
+  float ang = -zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
   // HACK: Reverse stripe thingy once we reach negative stripeTwist, it's a bug
   // that it becomes white normally and I don't feel like fixing it correctly
   if (stripeTwist < 0.0) {
@@ -477,8 +477,8 @@ float HeightMapCloudsTerraAli2(vec3 point) {
   // Compute turbulence
   twistedPoint = TurbulenceTerra(twistedPoint);
 
-  // Compute the Coriolis effect
-  float sina = sin(ang);
+  // Compute the Co-riolis effect
+  float sina = sin(-ang);
   float cosa = cos(ang);
   twistedPoint =
       vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y,
