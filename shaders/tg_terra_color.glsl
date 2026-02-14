@@ -158,8 +158,14 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     // Mountain/winter snow
     if((climate > 0.9 && latitude > latTropic) || latitude > latIceCaps) 
 	{
-        float snowTransition = smoothstep(0.9, 0.92, climate);
-        Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
+       float snowTransition = smoothstep(0.9, 0.92, climate);
+       
+//	   float snowTransition =
+//        smoothstep(0.8, 1.0, climate) *
+//        smoothstep(latTropic, latTropic + 0.2,
+//                   latitude);
+		
+		Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
         surf = BlendMaterials(surf, snow, snowTransition);
     }
 

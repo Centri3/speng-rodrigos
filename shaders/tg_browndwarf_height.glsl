@@ -1,8 +1,6 @@
 #include "tg_common.glh"
-#include "tg_rodrigos.glh"
 
 #ifdef _FRAGMENT_
-
 //-----------------------------------------------------------------------------
 
 vec3 TurbulenceGasGiantGmail(vec3 point) {
@@ -160,20 +158,14 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
 	
     return zones + height + offset;
 }
-
 //-----------------------------------------------------------------------------
 
-void main() {
-    vec3 point = GetSurfacePoint();
-    float height = 0.0;
-    if(volcanoActivity != 0.0) //volcanoActivity != 0.0 && colorDistFreq < 200000000
-	{
-        if(cloudsLayer == 0.0) {
-            height = 3.0 * stripeFluct * HeightMapCloudsTerraAli(point) + HeightMapCloudsTerraAli2(point);
-        }
-    } else {
-        height = 0.95*(HeightMapCloudsGasGiantGmail(point, true, stripeZones) + 0.5 * HeightMapCloudsGasGiantGmail2(point) + 0.5* HeightMapCloudsGasGiantGmail3(point));
-    }
+void main()
+{
+    vec3  point   = GetSurfacePoint();
+    float heightS = HeightMapSun(point);
+    float heightB = 0.95*(HeightMapCloudsGasGiantGmail(point, true, stripeZones) + 0.5 * HeightMapCloudsGasGiantGmail2(point) + 0.5* HeightMapCloudsGasGiantGmail3(point));
+    float height  = mix(heightB, heightS, erosion);
     OutColor = vec4(height);
 }
 

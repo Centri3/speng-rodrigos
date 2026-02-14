@@ -1,6 +1,7 @@
 #include "tg_common.glh"
 
 #ifdef _FRAGMENT_
+
 //-----------------------------------------------------------------------------
 
 float   HeightMapFogGasGiant(vec3 point)
@@ -27,17 +28,11 @@ void main() {
         OutColor.rgb = height * GetGasGiantCloudsColor(1.0).rgb;
         OutColor.a = 1.0;
 	}
-/*
-if (volcanoActivity != 0.0) {   //polar suppression  uncomment for full Centri Venus-likes
-    float latitude = abs(GetSurfacePoint().y);
-    // Drown out poles
-    OutColor.rgb = mix(GetGasGiantCloudsColor(0.0).rgb, OutColor.rgb,
-                       1.0 - vec3(saturate(latitude - 0.3)));
-  }
-*/
+
 	// GlobalModifier // Output color
     OutColor.rgb *= pow(OutColor.rgb, colorGamma);
 }
+
 
 //-----------------------------------------------------------------------------
 

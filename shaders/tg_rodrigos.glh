@@ -3,78 +3,191 @@
 //-----------------------------------------------------------------------------
 
 float HeightMapCloudsTerraAli(vec3 point) {
-	float minimumStripeTwist = 1.0;
+  float stripeTwistMult = 0.2;
+  if(cloudsCoverage == 1.0) {
+    stripeTwistMult = 1.4;
+  }
 
-	float zones = cos(stripeZones * point.y * 1.75);
-	float ang = zones * pow(max(abs(minimumStripeTwist), minimumStripeTwist), 0.6);
-	vec3 twistedPoint = point;
-	float coverage = cloudsCoverage * 0.5;
-	float weight = 1.0;
-	noiseH = 0.75;
+  float zones = cos(stripeZones * point.y * 1.75);
+  float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
+  if (stripeTwist < 0.0) {
+    ang *= -1.0;
+  }
+  vec3 twistedPoint = point;
+  float coverage = cloudsCoverage * 0.5;
+  float weight = 1.0;
+  noiseH = 0.75;
 
-	float offset = 0.0;
+  float offset = 0.0;
 
-	// Compute turbulence
-	twistedPoint = TurbulenceTerra(twistedPoint);
+  // Compute turbulence
+  twistedPoint = TurbulenceTerra(twistedPoint);
 
-	// Compute the Coriolis effect
-	float sina = sin(ang);
-	float cosa = cos(ang - 10);
-	twistedPoint = vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y, sina * twistedPoint.x + cosa * twistedPoint.z);
-	twistedPoint = twistedPoint * cloudsFreq + Randomize;
+  // Compute the Coriolis effect
+  float sina = sin(-ang);
+  float cosa = cos(-ang);
+  twistedPoint =
+      vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y,
+           sina * twistedPoint.x + cosa * twistedPoint.z);
+  twistedPoint = twistedPoint * cloudsFreq + Randomize;
 
-	// Compute the flow-like distortion
-	noiseLacunarity = 6.6;
-	noiseOctaves = 0.0;
+  // Compute the flow-like distortion
+  noiseLacunarity = 6.6;
+  noiseOctaves = 0.0;
 
-	vec3 distort = Fbm3D(twistedPoint * 2.8) * 3;
-	vec3 p = twistedPoint * cloudsFreq * 75.0;
-	vec3 q = p + Fbm3D(p);
-	vec3 r = p + Fbm3D(q);
-	float f = Fbm(r) * 4 + coverage;
-	float global = saturate(f) * weight * (Fbm(twistedPoint + distort) + 0.5 * (cloudsCoverage * 0.1));
+  vec3 distort = Fbm3D(twistedPoint * 2.8) * 3;
+  vec3 p = twistedPoint * cloudsFreq * 75.0;
+  vec3 q = p + Fbm3D(p);
+  vec3 r = p + Fbm3D(q);
+  float f = Fbm(r) * 4 + coverage;
+  float global = saturate(f) * weight *
+                 (Fbm(twistedPoint + distort) + 0.5 * (cloudsCoverage * 0.1));
 
-	return global;
+  return global;
 }
 
 //-----------------------------------------------------------------------------
 
 float HeightMapCloudsTerraAli2(vec3 point) {
-	float minimumStripeTwist = 1.0;
+  float stripeTwistMult = 0.2;
+  if(cloudsCoverage == 1.0) {
+    stripeTwistMult = 1.4;
+  }
 
-	float zones = cos(stripeZones * point.y * 1.75);
-	float ang = zones * pow(max(abs(stripeTwist), minimumStripeTwist), 0.6);
-	vec3 twistedPoint = point;
-	float coverage = cloudsCoverage;
-	float weight = 1.0;
-	noiseH = 0.75;
+  float zones = cos(stripeZones * point.y * 1.75);
+  float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
+  // HACK: Reverse stripe thingy once we reach negative stripeTwist, it's a bug
+  // that it becomes white normally and I don't feel like fixing it correctly
+  if (stripeTwist < 0.0) {
+    ang *= -1.0;
+  }
+  vec3 twistedPoint = point;
+  float coverage = cloudsCoverage;
+  float weight = 1.0;
+  noiseH = 0.75;
 
-	// Compute turbulence
-	twistedPoint = TurbulenceTerra(twistedPoint);
+  // Compute turbulence
+  twistedPoint = TurbulenceTerra(twistedPoint);
 
-	// Compute the Coriolis effect
-	float sina = sin(ang);
-	float cosa = cos(ang - 90);
-	twistedPoint = vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y, sina * twistedPoint.x + cosa * twistedPoint.z);
-	twistedPoint = twistedPoint * cloudsFreq + Randomize;
+  // Compute the Coriolis effect
+  float sina = sin(-ang);
+  float cosa = cos(-ang);
+  twistedPoint =
+      vec3(cosa * twistedPoint.x - sina * twistedPoint.z, twistedPoint.y,
+           sina * twistedPoint.x + cosa * twistedPoint.z);
+  twistedPoint = twistedPoint * cloudsFreq + Randomize;
 
-	// Compute the flow-like distortion
-	noiseLacunarity = 6.6 - cloudsFreq;
-	noiseOctaves = cloudsOctaves;
+  // Compute the flow-like distortion
+  noiseLacunarity = 6.6 - cloudsFreq;
+  noiseOctaves = cloudsOctaves;
 
-	vec3 distort = Fbm3D(twistedPoint) * 2;
+  vec3 distort = Fbm3D(twistedPoint) * 2;
 
-	vec3 p = twistedPoint * cloudsFreq * 6.5;
-	vec3 q = p + Fbm3D(p);
-	vec3 r = p + Fbm3D(q);
-	noiseOctaves = 0.0;
-	float f = Fbm(r) * 4 + coverage;
-	noiseOctaves = cloudsOctaves;
-	float global = saturate(f) * weight * (Fbm(twistedPoint + distort) + cloudsCoverage);
+  vec3 p = twistedPoint * cloudsFreq * 6.5;
+  vec3 q = p + Fbm3D(p);
+  vec3 r = p + Fbm3D(q);
+  noiseOctaves = 0.0;
+  float f = Fbm(r) * 4 + coverage;
+  noiseOctaves = cloudsOctaves;
+  float global =
+      saturate(f) * weight * (Fbm(twistedPoint + distort) + cloudsCoverage);
 
-	return global;
+  return global;
 }
 
-//-----------------------------------------------------------------------------
+struct NoiseParams {
+  // FIXME: IDK why we need to use floats here, but nested structs do not work.
+  float octaves;
+  float lacunarity;
+  float h;
+  float add;
+  float mul;
+};
+
+struct Lacunarity {
+  float inner;
+};
+struct Octaves {
+  float inner;
+};
+struct H {
+  float inner;
+};
+struct RidgeSmooth {
+  float inner;
+};
+struct Add {
+  float inner;
+};
+struct Mul {
+  float inner;
+};
+
+Octaves DEFAULT_OCTAVES = Octaves(4.0);
+Lacunarity DEFAULT_LACUNARITY = Lacunarity(2.218281828459);
+H DEFAULT_H = H(0.5);
+
+NoiseParams mk_noise(Octaves octaves, Lacunarity lacunarity, H h) {
+  return NoiseParams(octaves.inner, lacunarity.inner, h.inner, 0.0f, 1.0f);
+}
+
+NoiseParams mk_noise(Octaves octaves, Lacunarity lacunarity, H h, Add add,
+                     Mul mul) {
+  return NoiseParams(octaves.inner, lacunarity.inner, h.inner, add.inner,
+                     mul.inner);
+}
+
+#define noise_vec2(coords) vec2(Noise(coords), Noise(coords + vyd))
+#define noise_vec3(coords)                                                     \
+  vec3(Noise(coords), Noise(coords + vyd), Noise(coords + vzd))
+#define noise_vec4(coords)                                                     \
+  vec4(Noise(coords), Noise(coords + vyd), Noise(coords + vzd),                \
+       Noise(coords + vwd))
+#define noise_u_float(coords) Noise(coords) * 0.5 + 0.5
+#define noise_u_vec3(coords) noise_vec3(coords) * 0.5 + vec3(0.5)
+#define noise_u_vec4(coords) noise_vec4(coords) * 0.5 + vec4(0.5)
+
+float noise_fbm_float(vec3 coords, NoiseParams noise) {
+  float sum = 0.0f;
+
+  float ampl = 1.0f;
+  float gain = pow(noise.lacunarity, -noise.h);
+
+  for (int i = 0; i < noise.octaves; i++) {
+    sum += Noise(coords) * ampl * noise.mul + noise.add;
+    ampl *= gain;
+    coords *= noise.lacunarity;
+  }
+
+  return sum;
+}
+
+vec2 noise_fbm_vec2(vec3 coords, NoiseParams noise) {
+  vec2 sum = vec2(0.0f);
+  float ampl = 1.0f;
+  float gain = pow(noise.lacunarity, -noise.h);
+
+  for (int i = 0; i < noise.octaves; i++) {
+    sum += noise_vec2(coords) * ampl;
+    ampl *= gain;
+    coords *= noise.lacunarity;
+  }
+
+  return sum;
+}
+
+vec3 noise_fbm_vec3(vec3 coords, NoiseParams noise) {
+  vec3 sum = vec3(0.0f);
+  float ampl = 1.0f;
+  float gain = pow(noise.lacunarity, -noise.h);
+
+  for (int i = 0; i < noise.octaves; i++) {
+    sum += noise_vec3(coords) * ampl;
+    ampl *= gain;
+    coords *= noise.lacunarity;
+  }
+
+  return sum;
+}
 
 #endif
