@@ -68,7 +68,7 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
   float strength = 10.0;
   float freq = cycloneFreq * 30.0;
   float dens = cycloneDensity * 0.02;
-  float size = 1.3 * pow(cloudsLayer + 1.0, 5.0);
+  float size = 1.5 * pow(cloudsLayer + 1.0, 5.0);
 
   for (int i = 0; i < cycloneOctaves; i++) {
     cell = inverseSF(vec3(point.x, point.y * squeeze, point.z),
