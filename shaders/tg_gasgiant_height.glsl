@@ -19,52 +19,16 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
   noiseH = 1.0;
   noiseLacunarity = 2.0;
 
-  // high-level turbulence
-
-  for (int i = 0; i < 3; i++) {
-    float angleY = randomize.y * 6.283185;
-
-    randomize.y = hash1(randomize.y);
-    size -= randomize.y * 0.1;
-
-    // clang-format off
-    mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
-                          0.0, 1.0, 0.0,
-                          -sin(angleY), 0.0, cos(angleY));
-    // clang-format on
-
-    point *= rotY;
-
-    twistedPoint = point;
-    vec2 cell = inverseSF(point, freq, cellCenter);
-    rnd = hash1(cell.x);
-    r = size * cell.y;
-
-    if ((rnd < dens) && (r < 1.0)) {
-      dir = sign(0.5 * dens - rnd);
-      dist = saturate(1.0 - r);
-      dist2 = saturate(0.5 - r);
-      fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
-      twistedPoint = Rotate(dir * stripeTwist * sign(cellCenter.y) * fi * 2.2,
-                            cellCenter.xyz, point);
-    }
-
-    freq *= 1.03;
-    size *= 1.03;
-    point = twistedPoint;
-  }
-
   // mid-level turbulence
 
   strength = 6.0 + (1.0 - lavaCoverage) * 2.0;
   freq = 100.0 - 80.0 * lavaCoverage;
-  size = 11.0 - 8.0 * lavaCoverage;
+  size = 20.0 - 8.0 * lavaCoverage;
 
-  for (int i = 0; i < 200; i++) {
+  for (int i = 0; i < 60; i++) {
     float angleY = randomize.y * 0.03 + lavaCoverage * 0.97 * 6.283185;
 
     randomize.y = hash1(randomize.y);
-    size -= randomize.y * 0.1;
 
     // clang-format off
     // TODO: Make a helper function for this!
@@ -89,8 +53,7 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
                             cellCenter.xyz, point);
     }
 
-    freq *= 1.03;
-    size *= 1.03;
+    size *= 1.01;
     point = twistedPoint;
   }
 
