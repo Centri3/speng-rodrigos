@@ -56,21 +56,18 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
-vec3 CycloneNoiseGasGiantGmail(vec3 point) {
+vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
   vec3 rotVec = normalize(Randomize);
   vec3 twistedPoint = point;
   vec3 cellCenter = vec3(0.0);
   vec2 cell;
   float r, fi, rnd, dist, dist2, dir;
+  float offs = 0.5 / (cloudsLayer + 1.0);
   float squeeze = 1.9;
   float strength = 10.0;
   float freq = cycloneFreq * 30.0;
   float dens = cycloneDensity * 0.02;
   float size = 1.3 * pow(cloudsLayer + 1.0, 5.0);
-
-  noiseOctaves = 3;
-  noiseH = 1.0;
-  noiseLacunarity = 4.0;
 
   for (int i = 0; i < cycloneOctaves; i++) {
     cell = inverseSF(vec3(point.x, point.y * squeeze, point.z),
@@ -85,11 +82,13 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point) {
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.5);
       twistedPoint = Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi,
                             cellCenter.xyz, point);
+      offset += offs * fi * dir;
     }
 
     freq = min(freq * 2.0, 6400.0);
     dens = min(dens * 3.5, 0.3);
     size = min(size * 1.5, 15.0);
+    offs = offs * 0.85;
     squeeze = max(squeeze - 0.3, 1.0);
     strength = max(strength * 1.3, 0.5);
     point = twistedPoint;
@@ -104,15 +103,11 @@ float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones,
                                    float _stripeZones) {
   vec3 twistedPoint = point;
 
-  noiseOctaves = 15.0;
-  noiseH = 0.3;
-  noiseLacunarity = 4.0;
-  noiseH = 1.0 - lavaCoverage * 0.2;
-  noiseLacunarity = 1.4 + lavaCoverage;
+  float offset = 0.0;
 
   // Compute cyclons
   if (cycloneOctaves > 0.0 && cyclones)
-    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint);
+    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
@@ -125,16 +120,18 @@ float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones,
   float height =
       unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
 
-  return height;
+  return height + offset;
 }
 //-----------------------------------------------------------------------------
 
 float HeightMapCloudsGasGiantGmail2(vec3 point) {
   vec3 twistedPoint = point;
 
+  float offset = 0.1;
+
   // Compute cyclons
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint);
+    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
@@ -147,7 +144,7 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
   float height =
       unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return height;
+  return height + offset;
 }
 
 //-----------------------------------------------------------------------------
@@ -155,9 +152,11 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
 float HeightMapCloudsGasGiantGmail3(vec3 point) {
   vec3 twistedPoint = point;
 
+  float offset = 0.0;
+
   // Compute cyclons
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint);
+    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
@@ -170,7 +169,7 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
   float height =
       unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
-  return height;
+  return height + offset;
 }
 
 //-----------------------------------------------------------------------------
