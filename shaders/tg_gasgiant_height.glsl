@@ -109,6 +109,10 @@ float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones,
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
 
+  noiseOctaves = 12.0;
+  noiseLacunarity = 4.0;
+  noiseH = 0.3;
+
   // Compute stripes
   noiseOctaves = cloudsOctaves;
   float turbulence = Fbm(twistedPoint * 0.03);
@@ -132,6 +136,10 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
+
+  noiseOctaves = 12.0;
+  noiseLacunarity = 4.0;
+  noiseH = 0.3;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
@@ -157,6 +165,10 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
+
+  noiseOctaves = 12.0;
+  noiseLacunarity = 4.0;
+  noiseH = 0.3;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
