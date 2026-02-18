@@ -8,7 +8,8 @@ float HeightMapFogGasGiant(vec3 point) {
 }
 
 vec4 _GetGasGiantCloudsColor(float height, float slope) {
-  return texture(BiomeDataTable, vec2(1.0, height * 0.35)); // no idea why it has to be 0.35
+  return texture(BiomeDataTable,
+                 vec2(1.0, height * 0.35)); // no idea why it has to be 0.35
 }
 
 //-----------------------------------------------------------------------------
