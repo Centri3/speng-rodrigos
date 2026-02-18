@@ -83,7 +83,7 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.5);
       twistedPoint = Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi,
                             cellCenter.xyz, point);
-      offset += offs * fi * dir;
+      offset += offs * fi * dir * 0.3;
     }
 
     freq = min(freq * 2.0, 6400.0);
