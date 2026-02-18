@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------------
 
 vec3 TurbulenceGasGiantGmail(vec3 point) {
-  vec3 twistedPoint = point;
+  vec3 twistedPoint = point + Fbm(point * 8.0);
   vec3 cellCenter = vec3(0.0);
   vec2 cell;
   float r, fi, rnd, dist, dist2, dir;
@@ -25,8 +25,8 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
   freq = 100.0 - 80.0 * lavaCoverage;
   size = 20.0 - 8.0 * lavaCoverage;
 
-  for (int i = 0; i < 60; i++) {
-    float angleY = randomize.y * 0.03 + lavaCoverage * 0.97 * 6.283185;
+  for (int i = 0; i < 80; i++) {
+    float angleY = randomize.y * 0.03 + lavaCoverage * 7.97 * 6.283185;
 
     randomize.y = hash1(randomize.y);
 
@@ -53,7 +53,7 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
                             cellCenter.xyz, point);
     }
 
-    size *= 1.01;
+    size *= 1.006;
     point = twistedPoint;
   }
 
