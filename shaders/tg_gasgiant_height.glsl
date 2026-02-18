@@ -15,10 +15,6 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
   float dens = 1.0;
   vec3 randomize = Randomize;
 
-  noiseOctaves = 3;
-  noiseH = 1.0;
-  noiseLacunarity = 2.0;
-
   for (int i = 0; i < 80; i++) {
     float angleY = randomize.y * 0.03 + lavaCoverage * 0.097 * 6.283185;
 
