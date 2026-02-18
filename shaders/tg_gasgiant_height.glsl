@@ -9,9 +9,9 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
   vec3 cellCenter = vec3(0.0);
   vec2 cell;
   float r, fi, rnd, dist, dist2, dir;
-  float strength = 6.0 + (1.0 - lavaCoverage) * 2.0;
-  float freq = 100.0 - 80.0 * lavaCoverage;
-  float size = 9.0 - 8.0 * lavaCoverage;
+  float strength = 6.0;
+  float freq = 100.0 - 90.0 * lavaCoverage;
+  float size = 9.0 - 7.0 * lavaCoverage;
   float dens = 1.0;
   vec3 randomize = Randomize;
 
@@ -20,7 +20,7 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
   noiseLacunarity = 2.0;
 
   for (int i = 0; i < 80; i++) {
-    float angleY = randomize.y * 0.03 + lavaCoverage * 3.97 * 6.283185;
+    float angleY = randomize.y * 0.03 + lavaCoverage * 0.097 * 6.283185;
 
     randomize.y = hash1(randomize.y);
 
