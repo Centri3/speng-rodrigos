@@ -13,13 +13,13 @@ void main() {
   // GlobalModifier // Convert height to color
   float height = GetSurfaceHeight();
   OutColor =
-      0.1 * GetGasGiantCloudsColor(max(height * stripeFluct * 0.5,
+      0.1 * GetGasGiantCloudsColor(max(height * stripeFluct * 2.0,
                                        1.0 - float(BIOME_CLOUD_LAYERS - 1) /
                                                  float(BIOME_SURF_LAYERS))) +
-      0.1 * GetGasGiantCloudsColor(min(height * stripeFluct * 0.5,
+      0.1 * GetGasGiantCloudsColor(min(height * stripeFluct * 2.0,
                                        0.7 - float(BIOME_CLOUD_LAYERS - 1) /
                                                  float(BIOME_SURF_LAYERS)));
-  OutColor.rgb = (pow(OutColor.rgb, vec3(height * stripeFluct)));
+  OutColor.rgb = (pow(OutColor.rgb, vec3(height * stripeFluct * 4.0)));
 
   // GlobalModifier // Change cloud alpha channel
   // Changed lowest cloud layer to be full alpha // by Sp_ce
