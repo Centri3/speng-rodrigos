@@ -19,14 +19,12 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
   noiseH = 1.0;
   noiseLacunarity = 2.0;
 
-  // mid-level turbulence
-
   strength = 6.0 + (1.0 - lavaCoverage) * 2.0;
   freq = 100.0 - 80.0 * lavaCoverage;
   size = 20.0 - 8.0 * lavaCoverage;
 
   for (int i = 0; i < 80; i++) {
-    float angleY = randomize.y * 0.03 + lavaCoverage * 7.97 * 6.283185;
+    float angleY = randomize.y * 0.03 + lavaCoverage * 3.97 * 6.283185;
 
     randomize.y = hash1(randomize.y);
 
