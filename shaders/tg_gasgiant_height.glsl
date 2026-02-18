@@ -14,6 +14,7 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
   float size = 6.0;
   float dens = 1.0;
   vec3 randomize = Randomize;
+  point += Fbm(point * 8.0) * 0.01;
 
   // high-level turbulence
 
@@ -41,8 +42,8 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
       dist = saturate(1.0 - r);
       dist2 = saturate(0.5 - r);
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
-      twistedPoint = Rotate(dir * stripeTwist * sign(cellCenter.y) * fi * 2.2,
-                            cellCenter.xyz, point);
+      twistedPoint = Rotate(dir * stripeTwist * sign(cellCenter.y) * fi * 2.2 + Fbm(point) * 0.1,
+                            cellCenter.xyz, point + Fbm(point * 8.0) * 0.01);
     }
 
     freq *= 1.03;
@@ -76,13 +77,16 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
     rnd = hash1(cell.x);
     r = size * cell.y;
 
-    if ((rnd < dens) && (r < 1.0)) {
+    if ((rnd < dens)) {
       dir = sign(0.5 * dens - rnd);
       dist = saturate(1.0 - r);
       dist2 = saturate(0.5 - r);
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
-      twistedPoint = Rotate(dir * stripeTwist * sign(cellCenter.y) * fi,
-                            cellCenter.xyz, point);
+      noiseOctaves = 3;
+      noiseH = 1.0;
+      noiseLacunarity = 4.0;
+      twistedPoint = RotateWithNoise(dir * stripeTwist * sign(cellCenter.y) * fi,
+                            cellCenter.xyz, point + Fbm(point * 8.0) * 0.01);
     }
 
     freq *= 1.03;
