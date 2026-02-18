@@ -76,7 +76,7 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
     rnd = hash1(cell.x);
     r = size * cell.y;
 
-    if ((rnd < dens) && (r < 1.0)) {
+    if ((rnd < dens)) {
       dir = sign(0.7 * dens - rnd);
       dist = saturate(1.0 - r);
       dist2 = saturate(0.3 - r);
