@@ -9,7 +9,7 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
   vec3 cellCenter = vec3(0.0);
   vec2 cell;
   float r, fi, rnd, dist, dist2, dir;
-  float strength = 6.0;
+  float strength = 13.0;
   float freq = 100.0 - 90.0 * lavaCoverage;
   float size = 9.0 - 7.0 * lavaCoverage;
   float dens = 1.0;
@@ -48,6 +48,7 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
     }
 
     size *= 1.02;
+    strength = max(strength * 0.98, 6.0);
     point = twistedPoint;
   }
 
