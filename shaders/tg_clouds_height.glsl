@@ -193,7 +193,7 @@ void main() {
                      HeightMapCloudsTerraAli2(point),
                  pow(HeightMapCloudsTerraAli3(point), 2.0) * 50.0);
   }
-  height *= unwrap_or(stripeFluct, 1.0) * 0.33333;
+  height *= unwrap_or(stripeFluct, 1.0);
   OutColor = vec4(height);
 }
 
