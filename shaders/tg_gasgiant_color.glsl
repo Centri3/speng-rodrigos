@@ -18,7 +18,7 @@ void main() {
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
   OutColor =
       _GetGasGiantCloudsColor(height * stripeFluct * 0.2 * gaseousBuff);
-  OutColor.rgb = (pow(OutColor.rgb, vec3(height * stripeFluct * gaseousBuff)));
+  OutColor.rgb = (pow(OutColor.rgb, vec3(height * stripeFluct * 0.2 * gaseousBuff)));
 
   // GlobalModifier // Change cloud alpha channel
   // Changed lowest cloud layer to be full alpha // by Sp_ce
