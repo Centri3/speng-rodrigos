@@ -117,7 +117,7 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
 
   noiseOctaves = 12.0;
   noiseLacunarity = 4.0;
-  noiseH = 0.45;
+  noiseH = 0.6;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
@@ -129,7 +129,7 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   float height = unwrap_or(_stripeFluct, 0.0) * 1.0 *
                  (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
-  return mix(height,
+  return mix(height * 20.0,
              clamp(offset,
                    -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
@@ -152,7 +152,7 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
 
   noiseOctaves = 12.0;
   noiseLacunarity = 4.0;
-  noiseH = 0.3;
+  noiseH = 0.45;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
@@ -162,7 +162,7 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return mix(height,
+  return mix(height * 20.0,
              clamp(offset,
                    -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
@@ -187,7 +187,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
 
   noiseOctaves = 12.0;
   noiseLacunarity = 4.0;
-  noiseH = 0.3;
+  noiseH = 0.45;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
@@ -197,7 +197,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
-  return mix(height,
+  return mix(height * 20.0,
              clamp(offset,
                    -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
@@ -209,7 +209,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.9 + stripeFluct * 0.1;
+  float _stripeFluct = 0.3 + stripeFluct * 1.2;
 
   vec3 point = GetSurfacePoint();
   float height;

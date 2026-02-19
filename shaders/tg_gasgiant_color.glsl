@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.9 + stripeFluct * 0.1;
+  float _stripeFluct = 0.3 + stripeFluct * 1.2;
 
   // GlobalModifier // Convert height to color
   vec3 point = GetSurfacePoint();
@@ -16,13 +16,10 @@ void main() {
   float isMini = smoothstep(0.09, 1.0, cloudsFreq);
   OutColor =
       0.5 *
-          _GetGasGiantCloudsColor(modulate * _stripeFluct * 0.5 * gaseousBuff) +
+          _GetGasGiantCloudsColor(height - 0.5 * _stripeFluct * 0.0666666 * gaseousBuff) +
       0.5 *
-          _GetGasGiantCloudsColor(modulate * _stripeFluct * 0.5 * gaseousBuff);
+          _GetGasGiantCloudsColor(height - 0.5 * _stripeFluct * 0.0666666 * gaseousBuff);
   OutColor = rgb_to_lch(OutColor);
-  OutColor.r =
-      log((pow(OutColor.r, height * _stripeFluct * 3.0 * gaseousBuff)) * 30.0 +
-      20.0) * 15.0;
   OutColor = lch_to_rgb(OutColor);
 
   // GlobalModifier // Change cloud alpha channel
