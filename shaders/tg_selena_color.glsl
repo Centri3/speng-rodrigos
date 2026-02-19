@@ -107,35 +107,6 @@ float CenteredSlope(vec3 point, vec3 center) {
 
 //-----------------------------------------------------------------------------
 
-// Noise Function // Cell Noise Center
-vec4 Cell2NoiseCenter(vec3 p) {
-  vec3 cell = floor(p);
-  vec3 offs = p - cell - vec3(0.5);
-  vec3 pos;
-  vec3 rnd;
-  vec3 center;
-  vec3 d;
-  float dist;
-  float distMin = 1.0e38;
-  for (d.z = -1.0; d.z < 1.0; d.z += 1.0) {
-    for (d.y = -1.0; d.y < 1.0; d.y += 1.0) {
-      for (d.x = -1.0; d.x < 1.0; d.x += 1.0) {
-        rnd = NoiseNearestUVec4((cell + d) / NOISE_TEX_3D_SIZE).xyz + d;
-        pos = rnd - offs;
-        dist = dot(pos, pos);
-
-        if (dist < distMin) {
-          distMin = dist;
-          center = rnd;
-        }
-      }
-    }
-  }
-  return vec4(center, sqrt(distMin));
-}
-
-//-----------------------------------------------------------------------------
-
 // Function // Polar Slope Ice
 float SlopedIceCaps(float slope, float latitude) {
   // This uses `latitude + 0.5` to increase the amount of ice caps on a planet
@@ -264,9 +235,7 @@ float TholinPatchNoise(vec3 point, float height) {
   float patchDensity = sqrt(0.05); // mareSqrtDensity;
   point = (point * patchFreq + Randomize) * patchDensity;
 
-  vec4 cellCenter;
-  float cell;
-  vec3 center;
+  vec3 cellCenter;
   float radFactor = 1.0 / patchDensity;
 
   radPeak = 0.0;
@@ -275,10 +244,8 @@ float TholinPatchNoise(vec3 point, float height) {
   radOuter = 0.70; // 0.70; //0.70; //0.50;
 
   // cellCenter = Cell2NoiseCenter(point);
-  cellCenter = Cell2NoiseCenter(point * (1 + 0.1 * Fbm3D(point * 5)));
-  cell = cellCenter.w;
-  center = cellCenter.xyz;
-  float slopeFromCenter = CenteredSlope(point, center);
+  float cell = Cell2Noise(point * (1 + 0.1 * Fbm3D(point * 5)), cellCenter);
+  float slopeFromCenter = CenteredSlope(point, cellCenter);
   float patches =
       TholinPatchColorFunc(cell * radFactor, slopeFromCenter, height);
 
