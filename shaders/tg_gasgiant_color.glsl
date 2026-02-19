@@ -26,7 +26,7 @@ void main() {
                                       0.7 - float(BIOME_CLOUD_LAYERS - 1) /
                                                 float(BIOME_SURF_LAYERS)));
   OutColor.rgb =
-      (pow(OutColor.rgb, vec3(height * stripeFluct * 0.5 * gaseousBuff)));
+      (pow(OutColor.rgb, vec3(height * stripeFluct * 2.0 * gaseousBuff)));
 
   // GlobalModifier // Change cloud alpha channel
   // Changed lowest cloud layer to be full alpha // by Sp_ce
