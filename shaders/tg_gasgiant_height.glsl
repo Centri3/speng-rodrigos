@@ -10,12 +10,15 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   vec2 cell;
   float r, fi, rnd, dist, dist2, dir;
   float strength = 13.0 + smoothstep(1.0, 0.09, cloudsFreq) * 30.0;
+  vec3 randomize;
+  randomize.x = hash1(Randomize.x);
+  randomize.y = hash1(Randomize.y);
+  randomize.z = hash1(Randomize.z);
   float freq = 100.0 - 90.0 * lavaCoverage;
   // minijupiters have low cloudsFreq. special-case them to make them look good as well.
   float size = max(
       9.0 - 8.0 * lavaCoverage - 8.0 * smoothstep(1.0, 0.09, cloudsFreq), 1.0);
   float dens = 1.0;
-  vec3 randomize = Randomize;
 
   for (int i = 0; i < 80; i++) {
     float angleY = randomize.y * 0.03 + lavaCoverage * 0.897 +
