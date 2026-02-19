@@ -129,13 +129,11 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   float height = unwrap_or(_stripeFluct, 0.0) * 1.0 *
                  (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
-  // TODO: Add proper random number generator.
-  // Also change other hashed Randomize instances to this.
-  return mix(height + hash1(HASHED_RANDOMIZE) * 2.0 - lavaCoverage * 0.75,
+  return mix(height * 2.0 + 0.4,
              clamp(offset,
-                   -0.2 * saturate(1.0 - lavaCoverage -
+                   -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
-                   0.8 * saturate(1.0 - lavaCoverage -
+                   0.3 * saturate(1.0 - lavaCoverage -
                                   smoothstep(1.0, 0.09, cloudsFreq))),
              0.5 - lavaCoverage * 0.5);
 }
@@ -164,11 +162,11 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return mix(height + hash1(HASHED_RANDOMIZE) * 2.0 - lavaCoverage * 0.75,
+  return mix(height * 2.0 + 0.4,
              clamp(offset,
-                   -0.2 * saturate(1.0 - lavaCoverage -
+                   -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
-                   0.8 * saturate(1.0 - lavaCoverage -
+                   0.3 * saturate(1.0 - lavaCoverage -
                                   smoothstep(1.0, 0.09, cloudsFreq))),
              0.5 - lavaCoverage * 0.5);
 }
@@ -199,11 +197,11 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
-  return mix(height + hash1(HASHED_RANDOMIZE) * 2.0 - lavaCoverage * 0.75,
+  return mix(height * 2.0 + 0.4,
              clamp(offset,
-                   -0.2 * saturate(1.0 - lavaCoverage -
+                   -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
-                   0.8 * saturate(1.0 - lavaCoverage -
+                   0.3 * saturate(1.0 - lavaCoverage -
                                   smoothstep(1.0, 0.09, cloudsFreq))),
              0.5 - lavaCoverage * 0.5);
 }

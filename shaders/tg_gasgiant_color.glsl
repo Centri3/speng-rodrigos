@@ -5,24 +5,24 @@
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.2 + stripeFluct * 0.4;
+  float _stripeFluct = 0.2 + stripeFluct * 0.1;
 
   // GlobalModifier // Convert height to color
   vec3 point = GetSurfacePoint();
   float height = GetSurfaceHeight();
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
+  float isMini = smoothstep(0.09, 1.0, cloudsFreq);
   OutColor =
       0.5 *
-          _GetGasGiantCloudsColor(max(height * _stripeFluct * 0.5 * gaseousBuff,
-                                      1.0 - float(BIOME_CLOUD_LAYERS - 1) /
-                                                float(BIOME_SURF_LAYERS))) +
+          _GetGasGiantCloudsColor(height * _stripeFluct * 0.5 * gaseousBuff) +
       0.5 *
-          _GetGasGiantCloudsColor(min(height * _stripeFluct * 0.5 * gaseousBuff,
-                                      0.7 - float(BIOME_CLOUD_LAYERS - 1) /
-                                                float(BIOME_SURF_LAYERS)));
-  OutColor.rgb =
-      (pow(OutColor.rgb, vec3(height * _stripeFluct * 6.0 * gaseousBuff)));
+          _GetGasGiantCloudsColor(height * _stripeFluct * 0.5 * gaseousBuff);
+  OutColor = rgb_to_lch(OutColor);
+  OutColor.r = 
+      (pow(OutColor.r, height * _stripeFluct * 6.0 * gaseousBuff)) + 30.0;
+  OutColor.g *= 0.3;
+  OutColor = lch_to_rgb(OutColor);
 
   // GlobalModifier // Change cloud alpha channel
   // Changed lowest cloud layer to be full alpha // by Sp_ce
