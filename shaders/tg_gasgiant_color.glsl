@@ -16,9 +16,9 @@ void main() {
   GetSurfaceHeightAndSlope(height, slope);
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
-  OutColor =
-      _GetGasGiantCloudsColor(height * stripeFluct * 0.2 * gaseousBuff);
-  OutColor.rgb = (pow(OutColor.rgb, vec3(height * stripeFluct * 0.5 * gaseousBuff)));
+  OutColor = _GetGasGiantCloudsColor(height * stripeFluct * 0.2 * gaseousBuff);
+  OutColor.rgb =
+      (pow(OutColor.rgb, vec3(height * stripeFluct * 0.5 * gaseousBuff)));
 
   // GlobalModifier // Change cloud alpha channel
   // Changed lowest cloud layer to be full alpha // by Sp_ce
@@ -34,9 +34,9 @@ void main() {
   if (volcanoActivity != 0.0) {
     float latitude = abs(GetSurfacePoint().y);
     // Drown out poles
-    OutColor.rgb = mix(GetGasGiantCloudsColor(hash1(Randomize.x) * 0.333 +
-                                              hash1(Randomize.y) * 0.333 +
-                                              hash1(Randomize.z) * 0.333)
+    OutColor.rgb = mix(GetGasGiantCloudsColor(abs(Randomize.x) * 0.1666667 +
+                                              abs(Randomize.y) * 0.1666667 +
+                                              abs(Randomize.z) * 0.1666667)
                            .rgb,
                        OutColor.rgb, 1.0 - vec3(saturate(latitude - 0.1)));
   }
