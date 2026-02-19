@@ -16,7 +16,15 @@ void main() {
   GetSurfaceHeightAndSlope(height, slope);
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
-  OutColor = _GetGasGiantCloudsColor(height * stripeFluct * 0.2 * gaseousBuff);
+  OutColor =
+      0.5 *
+          _GetGasGiantCloudsColor(max(height * stripeFluct * 0.5 * gaseousBuff,
+                                      1.0 - float(BIOME_CLOUD_LAYERS - 1) /
+                                                float(BIOME_SURF_LAYERS))) +
+      0.5 *
+          _GetGasGiantCloudsColor(min(height * stripeFluct * 0.5 * gaseousBuff,
+                                      0.7 - float(BIOME_CLOUD_LAYERS - 1) /
+                                                float(BIOME_SURF_LAYERS)));
   OutColor.rgb =
       (pow(OutColor.rgb, vec3(height * stripeFluct * 0.5 * gaseousBuff)));
 

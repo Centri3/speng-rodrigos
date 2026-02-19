@@ -414,12 +414,12 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
 
 vec4 _GetCloudsColor(float height) {
   return texture(BiomeDataTable,
-                 vec2(1.0, height * 0.35)); // no idea why it has to be 0.35
+                 vec2(1.0, height * 0.25)); // no idea why it has to be 0.25
 }
 
 vec4 _GetGasGiantCloudsColor(float height) {
   return texture(BiomeDataTable,
-                 vec2(1.0, height * 0.35)); // no idea why it has to be 0.35
+                 vec2(1.0, height * 0.25)); // no idea why it has to be 0.25
 }
 
 float HeightMapCloudsVenusAli(vec3 point) {
