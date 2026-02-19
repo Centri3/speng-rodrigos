@@ -21,7 +21,7 @@ void main() {
   OutColor = rgb_to_lch(OutColor);
   OutColor.r = 
       (pow(OutColor.r, height * _stripeFluct * 6.0 * gaseousBuff)) + 30.0;
-  OutColor.g *= 0.3;
+  OutColor.g *= hash1(Randomize.x);
   OutColor = lch_to_rgb(OutColor);
 
   // GlobalModifier // Change cloud alpha channel
