@@ -10,8 +10,8 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   vec2 cell;
   float r, fi, rnd, dist, dist2, dir;
   float strength = 13.0;
-  float freq = 100.0 - 90.0 * lavaCoverage;
-  float size = 9.0 - 7.0 * lavaCoverage;
+  float freq = max(100.0 - 90.0 * lavaCoverage - 90.0 * smoothstep(0.1, 0.09, cloudsFreq), 10.0);
+  float size = max(9.0 - 8.0 * lavaCoverage - 7.0 * smoothstep(1.0, 0.09, cloudsFreq), 1.0);
   float dens = 1.0;
   vec3 randomize = Randomize;
 
@@ -39,7 +39,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
       dist = saturate(1.0 - r);
       dist2 = saturate(0.5 - r);
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
-      twistedPoint = Rotate(dir * stripeTwist * sign(cellCenter.y) * fi,
+      twistedPoint = Rotate(dir * stripeTwist / log(stripeTwist) * sign(cellCenter.y) * fi,
                             cellCenter.xyz, point);
     }
 
@@ -115,7 +115,7 @@ float HeightMapCloudsGasGiantAli(vec3 point) {
   // Compute stripes
   noiseOctaves = cloudsOctaves;
   float turbulence = Fbm(twistedPoint * 0.03);
-  twistedPoint = twistedPoint * (0.43 * cloudsFreq) + Randomize + cloudsLayer;
+  twistedPoint = twistedPoint * (0.43 * (smoothstep(0.09, 0.1, cloudsFreq) + cloudsFreq)) + Randomize + cloudsLayer;
   twistedPoint.y *= 9.0 + turbulence;
   float height =
       unwrap_or(stripeFluct, 0.0) * 1.0 * (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
