@@ -430,7 +430,7 @@ float HeightMapCloudsVenusAli(vec3 point) {
 
   float zones = cos(stripeZones * point.y * 1.75);
   float ang = zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
-  if (stripeTwist <0.0) {
+  if (stripeTwist < 0.0) {
     ang *= -1.0;
   }
   vec3 twistedPoint = point;
@@ -513,6 +513,36 @@ float HeightMapCloudsVenusAli2(vec3 point) {
       saturate(f) * weight * (Fbm(twistedPoint + distort) + cloudsCoverage);
 
   return global;
+}
+
+float   Cell2Noise(vec3 p, out vec3 NearestPoint)
+{
+    vec3  cell = floor(p);
+    vec3  offs = p - cell - vec3(0.5);
+    vec3  pos;
+    vec3  rnd;
+    vec3  d;
+    float dist;
+    float distMin = 1.0e38;
+    for (d.z=-1.0; d.z<1.0; d.z+=1.0)
+    {
+        for (d.y=-1.0; d.y<1.0; d.y+=1.0)
+        {
+            for (d.x=-1.0; d.x<1.0; d.x+=1.0)
+            {
+                rnd = NoiseNearestUVec4((cell + d) / NOISE_TEX_3D_SIZE).xyz + d;
+                //rnd = NoiseNearestUVec4((cell + d) / NOISE_TEX_3D_SIZE).xyz;
+                //rnd = CellularWeightSamples3(rnd) * 0.166666666 + d;
+                pos = rnd - offs;
+                dist = dot(pos, pos);
+                if (dist < distMin) {
+                    NearestPoint = rnd;
+                    distMin = dist;
+                }
+            }
+        }
+    }
+    return sqrt(distMin);
 }
 
 vec4 rgb_to_xyz(vec4 color) {
