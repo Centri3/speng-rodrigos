@@ -117,7 +117,7 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
 
   noiseOctaves = 12.0;
   noiseLacunarity = 4.0;
-  noiseH = 0.6;
+  noiseH = 0.45;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
@@ -140,6 +140,74 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
              0.5 - lavaCoverage * 0.5);
 }
 
+float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
+  vec3 twistedPoint = point;
+
+  float offset = 0.1;
+
+  // Compute cyclons
+  if (cycloneOctaves > 0.0)
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
+
+  // Compute turbulence
+  twistedPoint = TurbulenceGasGiantAli(twistedPoint);
+
+  noiseOctaves = 12.0;
+  noiseLacunarity = 4.0;
+  noiseH = 0.3;
+
+  // Compute stripes
+  noiseOctaves = cloudsOctaves;
+  float turbulence = Fbm(twistedPoint * 0.01);
+  twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
+  twistedPoint.y *= 30.0 + turbulence;
+  float height =
+      unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
+
+  return mix(height + hash1(HASHED_RANDOMIZE) * 2.0 - lavaCoverage * 0.75,
+             clamp(offset,
+                   -0.2 * saturate(1.0 - lavaCoverage -
+                                   smoothstep(1.0, 0.09, cloudsFreq)),
+                   0.8 * saturate(1.0 - lavaCoverage -
+                                  smoothstep(1.0, 0.09, cloudsFreq))),
+             0.5 - lavaCoverage * 0.5);
+}
+
+//-----------------------------------------------------------------------------
+
+float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
+  vec3 twistedPoint = point;
+
+  float offset = 0.0;
+
+  // Compute cyclons
+  if (cycloneOctaves > 0.0)
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
+
+  // Compute turbulence
+  twistedPoint = TurbulenceGasGiantAli(twistedPoint);
+
+  noiseOctaves = 12.0;
+  noiseLacunarity = 4.0;
+  noiseH = 0.3;
+
+  // Compute stripes
+  noiseOctaves = cloudsOctaves;
+  float turbulence = Fbm(twistedPoint * 8.86);
+  twistedPoint = twistedPoint * (1.12 * cloudsFreq) + Randomize + cloudsLayer;
+  twistedPoint.y *= 80.0 + turbulence;
+  float height =
+      unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
+
+  return mix(height + hash1(HASHED_RANDOMIZE) * 2.0 - lavaCoverage * 0.75,
+             clamp(offset,
+                   -0.2 * saturate(1.0 - lavaCoverage -
+                                   smoothstep(1.0, 0.09, cloudsFreq)),
+                   0.8 * saturate(1.0 - lavaCoverage -
+                                  smoothstep(1.0, 0.09, cloudsFreq))),
+             0.5 - lavaCoverage * 0.5);
+}
+
 //-----------------------------------------------------------------------------
 
 void main() {
@@ -153,7 +221,9 @@ void main() {
     height = 3.0 * _stripeFluct * HeightMapCloudsVenusAli(point) +
              HeightMapCloudsVenusAli2(point);
   } else {
-    height = 0.5 * HeightMapCloudsGasGiantAli(point, _stripeFluct);
+    height = 0.1 * HeightMapCloudsGasGiantAli(point, _stripeFluct) +
+             0.1 * HeightMapCloudsGasGiantAli2(point, _stripeFluct) +
+             0.1 * HeightMapCloudsGasGiantAli3(point, _stripeFluct);
   }
   OutColor = vec4(height);
 }

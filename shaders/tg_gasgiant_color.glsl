@@ -11,7 +11,7 @@ float HeightMapFogGasGiant(vec3 point) {
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.6 + stripeFluct * 0.4;
+  float _stripeFluct = 0.2 + stripeFluct * 0.4;
 
   // GlobalModifier // Convert height to color
   vec3 point = GetSurfacePoint();
@@ -28,7 +28,7 @@ void main() {
                                       0.7 - float(BIOME_CLOUD_LAYERS - 1) /
                                                 float(BIOME_SURF_LAYERS)));
   OutColor.rgb =
-      (pow(OutColor.rgb, vec3(height * _stripeFluct * 2.0 * gaseousBuff)));
+      (pow(OutColor.rgb, vec3(height * _stripeFluct * 6.0 * gaseousBuff)));
 
   // GlobalModifier // Change cloud alpha channel
   // Changed lowest cloud layer to be full alpha // by Sp_ce
