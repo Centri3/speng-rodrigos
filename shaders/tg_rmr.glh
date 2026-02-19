@@ -418,8 +418,7 @@ vec4 _GetCloudsColor(float height) {
 }
 
 vec4 _GetGasGiantCloudsColor(float height) {
-  return texture(BiomeDataTable,
-                 vec2(1.0, height * 0.25)); // no idea why it has to be 0.25
+  return texture(BiomeDataTable, vec2(1.0, clamp(height, 0.0, 0.25)));
 }
 
 float HeightMapCloudsVenusAli(vec3 point) {

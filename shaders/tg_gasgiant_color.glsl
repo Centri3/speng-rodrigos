@@ -5,23 +5,24 @@
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.2 + stripeFluct * 0.1;
+  float _stripeFluct = 0.9 + stripeFluct * 0.1;
 
   // GlobalModifier // Convert height to color
   vec3 point = GetSurfacePoint();
   float height = GetSurfaceHeight();
+  float modulate = height * 1.5 + height * 5.0;
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
   float isMini = smoothstep(0.09, 1.0, cloudsFreq);
   OutColor =
       0.5 *
-          _GetGasGiantCloudsColor(height * _stripeFluct * 0.5 * gaseousBuff) +
+          _GetGasGiantCloudsColor(modulate * _stripeFluct * 0.5 * gaseousBuff) +
       0.5 *
-          _GetGasGiantCloudsColor(height * _stripeFluct * 0.5 * gaseousBuff);
+          _GetGasGiantCloudsColor(modulate * _stripeFluct * 0.5 * gaseousBuff);
   OutColor = rgb_to_lch(OutColor);
-  OutColor.r = 
-      (pow(OutColor.r, height * _stripeFluct * 6.0 * gaseousBuff)) + 30.0;
-  OutColor.g *= hash1(Randomize.x);
+  OutColor.r =
+      log((pow(OutColor.r, height * _stripeFluct * 3.0 * gaseousBuff)) * 30.0 +
+      20.0) * 15.0;
   OutColor = lch_to_rgb(OutColor);
 
   // GlobalModifier // Change cloud alpha channel

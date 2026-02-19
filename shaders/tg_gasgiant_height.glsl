@@ -129,7 +129,7 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   float height = unwrap_or(_stripeFluct, 0.0) * 1.0 *
                  (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
-  return mix(height * 2.0 + 0.4,
+  return mix(height,
              clamp(offset,
                    -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
@@ -162,7 +162,7 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return mix(height * 2.0 + 0.4,
+  return mix(height,
              clamp(offset,
                    -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
@@ -197,7 +197,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
-  return mix(height * 2.0 + 0.4,
+  return mix(height,
              clamp(offset,
                    -0.3 * saturate(1.0 - lavaCoverage -
                                    smoothstep(1.0, 0.09, cloudsFreq)),
@@ -209,7 +209,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.6 + stripeFluct * 0.4;
+  float _stripeFluct = 0.9 + stripeFluct * 0.1;
 
   vec3 point = GetSurfacePoint();
   float height;
@@ -219,9 +219,9 @@ void main() {
     height = 3.0 * _stripeFluct * HeightMapCloudsVenusAli(point) +
              HeightMapCloudsVenusAli2(point);
   } else {
-    height = 0.1 * HeightMapCloudsGasGiantAli(point, _stripeFluct) +
+    height = 0.05 * HeightMapCloudsGasGiantAli(point, _stripeFluct) +
              0.1 * HeightMapCloudsGasGiantAli2(point, _stripeFluct) +
-             0.1 * HeightMapCloudsGasGiantAli3(point, _stripeFluct);
+             0.15 * HeightMapCloudsGasGiantAli3(point, _stripeFluct);
   }
   OutColor = vec4(height);
 }
