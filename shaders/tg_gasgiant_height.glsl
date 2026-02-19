@@ -18,7 +18,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   vec3 randomize = Randomize;
 
   for (int i = 0; i < 80; i++) {
-    float angleY = randomize.y * 0.03 + lavaCoverage * 0.597 +
+    float angleY = randomize.y * 0.03 + lavaCoverage * 0.897 +
                    smoothstep(1.0, 0.09, cloudsFreq) * 0.097 * 6.283185;
 
     randomize.y = hash1(randomize.y);
@@ -122,7 +122,7 @@ float HeightMapCloudsGasGiantAli(vec3 point) {
   // Compute stripes
   noiseOctaves = cloudsOctaves;
   float turbulence = Fbm(twistedPoint * 0.03);
-  twistedPoint = twistedPoint * (0.43 * cloudsFreq) + Randomize + cloudsLayer;
+  twistedPoint = twistedPoint * (0.43 * cloudsFreq) * (0.01 + smoothstep(1.0, 0.0, lavaCoverage)) + Randomize + cloudsLayer;
   twistedPoint.y *= 9.0 + turbulence;
   float height =
       unwrap_or(stripeFluct, 0.0) * 1.0 * (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);

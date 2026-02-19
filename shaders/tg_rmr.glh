@@ -430,7 +430,7 @@ float HeightMapCloudsVenusAli(vec3 point) {
 
   float zones = cos(stripeZones * point.y * 1.75);
   float ang = -zones * pow(abs(stripeTwist * stripeTwistMult), 0.6);
-  if (stripeTwist < 0.0) {
+  if (stripeTwist <0.0) {
     ang *= -1.0;
   }
   vec3 twistedPoint = point;
