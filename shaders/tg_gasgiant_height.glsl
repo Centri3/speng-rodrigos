@@ -27,7 +27,6 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
     randomize.y = hash1(randomize.y);
 
     // clang-format off
-    // TODO: Make a helper function for this!
     mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
                           0.0, 1.0, 0.0,
                           -sin(angleY), 0.0, cos(angleY));
@@ -86,7 +85,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.5);
       twistedPoint = Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi,
                             cellCenter.xyz, point);
-      offset += offs * fi * dir * 0.3;
+      offset += offs * fi * dir * 16.0;
     }
 
     freq = min(freq * 2.0, 6400.0);
@@ -106,11 +105,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
 float HeightMapCloudsGasGiantAli(vec3 point) {
   vec3 twistedPoint = point;
 
-  float zones = -cos(point.y * 1.75 * pow(abs(stripeTwist + 0.2), 0.3) *
-                     stripeZones * 0.3);
-  float ang = zones * 2;
   float offset = 0.0;
-
   // Compute cyclons
   if (cycloneOctaves > 0.0)
     twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
@@ -132,7 +127,7 @@ float HeightMapCloudsGasGiantAli(vec3 point) {
 
   // TODO: Add proper random number generator.
   // Also change other hashed Randomize instances to this.
-  return height + hash1(HASHED_RANDOMIZE) + offset;
+  return mix(height + hash1(HASHED_RANDOMIZE) * 2.0, clamp(offset, -0.2, 1.0), 0.5);
 }
 
 //-----------------------------------------------------------------------------
