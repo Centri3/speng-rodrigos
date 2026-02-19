@@ -18,7 +18,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   vec3 randomize = Randomize;
 
   for (int i = 0; i < 80; i++) {
-    float angleY = randomize.y * 0.03 + lavaCoverage * 0.097 +
+    float angleY = randomize.y * 0.03 + lavaCoverage * 0.597 +
                    smoothstep(1.0, 0.09, cloudsFreq) * 0.097 * 6.283185;
 
     randomize.y = hash1(randomize.y);
