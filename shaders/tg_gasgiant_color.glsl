@@ -11,9 +11,7 @@ float HeightMapFogGasGiant(vec3 point) {
 
 void main() {
   // GlobalModifier // Convert height to color
-  float height;
-  float slope;
-  GetSurfaceHeightAndSlope(height, slope);
+  float height = GetSurfaceHeight();
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
   OutColor =
