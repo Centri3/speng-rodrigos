@@ -129,8 +129,7 @@ float HeightMapCloudsGasGiantAli(vec3 point) {
 
   // TODO: Add proper random number generator.
   // Also change other hashed Randomize instances to this.
-  return height + hash1(HASHED_RANDOMIZE) + offset +
-         abs(point.y) * 1.25 * HASHED_RANDOMIZE;
+  return height + hash1(HASHED_RANDOMIZE) + offset;
 }
 
 //-----------------------------------------------------------------------------
