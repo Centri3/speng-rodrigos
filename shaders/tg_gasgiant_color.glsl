@@ -21,8 +21,7 @@ void main() {
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
   OutColor =
-      0.5 * _GetGasGiantCloudsColor(height * stripeFluct * 0.5 * gaseousBuff, slope) +
-      0.5 * _GetGasGiantCloudsColor(height * stripeFluct * 0.5 * gaseousBuff, slope);
+      _GetGasGiantCloudsColor(height * stripeFluct * 0.5 * gaseousBuff, slope);
 
   // GlobalModifier // Change cloud alpha channel
   // Changed lowest cloud layer to be full alpha // by Sp_ce

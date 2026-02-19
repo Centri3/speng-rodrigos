@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 
-vec3 TurbulenceGasGiantGmail(vec3 point) {
+vec3 TurbulenceGasGiantAli(vec3 point) {
   vec3 twistedPoint = point + Fbm(point * 8.0);
   vec3 cellCenter = vec3(0.0);
   vec2 cell;
@@ -53,7 +53,7 @@ vec3 TurbulenceGasGiantGmail(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
-vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
+vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
   vec3 rotVec = normalize(Randomize);
   vec3 twistedPoint = point;
   vec3 cellCenter = vec3(0.0);
@@ -96,17 +96,17 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
 
 //-----------------------------------------------------------------------------
 
-float HeightMapCloudsGasGiantGmail(vec3 point) {
+float HeightMapCloudsGasGiantAli(vec3 point) {
   vec3 twistedPoint = point;
 
   float offset = 0.0;
 
   // Compute cyclons
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
 
   // Compute turbulence
-  twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
+  twistedPoint = TurbulenceGasGiantAli(twistedPoint);
 
   noiseOctaves = 12.0;
   noiseLacunarity = 4.0;
@@ -134,10 +134,10 @@ void main() {
   if (volcanoActivity !=
       0.0) // volcanoActivity != 0.0 && colorDistFreq < 200000000
   {
-    height = 3.0 * stripeFluct * HeightMapCloudsTerraAli(point) +
-             HeightMapCloudsTerraAli2(point);
+    height = 3.0 * stripeFluct * HeightMapCloudsVenusAli(point) +
+             HeightMapCloudsVenusAli2(point);
   } else {
-    height = 0.5 * HeightMapCloudsGasGiantGmail(point);
+    height = 0.5 * HeightMapCloudsGasGiantAli(point);
   }
   OutColor = vec4(height);
 }

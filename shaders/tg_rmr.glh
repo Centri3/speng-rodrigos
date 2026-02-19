@@ -412,7 +412,7 @@ float _RayedCraterNoise(vec3 point, float cratMagn, float cratFreq,
   return cratMagn * newLand;
 }
 
-float HeightMapCloudsTerraAli(vec3 point) {
+float HeightMapCloudsVenusAli(vec3 point) {
   float stripeTwistMult = 0.2;
   if (cloudsCoverage == 1.0) {
     stripeTwistMult = 1.4;
@@ -458,7 +458,7 @@ float HeightMapCloudsTerraAli(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
-float HeightMapCloudsTerraAli2(vec3 point) {
+float HeightMapCloudsVenusAli2(vec3 point) {
   float stripeTwistMult = 0.2;
   if (cloudsCoverage == 1.0) {
     stripeTwistMult = 1.4;
