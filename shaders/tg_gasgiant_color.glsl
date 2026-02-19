@@ -4,12 +4,6 @@
 
 //-----------------------------------------------------------------------------
 
-float HeightMapFogGasGiant(vec3 point) {
-  return 0.75 + 0.3 * Noise(point * vec3(0.2, stripeZones * 0.5, 0.2));
-}
-
-//-----------------------------------------------------------------------------
-
 void main() {
   float _stripeFluct = 0.2 + stripeFluct * 0.4;
 
@@ -36,9 +30,7 @@ void main() {
     // OutColor = GetGasGiantCloudsColor(height);
     OutColor.a = 1.0;
   } else {
-    float height = HeightMapFogGasGiant(GetSurfacePoint());
-    OutColor.rgb = height * _GetGasGiantCloudsColor(1.0).rgb;
-    OutColor.a = 1.0;
+    OutColor.a = 0.0;
   }
 
   if (volcanoActivity != 0.0) {
