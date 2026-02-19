@@ -96,14 +96,13 @@ vec3 CycloneNoiseGasGiantGmail(vec3 point, inout float offset) {
 
 //-----------------------------------------------------------------------------
 
-float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones,
-                                   float _stripeZones) {
+float HeightMapCloudsGasGiantGmail(vec3 point) {
   vec3 twistedPoint = point;
 
   float offset = 0.0;
 
   // Compute cyclons
-  if (cycloneOctaves > 0.0 && cyclones)
+  if (cycloneOctaves > 0.0)
     twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
 
   // Compute turbulence
@@ -111,7 +110,7 @@ float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones,
 
   noiseOctaves = 12.0;
   noiseLacunarity = 4.0;
-  noiseH = 0.3;
+  noiseH = 0.4;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
@@ -119,66 +118,12 @@ float HeightMapCloudsGasGiantGmail(vec3 point, bool cyclones,
   twistedPoint = twistedPoint * (0.43 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= 9.0 + turbulence;
   float height =
-      unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
+      unwrap_or(stripeFluct, 0.0) * 1.0 * (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
-  return height + offset;
-}
-//-----------------------------------------------------------------------------
-
-float HeightMapCloudsGasGiantGmail2(vec3 point) {
-  vec3 twistedPoint = point;
-
-  float offset = 0.1;
-
-  // Compute cyclons
-  if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
-
-  // Compute turbulence
-  twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
-
-  noiseOctaves = 12.0;
-  noiseLacunarity = 4.0;
-  noiseH = 0.3;
-
-  // Compute stripes
-  noiseOctaves = cloudsOctaves;
-  float turbulence = Fbm(twistedPoint * 0.01);
-  twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
-  twistedPoint.y *= 30.0 + turbulence;
-  float height =
-      unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
-
-  return height + offset;
-}
-
-//-----------------------------------------------------------------------------
-
-float HeightMapCloudsGasGiantGmail3(vec3 point) {
-  vec3 twistedPoint = point;
-
-  float offset = 0.0;
-
-  // Compute cyclons
-  if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantGmail(twistedPoint, offset);
-
-  // Compute turbulence
-  twistedPoint = TurbulenceGasGiantGmail(twistedPoint);
-
-  noiseOctaves = 12.0;
-  noiseLacunarity = 4.0;
-  noiseH = 0.3;
-
-  // Compute stripes
-  noiseOctaves = cloudsOctaves;
-  float turbulence = Fbm(twistedPoint * 8.86);
-  twistedPoint = twistedPoint * (1.12 * cloudsFreq) + Randomize + cloudsLayer;
-  twistedPoint.y *= 80.0 + turbulence;
-  float height =
-      unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
-
-  return height + offset;
+  // TODO: Add proper random number generator.
+  // Also change other hashed Randomize instances to this.
+  return height + hash1(HASHED_RANDOMIZE) + offset +
+         abs(point.y) * 1.25 * HASHED_RANDOMIZE;
 }
 
 //-----------------------------------------------------------------------------
@@ -192,9 +137,7 @@ void main() {
     height = 3.0 * stripeFluct * HeightMapCloudsTerraAli(point) +
              HeightMapCloudsTerraAli2(point);
   } else {
-    height = 0.95 * (HeightMapCloudsGasGiantGmail(point, true, stripeZones) +
-                     0.5 * HeightMapCloudsGasGiantGmail2(point) +
-                     0.5 * HeightMapCloudsGasGiantGmail3(point));
+    height = 0.5 * HeightMapCloudsGasGiantGmail(point);
   }
   OutColor = vec4(height);
 }

@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 //-----------------------------------------------------------------------------
@@ -7,21 +7,22 @@ float HeightMapFogGasGiant(vec3 point) {
   return 0.75 + 0.3 * Noise(point * vec3(0.2, stripeZones * 0.5, 0.2));
 }
 
+vec4 _GetGasGiantCloudsColor(float height, float slope) {
+  return texture(BiomeDataTable, vec2(1.0, height * 0.35)); // no idea why it has to be 0.35
+}
+
 //-----------------------------------------------------------------------------
 
 void main() {
   // GlobalModifier // Convert height to color
-  float height = GetSurfaceHeight();
+  float height;
+  float slope;
+  GetSurfaceHeightAndSlope(height, slope);
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
   OutColor =
-      0.1 * GetGasGiantCloudsColor(max(height * stripeFluct * 0.5 * gaseousBuff,
-                                       1.0 - float(BIOME_CLOUD_LAYERS - 1) /
-                                                 float(BIOME_SURF_LAYERS))) +
-      0.1 * GetGasGiantCloudsColor(min(height * stripeFluct * 0.5 * gaseousBuff,
-                                       0.7 - float(BIOME_CLOUD_LAYERS - 1) /
-                                                 float(BIOME_SURF_LAYERS)));
-  OutColor.rgb = (pow(OutColor.rgb, vec3(height * stripeFluct * gaseousBuff)));
+      0.5 * _GetGasGiantCloudsColor(height * stripeFluct * 0.5 * gaseousBuff, slope) +
+      0.5 * _GetGasGiantCloudsColor(height * stripeFluct * 0.5 * gaseousBuff, slope);
 
   // GlobalModifier // Change cloud alpha channel
   // Changed lowest cloud layer to be full alpha // by Sp_ce
@@ -30,7 +31,7 @@ void main() {
     OutColor.a = 1.0;
   } else {
     float height = HeightMapFogGasGiant(GetSurfacePoint());
-    OutColor.rgb = height * GetGasGiantCloudsColor(1.0).rgb;
+    OutColor.rgb = height * _GetGasGiantCloudsColor(1.0, slope).rgb;
     OutColor.a = 1.0;
   }
 
