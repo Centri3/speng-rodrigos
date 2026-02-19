@@ -15,7 +15,8 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   randomize.y = hash1(Randomize.y);
   randomize.z = hash1(Randomize.z);
   float freq = 100.0 - 90.0 * lavaCoverage;
-  // minijupiters have low cloudsFreq. special-case them to make them look good as well.
+  // minijupiters have low cloudsFreq. special-case them to make them look good
+  // as well.
   float size = max(
       9.0 - 8.0 * lavaCoverage - 8.0 * smoothstep(1.0, 0.09, cloudsFreq), 1.0);
   float dens = 1.0;
@@ -83,15 +84,16 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
       dist = saturate(1.0 - r);
       dist2 = saturate(0.3 - r);
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.5);
-      twistedPoint = Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi,
-                            cellCenter.xyz, point);
+      twistedPoint =
+          Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi * 3.0,
+                 cellCenter.xyz, point);
       offset += offs * fi * dir * 16.0;
     }
 
     freq = min(freq * 2.0, 6400.0);
     dens = min(dens * 3.5, 0.3);
     size = min(size * 1.5, 15.0);
-    offs = offs * 0.85;
+    offs = offs * 0.5;
     squeeze = max(squeeze - 0.3, 1.0);
     strength = max(strength * 1.3, 0.5);
     point = twistedPoint;
@@ -102,7 +104,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
 
 //-----------------------------------------------------------------------------
 
-float HeightMapCloudsGasGiantAli(vec3 point) {
+float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   vec3 twistedPoint = point;
 
   float offset = 0.0;
@@ -120,28 +122,38 @@ float HeightMapCloudsGasGiantAli(vec3 point) {
   // Compute stripes
   noiseOctaves = cloudsOctaves;
   float turbulence = Fbm(twistedPoint * 0.03);
-  twistedPoint = twistedPoint * (0.43 * cloudsFreq) * (0.01 + smoothstep(1.0, 0.0, lavaCoverage)) + Randomize + cloudsLayer;
+  twistedPoint = twistedPoint * (0.43 * cloudsFreq) *
+                     (0.01 + smoothstep(1.0, 0.0, lavaCoverage)) +
+                 Randomize + cloudsLayer;
   twistedPoint.y *= 9.0 + turbulence;
-  float height =
-      unwrap_or(stripeFluct, 0.0) * 1.0 * (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
+  float height = unwrap_or(_stripeFluct, 0.0) * 1.0 *
+                 (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
   // TODO: Add proper random number generator.
   // Also change other hashed Randomize instances to this.
-  return mix(height + hash1(HASHED_RANDOMIZE) * 2.0, clamp(offset, -0.2, 1.0), 0.5);
+  return mix(height + hash1(HASHED_RANDOMIZE) * 2.0 - lavaCoverage * 0.75,
+             clamp(offset,
+                   -0.2 * saturate(1.0 - lavaCoverage -
+                                   smoothstep(1.0, 0.09, cloudsFreq)),
+                   0.8 * saturate(1.0 - lavaCoverage -
+                                  smoothstep(1.0, 0.09, cloudsFreq))),
+             0.5 - lavaCoverage * 0.5);
 }
 
 //-----------------------------------------------------------------------------
 
 void main() {
+  float _stripeFluct = 0.6 + stripeFluct * 0.4;
+
   vec3 point = GetSurfacePoint();
   float height;
   if (volcanoActivity !=
       0.0) // volcanoActivity != 0.0 && colorDistFreq < 200000000
   {
-    height = 3.0 * stripeFluct * HeightMapCloudsVenusAli(point) +
+    height = 3.0 * _stripeFluct * HeightMapCloudsVenusAli(point) +
              HeightMapCloudsVenusAli2(point);
   } else {
-    height = 0.5 * HeightMapCloudsGasGiantAli(point);
+    height = 0.5 * HeightMapCloudsGasGiantAli(point, _stripeFluct);
   }
   OutColor = vec4(height);
 }
