@@ -14,7 +14,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   randomize.x = hash1(Randomize.x);
   randomize.y = hash1(Randomize.y);
   randomize.z = hash1(Randomize.z);
-  float freq = (70.0 - 60.0 * lavaCoverage);
+  float freq = (100.0 - 90.0 * lavaCoverage);
   // minijupiters have low cloudsFreq. special-case them to make them look good
   // as well.
   float size = max(
@@ -46,12 +46,12 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
       dist = saturate(
           1.0 - r -
           distance(cellCenter.y, point.y) * (5.0 + lavaCoverage * 5.0) *
-              smoothstep(0.5, 0.3, lavaCoverage) *
+              randomize.x * smoothstep(0.5, 0.3, lavaCoverage) *
               smoothstep(0.3, 0.5, cloudsFreq));
       dist2 = saturate(
           0.5 - r -
           distance(cellCenter.y, point.y) * (2.5 + lavaCoverage * 5.0) *
-              ((randomize.x - 0.5) * 2.0) * smoothstep(0.5, 0.3, lavaCoverage) *
+              randomize.x * smoothstep(0.5, 0.3, lavaCoverage) *
               smoothstep(0.3, 0.5, cloudsFreq)); // only apply on non-minijupiters.
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
       twistedPoint =
