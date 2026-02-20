@@ -2,6 +2,49 @@
 
 #ifdef _FRAGMENT_
 
+float CycloneColorGasGiantAli(vec3 point) {
+  vec3 rotVec = normalize(Randomize);
+  vec3 twistedPoint = point;
+  vec3 cellCenter = vec3(0.0);
+  vec2 cell;
+  float r, fi, rnd, dist, dist2, dir;
+  float offset = 0.0;
+  float offs = 0.5 / (cloudsLayer + 1.0);
+  float squeeze = 1.9;
+  float strength = 10.0;
+  float freq = cycloneFreq * 30.0;
+  float dens = cycloneDensity * 0.02;
+  float size = 1.5 * pow(cloudsLayer + 1.0, 5.0);
+
+  for (int i = 0; i < cycloneOctaves; i++) {
+    cell = inverseSF(vec3(point.x, point.y * squeeze, point.z),
+                     freq + cloudsLayer, cellCenter);
+    rnd = hash1(cell.x);
+    r = size * cell.y;
+
+    if ((rnd < dens)) {
+      dir = sign(0.7 * dens - rnd);
+      dist = saturate(1.0 - r);
+      dist2 = saturate(0.3 - r);
+      fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.5);
+      twistedPoint =
+          Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi * 3.0,
+                 cellCenter.xyz, point);
+      offset += offs * fi * dir * 16.0;
+    }
+
+    freq = min(freq * 2.0, 6400.0);
+    dens = min(dens * 3.5, 0.3);
+    size = min(size * 1.5, 15.0);
+    offs = offs * 0.5;
+    squeeze = max(squeeze - 0.3, 1.0);
+    strength = max(strength * 1.3, 0.5);
+    point = twistedPoint;
+  }
+
+  return offset;
+}
+
 //-----------------------------------------------------------------------------
 
 void main() {
@@ -12,15 +55,17 @@ void main() {
   float height = 0.0;
   float slope = 0.0;
   GetSurfaceHeightAndSlope(height, slope);
-  float modulate = height * 1.5 + height * 5.0;
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
   float isMini = smoothstep(0.09, 1.0, cloudsFreq);
-  OutColor =
-      0.5 *
-          _GetGasGiantCloudsColor(height - 0.5 * _stripeFluct * 0.0666666 * gaseousBuff) +
-      0.5 *
-          _GetGasGiantCloudsColor(height - 0.5 * _stripeFluct * 0.0666666 * gaseousBuff);
+  OutColor = 0.5 * _GetGasGiantCloudsColor(
+                       height - 0.5 * _stripeFluct * 0.0666666 * gaseousBuff) +
+             0.5 * _GetGasGiantCloudsColor(
+                       height - 0.5 * _stripeFluct * 0.0666666 * gaseousBuff);
+
+  OutColor.rgb = mix(OutColor.rgb, texture(BiomeDataTable, vec2(1.0, 0.0)).rgb,
+                     saturate(abs(CycloneColorGasGiantAli(point))));
+
   OutColor = rgb_to_lch(OutColor);
   OutColor.r = pow(OutColor.r, height * stripeFluct) + 30.0;
   OutColor.g /= 1.0 - height * 0.8;
@@ -36,7 +81,7 @@ void main() {
   }
 
   if (volcanoActivity != 0.0) {
-    float latitude = abs(GetSurfacePoint().y);
+    float latitude = abs(point.y);
     // Drown out poles
     OutColor.rgb = mix(GetGasGiantCloudsColor(abs(Randomize.x) * 0.1666667 +
                                               abs(Randomize.y) * 0.1666667 +

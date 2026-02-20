@@ -60,13 +60,12 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
-vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
+vec3 CycloneNoiseGasGiantAli(vec3 point) {
   vec3 rotVec = normalize(Randomize);
   vec3 twistedPoint = point;
   vec3 cellCenter = vec3(0.0);
   vec2 cell;
   float r, fi, rnd, dist, dist2, dir;
-  float offs = 0.5 / (cloudsLayer + 1.0);
   float squeeze = 1.9;
   float strength = 10.0;
   float freq = cycloneFreq * 30.0;
@@ -87,13 +86,11 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
       twistedPoint =
           Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi * 3.0,
                  cellCenter.xyz, point);
-      offset += offs * fi * dir * 16.0;
     }
 
     freq = min(freq * 2.0, 6400.0);
     dens = min(dens * 3.5, 0.3);
     size = min(size * 1.5, 15.0);
-    offs = offs * 0.5;
     squeeze = max(squeeze - 0.3, 1.0);
     strength = max(strength * 1.3, 0.5);
     point = twistedPoint;
@@ -107,10 +104,9 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
 float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   vec3 twistedPoint = point;
 
-  float offset = 0.0;
   // Compute cyclons
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
@@ -129,23 +125,15 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   float height = unwrap_or(_stripeFluct, 0.0) * 1.0 *
                  (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
-  return mix(height * 20.0,
-             clamp(offset,
-                   -0.3 * saturate(1.0 - lavaCoverage -
-                                   smoothstep(1.0, 0.09, cloudsFreq)),
-                   0.3 * saturate(1.0 - lavaCoverage -
-                                  smoothstep(1.0, 0.09, cloudsFreq))),
-             0.5 - lavaCoverage * 0.5);
+  return height * 10.0;
 }
 
 float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
   vec3 twistedPoint = point;
 
-  float offset = 0.1;
-
   // Compute cyclons
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
@@ -162,13 +150,7 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return mix(height * 20.0,
-             clamp(offset,
-                   -0.3 * saturate(1.0 - lavaCoverage -
-                                   smoothstep(1.0, 0.09, cloudsFreq)),
-                   0.3 * saturate(1.0 - lavaCoverage -
-                                  smoothstep(1.0, 0.09, cloudsFreq))),
-             0.5 - lavaCoverage * 0.5);
+  return height * 10.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -176,11 +158,9 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
 float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   vec3 twistedPoint = point;
 
-  float offset = 0.0;
-
   // Compute cyclons
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
@@ -197,13 +177,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
-  return mix(height * 20.0,
-             clamp(offset,
-                   -0.3 * saturate(1.0 - lavaCoverage -
-                                   smoothstep(1.0, 0.09, cloudsFreq)),
-                   0.3 * saturate(1.0 - lavaCoverage -
-                                  smoothstep(1.0, 0.09, cloudsFreq))),
-             0.5 - lavaCoverage * 0.5);
+  return height * 10.0;
 }
 
 //-----------------------------------------------------------------------------
