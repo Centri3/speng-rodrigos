@@ -14,7 +14,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   randomize.x = hash1(Randomize.x);
   randomize.y = hash1(Randomize.y);
   randomize.z = hash1(Randomize.z);
-  float freq = 100.0 - 90.0 * lavaCoverage;
+  float freq = (70.0 - 60.0 * lavaCoverage) * stripeZones;
   // minijupiters have low cloudsFreq. special-case them to make them look good
   // as well.
   float size = max(
@@ -121,7 +121,7 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   twistedPoint = twistedPoint * (0.43 * cloudsFreq) *
                      (0.01 + smoothstep(1.0, 0.0, lavaCoverage)) +
                  Randomize + cloudsLayer;
-  twistedPoint.y *= 9.0 + turbulence;
+  twistedPoint.y *= (9.0 + turbulence) * stripeZones;
   float height = unwrap_or(_stripeFluct, 0.0) * 1.0 *
                  (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
@@ -146,7 +146,7 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
   noiseOctaves = cloudsOctaves;
   float turbulence = Fbm(twistedPoint * 0.01);
   twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
-  twistedPoint.y *= 30.0 + turbulence;
+  twistedPoint.y *= (30.0 + turbulence) * stripeZones;
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
@@ -173,7 +173,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   noiseOctaves = cloudsOctaves;
   float turbulence = Fbm(twistedPoint * 8.86);
   twistedPoint = twistedPoint * (1.12 * cloudsFreq) + Randomize + cloudsLayer;
-  twistedPoint.y *= 80.0 + turbulence;
+  twistedPoint.y *= (80.0 + turbulence) * stripeZones;
   float height =
       unwrap_or(_stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 

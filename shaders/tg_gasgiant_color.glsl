@@ -67,8 +67,8 @@ void main() {
                      saturate(abs(CycloneColorGasGiantAli(point))));
 
   OutColor = rgb_to_lch(OutColor);
-  OutColor.r = pow(OutColor.r, height * stripeFluct) + 30.0;
-  OutColor.g /= 1.0 - height * 0.8;
+  // OutColor.r = pow(OutColor.r, height * stripeFluct) + 30.0;
+  // OutColor.g /= 1.0 - height * 0.8;
   OutColor = lch_to_rgb(OutColor);
 
   // GlobalModifier // Change cloud alpha channel
