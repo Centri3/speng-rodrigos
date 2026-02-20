@@ -43,8 +43,16 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
 
     if ((rnd < dens)) {
       dir = sign(0.5 * dens - rnd);
-      dist = saturate(1.0 - r - distance(cellCenter.y, point.y) * (5.0 + lavaCoverage * 5.0) * ((randomize.x - 0.5) * 2.0) * smoothstep(0.5, 0.3, lavaCoverage));
-      dist2 = saturate(0.5 - r - distance(cellCenter.y, point.y) * (2.5 + lavaCoverage * 5.0) * ((randomize.x - 0.5) * 2.0) * smoothstep(0.5, 0.3, lavaCoverage));
+      dist = saturate(
+          1.0 - r -
+          distance(cellCenter.y, point.y) * (5.0 + lavaCoverage * 5.0) *
+              ((randomize.x - 0.5) * 2.0) * smoothstep(0.5, 0.3, lavaCoverage) *
+              smoothstep(0.3, 0.5, cloudsFreq));
+      dist2 = saturate(
+          0.5 - r -
+          distance(cellCenter.y, point.y) * (2.5 + lavaCoverage * 5.0) *
+              ((randomize.x - 0.5) * 2.0) * smoothstep(0.5, 0.3, lavaCoverage) *
+              smoothstep(0.3, 0.5, cloudsFreq)); // only apply on non-minijupiters.
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
       twistedPoint =
           Rotate(dir * min(stripeTwist * 4.0, 15.0) * sign(cellCenter.y) * fi,
