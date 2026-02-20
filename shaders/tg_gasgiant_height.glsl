@@ -14,7 +14,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   randomize.x = hash1(Randomize.x);
   randomize.y = hash1(Randomize.y);
   randomize.z = hash1(Randomize.z);
-  float freq = (70.0 - 60.0 * lavaCoverage) * stripeZones;
+  float freq = (70.0 - 60.0 * lavaCoverage);
   // minijupiters have low cloudsFreq. special-case them to make them look good
   // as well.
   float size = max(
