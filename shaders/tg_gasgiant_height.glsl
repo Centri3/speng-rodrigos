@@ -25,12 +25,13 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
     float angleY = randomize.y * 0.03 + lavaCoverage * 0.897 +
                    smoothstep(1.0, 0.09, cloudsFreq) * 0.097 * 6.283185;
 
+    randomize.x = hash1(randomize.x);
     randomize.y = hash1(randomize.y);
 
     // clang-format off
     mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
-                          0.0, 1.0, 0.0,
-                          -sin(angleY), 0.0, cos(angleY));
+                         0.0, 1.0, 0.0,
+                         -sin(angleY), 0.0, cos(angleY));
     // clang-format on
 
     point *= rotY;
@@ -42,12 +43,12 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
 
     if ((rnd < dens)) {
       dir = sign(0.5 * dens - rnd);
-      dist = saturate(1.0 - r);
-      dist2 = saturate(0.5 - r);
+      dist = saturate(1.0 - r - distance(cellCenter.y, point.y) * (5.0 + lavaCoverage * 5.0) * ((randomize.x - 0.5) * 2.0) * smoothstep(0.5, 0.3, lavaCoverage));
+      dist2 = saturate(0.5 - r - distance(cellCenter.y, point.y) * (2.5 + lavaCoverage * 5.0) * ((randomize.x - 0.5) * 2.0) * smoothstep(0.5, 0.3, lavaCoverage));
       fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
       twistedPoint =
           Rotate(dir * min(stripeTwist * 4.0, 15.0) * sign(cellCenter.y) * fi,
-                 cellCenter.xyz, point);
+                 cellCenter, point);
     }
 
     size *= 1.02;
