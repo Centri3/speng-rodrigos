@@ -5,24 +5,25 @@
 //-----------------------------------------------------------------------------
 
 vec3 TurbulenceGasGiantAli(vec3 point) {
-  vec3 twistedPoint = point + Fbm(point * 8.0);
+  vec3 twistedPoint;
   vec3 cellCenter = vec3(0.0);
-  vec2 cell;
+  vec4 cell;
+  vec3 v;
   float r, fi, rnd, dist, dist2, dir;
   float strength = 13.0 + smoothstep(1.0, 0.09, cloudsFreq) * 30.0;
   vec3 randomize;
   randomize.x = hash1(Randomize.x);
   randomize.y = hash1(Randomize.y);
   randomize.z = hash1(Randomize.z);
-  float freq = (70.0 - 60.0 * lavaCoverage);
+  float freq = (3.0 - 0.9 * lavaCoverage);
   // minijupiters have low cloudsFreq. special-case them to make them look good
   // as well.
   float size = max(
       9.0 - 8.0 * lavaCoverage - 8.0 * smoothstep(1.0, 0.09, cloudsFreq), 1.0);
-  float dens = 1.0;
 
-  for (int i = 0; i < 80 - smoothstep(0.0, 0.5, lavaCoverage) * 70.0; i++) {
-    float angleY = randomize.y * 0.03 + lavaCoverage * 0.17 + + smoothstep(0.5, 0.75, lavaCoverage) * 0.9 +
+  for (int i = 0; i < 80; i++) {
+    float angleY = randomize.y * 0.03 + lavaCoverage * 0.17 +
+                   +smoothstep(0.5, 0.75, lavaCoverage) * 0.9 +
                    smoothstep(1.0, 0.09, cloudsFreq) * 0.097 * 6.283185;
 
     randomize.x = hash1(randomize.x);
@@ -37,27 +38,12 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
     point *= rotY;
 
     twistedPoint = point;
-    vec2 cell = inverseSF(point, freq, cellCenter);
-    rnd = hash1(cell.x);
-    r = size * cell.y;
-
-    if ((rnd < dens)) {
-      dir = sign(0.5 * dens - rnd);
-      dist = saturate(
-          1.0 - r -
-          distance(cellCenter.y, point.y) * (5.0 + lavaCoverage * 5.0) *
-              smoothstep(0.5, 0.3, lavaCoverage) *
-              smoothstep(0.3, 0.5, cloudsFreq));
-      dist2 = saturate(
-          0.5 - r -
-          distance(cellCenter.y, point.y) * (2.5 + lavaCoverage * 5.0) *
-              smoothstep(0.5, 0.3, lavaCoverage) *
-              smoothstep(0.3, 0.5, cloudsFreq)); // only apply on non-minijupiters.
-      fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.25);
-      twistedPoint =
-          Rotate(dir * min(stripeTwist * 4.0, 15.0) * sign(cellCenter.y) * fi,
-                 cellCenter, point);
-    }
+    cell = _Cell2NoiseVec((point * freq), 0.6);
+    v = cell.xyz - point;
+    dist = 1.0 - length(v);
+    dist2 = 0.5 - length(v);
+    fi = pow(dist, 150.0) * (exp(-60.0 * dist2 * dist2) + 0.5);
+    twistedPoint = Rotate(fi * 10.0, cell.xyz, point);
 
     size *= 1.02;
     strength = max(strength * 0.98, 6.0);
@@ -131,8 +117,7 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
                      (0.01 + smoothstep(1.0, 0.0, lavaCoverage)) +
                  Randomize + cloudsLayer;
   twistedPoint.y *= (9.0 + turbulence) * stripeZones * 0.12;
-  float height = _stripeFluct * 1.0 *
-                 (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
+  float height = _stripeFluct * 1.0 * (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
   return height * 10.0;
 }
@@ -156,8 +141,7 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
   float turbulence = Fbm(twistedPoint * 0.01);
   twistedPoint = twistedPoint * (0.32 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= (30.0 + turbulence) * stripeZones * 0.12;
-  float height =
-      _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
+  float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
   return height * 10.0;
 }
@@ -183,8 +167,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   float turbulence = Fbm(twistedPoint * 8.86);
   twistedPoint = twistedPoint * (1.12 * cloudsFreq) + Randomize + cloudsLayer;
   twistedPoint.y *= (80.0 + turbulence) * stripeZones * 0.12;
-  float height =
-      _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
+  float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
   return height * 10.0;
 }
