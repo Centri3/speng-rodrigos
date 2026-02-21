@@ -6,10 +6,10 @@
 
 vec3 TurbulenceGasGiantAli(vec3 point) {
   vec3 twistedPoint;
-  vec3 cellCenter = vec3(0.0);
   vec4 cell;
   vec3 v;
   float r, fi, rnd, dist, dist2, dir;
+  // float squeeze = 1.9;
   float strength = 13.0 + smoothstep(1.0, 0.09, cloudsFreq) * 30.0;
   vec3 randomize;
   randomize.x = hash1(Randomize.x);
@@ -65,29 +65,28 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
 vec3 CycloneNoiseGasGiantAli(vec3 point) {
   vec3 rotVec = normalize(Randomize);
   vec3 twistedPoint = point;
-  vec3 cellCenter = vec3(0.0);
-  vec2 cell;
+  vec4 cell;
+  vec3 v;
   float r, fi, rnd, dist, dist2, dir;
   float squeeze = 1.9;
   float strength = 10.0;
-  float freq = cycloneFreq * 30.0;
-  float dens = cycloneDensity * 0.02;
+  float freq = 1.0;
+  float dens = cycloneDensity;
   float size = 1.5 * pow(cloudsLayer + 1.0, 5.0);
 
   for (int i = 0; i < cycloneOctaves; i++) {
-    cell = inverseSF(vec3(point.x, point.y * squeeze, point.z),
-                     freq + cloudsLayer, cellCenter);
+    twistedPoint = point;
+    cell = _Cell2NoiseVec((vec3(point.x, point.y * squeeze, point.z) * freq), 0.6);
+    v = cell.xyz - point;
     rnd = hash1(cell.x);
-    r = size * cell.y;
-
-    if ((rnd < dens)) {
-      dir = sign(0.7 * dens - rnd);
-      dist = saturate(1.0 - r);
-      dist2 = saturate(0.3 - r);
-      fi = pow(dist, strength) * (exp(-6.0 * dist2) + 0.5);
+    if (rnd < dens) {
+      dir = sign(0.5 * dens - rnd);
+      dist = 1.0 - length(v);
+      dist2 = 0.5 - length(v);
+      fi = pow(dist, 70.0) * (exp(-60.0 * dist2 * dist2) + 0.5);
       twistedPoint =
-          Rotate(cycloneMagn * dir * sign(cellCenter.y + 0.001) * fi * 3.0,
-                 cellCenter.xyz, point);
+          Rotate(dir * cycloneMagn * sign(cell.y) * fi,
+                 cell.xyz, point);
     }
 
     freq = min(freq * 2.0, 6400.0);
