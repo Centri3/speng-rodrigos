@@ -22,7 +22,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
       9.0 - 8.0 * lavaCoverage - 8.0 * smoothstep(1.0, 0.09, cloudsFreq), 1.0);
 
   for (int i = 0; i < 80; i++) {
-    float angleY = randomize.y * 0.03 + lavaCoverage * 0.17 +
+    float angleY = randomize.y * 0.01 + lavaCoverage * 0.17 +
                    +smoothstep(0.5, 0.75, lavaCoverage) * 0.9 +
                    smoothstep(1.0, 0.09, cloudsFreq) * 0.097 * 6.283185;
 
@@ -42,8 +42,8 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
     v = cell.xyz - point;
     dist = 1.0 - length(v);
     dist2 = 0.5 - length(v);
-    fi = pow(dist, 150.0) * (exp(-60.0 * dist2 * dist2) + 0.5);
-    twistedPoint = Rotate(fi * 10.0, cell.xyz, point);
+    fi = pow(dist, 250.0) * (exp(-60.0 * dist2 * dist2) + 0.5);
+    twistedPoint = Rotate(fi * 20.0, cell.xyz, point);
 
     size *= 1.02;
     strength = max(strength * 0.98, 6.0);
