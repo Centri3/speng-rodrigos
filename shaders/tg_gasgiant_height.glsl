@@ -39,7 +39,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
     point *= rotY;
 
     twistedPoint = point;
-    cell = _Cell2NoiseVec((point * freq), 0.6);
+    cell = _Cell2NoiseVec((point * freq), 1.0);
     v = cell.xyz - point;
     rnd = hash1(cell.x);
     if (rnd < dens) {
@@ -76,7 +76,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point) {
 
   for (int i = 0; i < cycloneOctaves; i++) {
     twistedPoint = point;
-    cell = _Cell2NoiseVec((vec3(point.x, point.y * squeeze, point.z) * freq), 0.6);
+    cell = _Cell2NoiseVec((vec3(point.x, point.y * squeeze, point.z) * freq), 1.0);
     v = cell.xyz - point;
     rnd = hash1(cell.x);
     if (rnd < dens) {
