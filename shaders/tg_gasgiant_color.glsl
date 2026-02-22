@@ -53,15 +53,15 @@ void main() {
   // Don't go crazy with stripeFluct on venuslikes.
   float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
   float isMini = smoothstep(0.09, 1.0, cloudsFreq);
-  OutColor = _GetGasGiantCloudsColor(height - 0.5 * _stripeFluct * 0.0666666 *
+  OutColor = _GetGasGiantCloudsColor(height - 0.5 * _stripeFluct * 0.1666666 *
                                                   gaseousBuff);
+	OutColor.rgb = (pow(OutColor.rgb, vec3(height)));
   OutColor = rgb_to_lch(OutColor);
   vec4 cycloneColor =
       texture(BiomeDataTable, vec2(1.0, 0.0)); // always the first cloud layer
   OutColor.rgb = mix(OutColor.rgb, rgb_to_lch(cycloneColor).rgb,
                      saturate(abs(CycloneColorGasGiantAli(point))));
-  OutColor.r = mix(OutColor.r * min(height, 0.5) + 50.0, pow(OutColor.r, height) + 30.0, lavaCoverage);
-  OutColor.g *= mix(1.25, 2.0, lavaCoverage);
+  OutColor.g *= 0.8;
   OutColor = lch_to_rgb(OutColor);
 
   // GlobalModifier // Change cloud alpha channel
