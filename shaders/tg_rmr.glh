@@ -535,8 +535,7 @@ vec4 _Cell2NoiseVec(vec3 p, float jitter) {
       for (d.x = -1.0; d.x < 1.0; d.x += 1.0) {
         rnd =
             NoiseNearestUVec4((cell + d + Randomize * 10.0) / NOISE_TEX_3D_SIZE).xyz *
-                jitter +
-            d;
+                jitter + d;
         pos = rnd - offs;
         dist = dot(pos, pos);
         if (distMin > dist) {
