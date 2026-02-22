@@ -170,7 +170,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
 
   return mix(coolJupiter, mix(hotJupiter, swirls, saturate(swirlsMask)),
              saturate(smoothstep(0.5, 1.0, lavaCoverage) +
-                      smoothstep(1.0, 0.09, cloudsFreq)));
+                      smoothstep(0.5, 0.09, cloudsFreq)));
 }
 
 //-----------------------------------------------------------------------------
@@ -297,7 +297,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.3 + unwrap_or(stripeFluct, 0.0) * 1.2;
+  float _stripeFluct = 0.3 + unwrap_or(stripeFluct, 0.0) * 0.4;
 
   vec3 point = GetSurfacePoint();
   float height;

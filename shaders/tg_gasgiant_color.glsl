@@ -43,7 +43,7 @@ float CycloneColorGasGiantAli(vec3 point) {
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.3 + stripeFluct * 1.2;
+  float _stripeFluct = 0.3 + stripeFluct * 0.4;
 
   // GlobalModifier // Convert height to color
   vec3 point = GetSurfacePoint();
