@@ -423,8 +423,8 @@ vec4 _GetGasGiantCloudsColor(float height) {
   const float hScale = float(BIOME_CLOUD_LAYERS - 1) / float(BIOME_SURF_LAYERS);
   const float hMin =
       0.1; // skip top and bottom palette colors. these are used for cyclones.
-  const float hMax = 1.0;
-  return texture(BiomeDataTable, vec2(1.0, clamp(height * hScale, hMin, hMax)));
+  const float hMax = 0.3333333;
+  return texture(BiomeDataTable, vec2(1.0, clamp(height, hMin, hMax)));
 }
 
 float HeightMapCloudsVenusAli(vec3 point) {
