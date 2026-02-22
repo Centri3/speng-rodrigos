@@ -60,8 +60,8 @@ void main() {
       texture(BiomeDataTable, vec2(1.0, 0.0)); // always the first cloud layer
   OutColor.rgb = mix(OutColor.rgb, rgb_to_lch(cycloneColor).rgb,
                      saturate(abs(CycloneColorGasGiantAli(point))));
-  OutColor.r = mix(OutColor.r * min(height, 0.5) + 50.0, pow(OutColor.r, height * height * height) + 60.0, lavaCoverage);
-  OutColor.g *= mix(1.25, 4.0, lavaCoverage);
+  OutColor.r = mix(OutColor.r * min(height, 0.5) + 50.0, pow(OutColor.r, height) + 30.0, lavaCoverage);
+  OutColor.g *= mix(1.25, 2.0, lavaCoverage);
   OutColor = lch_to_rgb(OutColor);
 
   // GlobalModifier // Change cloud alpha channel
