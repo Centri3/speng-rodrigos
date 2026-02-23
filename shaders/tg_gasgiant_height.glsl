@@ -41,7 +41,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
 
     coolJupiter *= rotY;
 
-    cell = _Cell2NoiseVec((coolJupiter * coolFreq), 0.6);
+    cell = _Cell2NoiseVec((coolJupiter * coolFreq), 0.6, randomize);
     v = cell.xyz - coolJupiter;
     rnd = hash1(cell.x);
     if (rnd < dens) {
@@ -157,21 +157,27 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
-vec3 CycloneNoiseGasGiantAli(vec3 point) {
+vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
   vec3 rotVec = normalize(Randomize);
   vec3 twistedPoint = point;
   vec4 cell;
   vec3 v;
   float r, fi, rnd, dist, dist2, dir;
-  float squeeze = 1.9;
+  float offs = 0.5 / (cloudsLayer + 1.0);
   float strength = 10.0;
-  float freq = cycloneFreq;
+  float freq = cycloneFreq * 0.2;
   float dens = cycloneDensity;
   float size = 1.5 * pow(cloudsLayer + 1.0, 5.0);
+  vec3 randomize = Randomize;
+
 
   for (int i = 0; i < cycloneOctaves; i++) {
+    randomize.x = hash1(randomize.x);
+    randomize.y = hash1(randomize.y);
+    randomize.z = hash1(randomize.z);
+
     twistedPoint = point;
-    cell = _Cell2NoiseVec(point * freq, 0.6);
+    cell = _Cell2NoiseVec(point * freq, 0.3, randomize * 10.0);
     v = cell.xyz - point;
     v.y *= 1.9;
     rnd = hash1(cell.x);
@@ -182,12 +188,12 @@ vec3 CycloneNoiseGasGiantAli(vec3 point) {
       fi = pow(dist, 20.0 * size) * (exp(-60.0 * dist2 * dist2) + 0.5);
       twistedPoint =
           Rotate(dir * cycloneMagn * sign(cell.y) * fi, cell.xyz, point);
+      offset += offs * fi * dir * 0.1 * cycloneMagn;
     }
 
     freq = min(freq * 2.0, 6400.0);
     dens = min(dens * 3.5, 0.3);
     size = min(size * 1.5, 15.0);
-    squeeze = max(squeeze - 0.3, 1.0);
     strength = max(strength * 1.3, 0.5);
     point = twistedPoint;
   }
@@ -207,8 +213,9 @@ float HeightMapCloudsGasGiantGmail(vec3 point, float _stripeFluct) {
                      0.3);
 
   // Compute cyclons
+  float offset = 0.0;
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint);
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
@@ -219,7 +226,7 @@ float HeightMapCloudsGasGiantGmail(vec3 point, float _stripeFluct) {
   twistedPoint.y *= 9.0 * stripeZones * 0.12 + turbulence;
   float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
 
-  return height * 6.0;
+  return height * 6.0 + offset;
 }
 //-----------------------------------------------------------------------------
 
@@ -233,8 +240,9 @@ float HeightMapCloudsGasGiantGmail2(vec3 point, float _stripeFluct) {
                       0.3);
 
   // Compute cyclons
+  float offset = 0.0;
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint);
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
@@ -245,7 +253,7 @@ float HeightMapCloudsGasGiantGmail2(vec3 point, float _stripeFluct) {
   twistedPoint.y *= 30.0 * stripeZones * 0.12 + turbulence;
   float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return height * 6.0;
+  return height * 6.0 + offset;
 }
 
 //-----------------------------------------------------------------------------
@@ -260,8 +268,9 @@ float HeightMapCloudsGasGiantGmail3(vec3 point, float _stripeFluct) {
                       0.3);
 
   // Compute cyclons
+  float offset = 0.0;
   if (cycloneOctaves > 0.0)
-    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint);
+    twistedPoint = CycloneNoiseGasGiantAli(twistedPoint, offset);
 
   // Compute turbulence
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
@@ -272,7 +281,7 @@ float HeightMapCloudsGasGiantGmail3(vec3 point, float _stripeFluct) {
   twistedPoint.y *= 80.0 * stripeZones * 0.12 + turbulence;
   float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
-  return height * 6.0;
+  return height * 6.0 + offset;
 }
 
 //-----------------------------------------------------------------------------

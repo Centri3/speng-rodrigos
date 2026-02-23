@@ -521,7 +521,7 @@ float HeightMapCloudsVenusAli2(vec3 point) {
 }
 
 // Uses Randomize now.
-vec4 _Cell2NoiseVec(vec3 p, float jitter) {
+vec4 _Cell2NoiseVec(vec3 p, float jitter, vec3 randomize) {
   vec3 cell = floor(p);
   vec3 offs = p - cell - vec3(0.5);
   vec3 pos;
@@ -534,7 +534,7 @@ vec4 _Cell2NoiseVec(vec3 p, float jitter) {
     for (d.y = -1.0; d.y < 1.0; d.y += 1.0) {
       for (d.x = -1.0; d.x < 1.0; d.x += 1.0) {
         rnd =
-            NoiseNearestUVec4((cell + d + Randomize * 10.0) / NOISE_TEX_3D_SIZE)
+            NoiseNearestUVec4((cell + d + randomize) / NOISE_TEX_3D_SIZE)
                     .xyz *
                 jitter +
             d;
