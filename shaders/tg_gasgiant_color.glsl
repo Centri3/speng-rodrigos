@@ -42,6 +42,14 @@ float CycloneColorGasGiantAli(vec3 point) {
 
 //-----------------------------------------------------------------------------
 
+vec3 lumaBasedReinhardToneMapping(vec3 color) {
+  float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+  float toneMappedLuma = luma / (1. + luma);
+  color *= toneMappedLuma / luma;
+  color = pow(color, vec3(1. / 2.2));
+  return color;
+}
+
 void main() {
   float _stripeFluct = 0.3 + stripeFluct * 0.4;
 
@@ -50,16 +58,13 @@ void main() {
   float height = 0.0;
   float slope = 0.0;
   GetSurfaceHeightAndSlope(height, slope);
-  // Don't go crazy with stripeFluct on venuslikes.
-  float gaseousBuff = volcanoActivity != 0.0 ? 1.0 : 4.0;
-  float isMini = smoothstep(0.09, 1.0, cloudsFreq);
   OutColor = _GetGasGiantCloudsColor(height);
   OutColor = rgb_to_lch(OutColor);
   vec4 cycloneColor =
       texture(BiomeDataTable, vec2(1.0, 0.0)); // always the first cloud layer
   OutColor.rgb = mix(OutColor.rgb, rgb_to_lch(cycloneColor).rgb,
                      saturate(abs(CycloneColorGasGiantAli(point))));
-  OutColor.g *= 0.8;
+  OutColor.r = OutColor.r - 10.0 + height * 40.0;
   OutColor = lch_to_rgb(OutColor);
 
   // GlobalModifier // Change cloud alpha channel
