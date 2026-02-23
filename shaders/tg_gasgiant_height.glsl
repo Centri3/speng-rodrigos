@@ -121,7 +121,8 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
 
     for (int j = 0; j < 3; j++) {
       float angleY =
-          randomize.y * 0.43 + smoothstep(0.0, 0.5, lavaCoverage) * 0.57;
+          (randomize.y * 0.43 + smoothstep(0.0, 0.5, lavaCoverage) * 0.57) *
+          6.283185;
 
       // clang-format off
       mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
@@ -170,11 +171,20 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
   float size = 1.5 * pow(cloudsLayer + 1.0, 5.0);
   vec3 randomize = Randomize;
 
-
   for (int i = 0; i < cycloneOctaves; i++) {
     randomize.x = hash1(randomize.x);
     randomize.y = hash1(randomize.y);
     randomize.z = hash1(randomize.z);
+
+    float angleY = randomize.y * 6.283185;
+
+    // clang-format off
+    mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
+                         0.0, 1.0, 0.0,
+                         -sin(angleY), 0.0, cos(angleY));
+    // clang-format on
+
+    point *= rotY;
 
     twistedPoint = point;
     cell = _Cell2NoiseVec(point * freq, 0.2, randomize * 10.0);
@@ -191,9 +201,9 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
       offset += offs * fi * dir * 0.1 * cycloneMagn;
     }
 
-    freq = freq * 1.5;
-    size = size * 1.5;
-    strength = strength * 1.3;
+    freq *= 1.5;
+    size *= 1.5;
+    strength *= 1.3;
     point = twistedPoint;
   }
 
@@ -235,8 +245,8 @@ float HeightMapCloudsGasGiantGmail2(vec3 point, float _stripeFluct) {
   noiseOctaves = cloudsOctaves;
   noiseLacunarity = 4.0;
   noiseH = 0.5 + min(smoothstep(0.5, 1.0, lavaCoverage) * 0.3 +
-                          smoothstep(0.5, 0.09, cloudsFreq) * 0.3,
-                      0.3);
+                         smoothstep(0.5, 0.09, cloudsFreq) * 0.3,
+                     0.3);
 
   // Compute cyclons
   float offset = 0.0;
@@ -263,8 +273,8 @@ float HeightMapCloudsGasGiantGmail3(vec3 point, float _stripeFluct) {
   noiseOctaves = cloudsOctaves;
   noiseLacunarity = 4.0;
   noiseH = 0.5 + min(smoothstep(0.5, 1.0, lavaCoverage) * 0.3 +
-                          smoothstep(0.5, 0.09, cloudsFreq) * 0.3,
-                      0.3);
+                         smoothstep(0.5, 0.09, cloudsFreq) * 0.3,
+                     0.3);
 
   // Compute cyclons
   float offset = 0.0;
