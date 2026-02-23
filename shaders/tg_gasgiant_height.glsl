@@ -144,16 +144,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
       v = cell.xyz - swirls;
 
       dir = sign(0.5 * dens - randomize.x);
-      dist = saturate(1.0 - length(v) -
-                      distance(cell.y, swirls.y) * (5.0 + lavaCoverage * 5.0) *
-                          smoothstep(0.5, 0.3, lavaCoverage) *
-                          smoothstep(0.3, 0.5, cloudsFreq));
-      dist2 = saturate(
-          0.5 - length(v) -
-          distance(cell.y, swirls.y) * (2.5 + lavaCoverage * 5.0) *
-              smoothstep(0.5, 0.3, lavaCoverage) *
-              smoothstep(0.3, 0.5,
-                         cloudsFreq)); // only apply on non-minijupiters.
+      dist2 = 0.5 - length(v);
       fi = pow(dist, 12.0 * swirlsSize) * (exp(-60.0 * dist2 * dist2) + 0.5);
       swirlsMask += dist * 0.2;
       swirls = Rotate(dir * min(stripeTwist * 4.0, 15.0) * sign(cell.y) * fi *
@@ -182,21 +173,21 @@ vec3 CycloneNoiseGasGiantAli(vec3 point) {
   float r, fi, rnd, dist, dist2, dir;
   float squeeze = 1.9;
   float strength = 10.0;
-  float freq = 1.0;
+  float freq = cycloneFreq;
   float dens = cycloneDensity;
   float size = 1.5 * pow(cloudsLayer + 1.0, 5.0);
 
   for (int i = 0; i < cycloneOctaves; i++) {
     twistedPoint = point;
-    cell =
-        _Cell2NoiseVec((vec3(point.x, point.y * squeeze, point.z) * freq), 0.6);
+    cell = _Cell2NoiseVec(point * freq, 0.6);
     v = cell.xyz - point;
+    v.y *= 1.9;
     rnd = hash1(cell.x);
     if (rnd < dens) {
       dir = sign(0.5 * dens - rnd);
-      dist = 1.0 - length(v);
-      dist2 = 0.5 - length(v);
-      fi = pow(dist, 70.0) * (exp(-60.0 * dist2 * dist2) + 0.5);
+      dist = saturate(1.0 - length(v));
+      dist2 = saturate(0.5 - length(v));
+      fi = pow(dist, 20.0 * size) * (exp(-60.0 * dist2 * dist2) + 0.5);
       twistedPoint =
           Rotate(dir * cycloneMagn * sign(cell.y) * fi, cell.xyz, point);
     }
@@ -246,8 +237,8 @@ float HeightMapCloudsGasGiantGmail2(vec3 point, float _stripeFluct) {
   noiseOctaves = cloudsOctaves;
   noiseLacunarity = 4.0;
   noiseH = 0.35 + min(smoothstep(0.5, 1.0, lavaCoverage) * 0.3 +
-                         smoothstep(0.5, 0.09, cloudsFreq) * 0.3,
-                     0.3);
+                          smoothstep(0.5, 0.09, cloudsFreq) * 0.3,
+                      0.3);
 
   // Compute cyclons
   if (cycloneOctaves > 0.0)
@@ -273,8 +264,8 @@ float HeightMapCloudsGasGiantGmail3(vec3 point, float _stripeFluct) {
   noiseOctaves = cloudsOctaves;
   noiseLacunarity = 4.0;
   noiseH = 0.35 + min(smoothstep(0.5, 1.0, lavaCoverage) * 0.3 +
-                         smoothstep(0.5, 0.09, cloudsFreq) * 0.3,
-                     0.3);
+                          smoothstep(0.5, 0.09, cloudsFreq) * 0.3,
+                      0.3);
 
   // Compute cyclons
   if (cycloneOctaves > 0.0)

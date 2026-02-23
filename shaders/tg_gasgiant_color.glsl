@@ -9,7 +9,6 @@ float CycloneColorGasGiantAli(vec3 point) {
   float r, fi, rnd, dist, dist2, dir;
   float offset = 0.0;
   float offs = 0.5 / (cloudsLayer + 1.0);
-  float squeeze = 1.9;
   float strength = 10.0;
   float freq = cycloneFreq;
   float dens = cycloneDensity;
@@ -18,22 +17,21 @@ float CycloneColorGasGiantAli(vec3 point) {
   for (int i = 0; i < cycloneOctaves; i++) {
     cell = _Cell2NoiseVec((point * freq), 0.6);
     v = cell.xyz - point;
+    v.y *= 1.9;
     rnd = hash1(cell.x);
 
     if (rnd < dens) {
       dir = sign(0.5 * dens - rnd);
-      dist = 1.0 - length(v);
-      dist2 = 0.5 - length(v);
-      fi = pow(dist, 70.0) * (exp(-60.0 * dist2 * dist2) + 0.5);
-      offset += offs * fi * dir * 16.0;
+      dist = saturate(1.0 - length(v));
+      dist2 = saturate(0.5 - length(v));
+      fi = pow(dist, 20.0 * size) * (exp(-60.0 * dist2 * dist2) + 0.5);
+      offset += offs * fi * dir * 0.7 * cycloneMagn;
     }
 
-    offset += offs * fi * dir * 16.0;
     freq = min(freq * 2.0, 6400.0);
     dens = min(dens * 3.5, 0.3);
     size = min(size * 1.5, 15.0);
     offs = offs * 0.5;
-    squeeze = max(squeeze - 0.3, 1.0);
     strength = max(strength * 1.3, 0.5);
   }
 
