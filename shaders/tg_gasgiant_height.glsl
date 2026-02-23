@@ -165,7 +165,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
   float r, fi, rnd, dist, dist2, dir;
   float offs = 0.5 / (cloudsLayer + 1.0);
   float strength = 10.0;
-  float freq = cycloneFreq * 0.2;
+  float freq = cycloneFreq;
   float dens = cycloneDensity;
   float size = 1.5 * pow(cloudsLayer + 1.0, 5.0);
   vec3 randomize = Randomize;
@@ -177,7 +177,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
     randomize.z = hash1(randomize.z);
 
     twistedPoint = point;
-    cell = _Cell2NoiseVec(point * freq, 0.3, randomize * 10.0);
+    cell = _Cell2NoiseVec(point * freq, 0.2, randomize * 10.0);
     v = cell.xyz - point;
     v.y *= 1.9;
     rnd = hash1(cell.x);
@@ -191,10 +191,9 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
       offset += offs * fi * dir * 0.1 * cycloneMagn;
     }
 
-    freq = min(freq * 2.0, 6400.0);
-    dens = min(dens * 3.5, 0.3);
-    size = min(size * 1.5, 15.0);
-    strength = max(strength * 1.3, 0.5);
+    freq = freq * 1.5;
+    size = size * 1.5;
+    strength = strength * 1.3;
     point = twistedPoint;
   }
 
