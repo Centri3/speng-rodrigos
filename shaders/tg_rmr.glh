@@ -534,8 +534,10 @@ vec4 _Cell2NoiseVec(vec3 p, float jitter) {
     for (d.y = -1.0; d.y < 1.0; d.y += 1.0) {
       for (d.x = -1.0; d.x < 1.0; d.x += 1.0) {
         rnd =
-            NoiseNearestUVec4((cell + d + Randomize * 10.0) / NOISE_TEX_3D_SIZE).xyz *
-                jitter + d;
+            NoiseNearestUVec4((cell + d + Randomize * 10.0) / NOISE_TEX_3D_SIZE)
+                    .xyz *
+                jitter +
+            d;
         pos = rnd - offs;
         dist = dot(pos, pos);
         if (distMin > dist) {
@@ -721,9 +723,9 @@ vec4 lch_to_rgb(vec4 color) {
   return rgb;
 }
 
-const float HASHED_RANDOMIZE = hash1(Randomize.x) * 0.3333333 +
-                               hash1(Randomize.y) * 0.3333333 +
-                               hash1(Randomize.z) * 0.3333333;
+#define HASHED_RANDOMIZE                                                       \
+  hash1(Randomize.x) * 0.3333333 + hash1(Randomize.y) * 0.3333333 +            \
+      hash1(Randomize.z) * 0.3333333;
 
 struct NoiseParams {
   // FIXME: IDK why we need to use floats here, but nested structs do not work.

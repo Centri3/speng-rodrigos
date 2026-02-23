@@ -226,8 +226,8 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
 
   noiseOctaves = 12.0;
-  noiseLacunarity = 4.0;
-  noiseH = 0.6;
+  noiseLacunarity = 4.0 - smoothstep(0.5, 1.0, lavaCoverage) * 1.5;
+  noiseH = 0.6 + smoothstep(0.5, 1.0, lavaCoverage) * 0.06;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
@@ -252,8 +252,8 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
 
   noiseOctaves = 12.0;
-  noiseLacunarity = 4.0;
-  noiseH = 0.45;
+  noiseLacunarity = 4.0 - smoothstep(0.5, 1.0, lavaCoverage) * 1.5;
+  noiseH = 0.45 + smoothstep(0.5, 1.0, lavaCoverage) * 0.045;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
@@ -279,8 +279,8 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   twistedPoint = TurbulenceGasGiantAli(twistedPoint);
 
   noiseOctaves = 12.0;
-  noiseLacunarity = 4.0;
-  noiseH = 0.45;
+  noiseLacunarity = 4.0 - smoothstep(0.5, 0.5, lavaCoverage) * 1.5;
+  noiseH = 0.45 + smoothstep(0.5, 1.0, lavaCoverage) * 0.045;
 
   // Compute stripes
   noiseOctaves = cloudsOctaves;
