@@ -26,8 +26,8 @@ float CycloneColorGasGiantAli(vec3 point) {
       dir = sign(0.5 * dens - rnd);
       dist = saturate(1.0 - length(v));
       dist2 = saturate(0.5 - length(v));
-      fi = pow(dist, 20.0 * size) * (exp(-60.0 * dist2 * dist2) + 0.5);
-      offset += offs * fi * dir * 0.7 * cycloneMagn;
+      fi = pow(dist, 10.0 * size) * (exp(-60.0 * dist2 * dist2) + 0.5);
+      offset += offs * fi * dir * 0.3 * cycloneMagn;
     }
 
     freq = min(freq * 2.0, 6400.0);
@@ -55,7 +55,7 @@ void main() {
     height = height / 3;
   }
 
-  OutColor.rgb = (pow(OutColor.rgb, vec3(height * 3)));
+  OutColor.rgb = (pow(OutColor.rgb, vec3(height)));
   OutColor = rgb_to_lch(OutColor);
   vec4 cycloneColor =
       texture(BiomeDataTable, vec2(1.0, 0.0)); // always the first cloud layer

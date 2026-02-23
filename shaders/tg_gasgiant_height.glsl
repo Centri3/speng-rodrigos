@@ -219,7 +219,7 @@ float HeightMapCloudsGasGiantGmail(vec3 point, float _stripeFluct) {
   twistedPoint.y *= 9.0 * stripeZones * 0.12 + turbulence;
   float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.8 + 0.1);
 
-  return height * 2.5;
+  return height * 6.0;
 }
 //-----------------------------------------------------------------------------
 
@@ -245,7 +245,7 @@ float HeightMapCloudsGasGiantGmail2(vec3 point, float _stripeFluct) {
   twistedPoint.y *= 30.0 * stripeZones * 0.12 + turbulence;
   float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return height * 2.5;
+  return height * 6.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -272,7 +272,7 @@ float HeightMapCloudsGasGiantGmail3(vec3 point, float _stripeFluct) {
   twistedPoint.y *= 80.0 * stripeZones * 0.12 + turbulence;
   float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
-  return height * 2.5;
+  return height * 6.0;
 }
 
 //-----------------------------------------------------------------------------
