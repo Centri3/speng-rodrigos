@@ -27,7 +27,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {
   // cool jupiter algorithm: faster and allows for more octaves
   for (int i = 0; i < 80 - smoothstep(0.0, 0.5, lavaCoverage) * 20.0; i++) {
     float angleY =
-        (randomize.y * 0.01 + 0.09 * smoothstep(0.0, 0.5, lavaCoverage)) *
+        (randomize.y * 0.01 + 0.09 * smoothstep(0.2, 0.5, lavaCoverage)) *
         6.283185;
 
     randomize.x = hash1(randomize.x);
@@ -278,7 +278,7 @@ float HeightMapCloudsGasGiantGmail3(vec3 point, float _stripeFluct) {
 //-----------------------------------------------------------------------------
 
 void main() {
-  float _stripeFluct = 0.3 + unwrap_or(stripeFluct, 0.0) * 0.7;
+  float _stripeFluct = 0.3 + unwrap_or(stripeFluct, 0.0) * 0.2;
 
   vec3 point = GetSurfacePoint();
   float height;
