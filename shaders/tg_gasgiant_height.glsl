@@ -238,7 +238,7 @@ float HeightMapCloudsGasGiantAli(vec3 point, float _stripeFluct) {
   twistedPoint.y *= (9.0 + turbulence) * stripeZones * 0.12;
   float height = _stripeFluct * 1.0 * (Fbm(twistedPoint * 2.0) * 0.8 + 0.1);
 
-  return height * 10.0;
+  return height * 30.0;
 }
 
 float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
@@ -263,7 +263,7 @@ float HeightMapCloudsGasGiantAli2(vec3 point, float _stripeFluct) {
       (30.0 + turbulence) * stripeZones * 0.12 * (1.0 - lavaCoverage);
   float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return height * 10.0;
+  return height * 30.0;
 }
 
 //-----------------------------------------------------------------------------
@@ -291,7 +291,7 @@ float HeightMapCloudsGasGiantAli3(vec3 point, float _stripeFluct) {
   ;
   float height = _stripeFluct * 0.5 * (Fbm(twistedPoint) * 0.25 + 0.4);
 
-  return height * 10.0;
+  return height * 30.0;
 }
 
 //-----------------------------------------------------------------------------
