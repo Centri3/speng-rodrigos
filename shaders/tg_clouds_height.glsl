@@ -1,4 +1,4 @@
-#include "tg_common.glh" 
+#include "tg_rmr.glh" 
 
 #ifdef _FRAGMENT_ 
 
@@ -348,6 +348,13 @@ void main()
 {
 	vec3  point  = GetSurfacePoint();
 	float height = 0.0;
+	
+	if (cloudsCoverage == 1.0) {
+    height = 1.0 * HeightMapCloudsVenusAli(point) +
+            0.65 * HeightMapCloudsVenusAli2(point);
+	}
+	else if (cloudsCoverage < 1.0)
+	{
 	if (cloudsNLayers == 1 || cloudsLayer != 0)
 	{
 		height = 3 * (HeightMapCloudsTerraTPE(point) + HeightMapCloudsTerraTPE2(point));
@@ -355,6 +362,7 @@ void main()
 	else
 	{
 		height = 3 * (HeightMapCloudsTerraA(point));
+	}
 	}
 	OutColor = vec4(height);
 }

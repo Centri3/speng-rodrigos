@@ -4,33 +4,23 @@
 
 //-----------------------------------------------------------------------------
 
-void main() {
+void main()
+{
     float height = GetSurfaceHeight();
-
-    float modulate = saturate(height * height * 3.5 + height * 4.5);
+    float modulate = saturate(height * height * 3.5 + height);
+	
     OutColor = GetCloudsColor(height);
-
-    // Venus-like clouds
-    if(cloudsCoverage == 1.0) {
-        if(cloudsLayer == 0) {
-            OutColor.a = 1.0;
-        } else {
-            OutColor.a *= modulate;
-        }
-
-        float latitude = abs(GetSurfacePoint().y);
-        // Drown out poles
-        // TODO: Occasionally make the equator drowned out, like Titan
-        OutColor.rgb = pow(OutColor.rgb, 1.0 - vec3(saturate(latitude - 0.4)));
-
-        if(cloudsLayer == 0.0 && cloudsNLayers != 1) {
-            OutColor.a = 0.0;
-        }
-    } else {
-        OutColor *= modulate;
-    }
-
+	
+	if (cloudsCoverage < 1.0) // fix cloud gaps on fully cloudy worlds -- HarbingerDawn
+        OutColor = GetCloudsColor(height) * modulate;
+	
     OutColor.rgb = pow(OutColor.rgb, colorGamma);
+//	if (cloudsCoverage == 1)
+//	{
+//	OutColor.rgb *= pow(OutColor.rgb, colorGamma);
+//	}
+	
+    //OutColor2 = vec4(0.0);
 }
 
 //-----------------------------------------------------------------------------

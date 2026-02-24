@@ -15,6 +15,7 @@ void main()
 
     float surfTemp = mix(surfTempB, surfTempS, erosion) * surfTemperature; // in thousand Kelvins
 
+		
     surfTemp = EncodeTemperature(surfTemp); // encode to [0...1] range
 	OutColor = vec4(surfTemp);
 }

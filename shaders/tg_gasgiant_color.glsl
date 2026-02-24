@@ -12,9 +12,15 @@ float   HeightMapFogGasGiant(vec3 point)
 
 void main() {
     // GlobalModifier // Convert height to color
-    float height = GetSurfaceHeight();
-    OutColor = GetGasGiantCloudsColor(max(height, 1.0 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
-	OutColor.rgb = (pow(OutColor.rgb, vec3(height)));
+    float height = GetSurfaceHeight();	
+	OutColor = GetGasGiantCloudsColor(max(height, 1.0 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
+	
+	if (volcanoActivity != 0.0) 
+	{
+	height = height/3;
+	}
+	
+	OutColor.rgb = (pow(OutColor.rgb, vec3(height*3)));
 
 	// GlobalModifier // Change cloud alpha channel
 	   // Changed lowest cloud layer to be full alpha // by Sp_ce
