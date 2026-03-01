@@ -61,7 +61,7 @@ vec3 TurbulenceGasGiantAli(vec3 point) {   //actually turbulance ali but I'm bei
     coolStrength = max(coolStrength * 0.98, 0.4);
   }
 
-  float hotStrength = 1.0;
+  float hotStrength = 0.5;
   float hotSize = 1.0;
 
   // hot jupiter/minijupiter algorithm: this is separate because cellular noise
@@ -122,7 +122,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
     randomize.y = hash1(randomize.y);
     randomize.z = hash1(randomize.z);
 
-    float angleY = randomize.y * 12.56637061;
+    float angleY = randomize.y * 6.283185;
 
     // clang-format off
     mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
@@ -133,7 +133,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
     point *= rotY;
 
     twistedPoint = point;
-    cell = _Cell2NoiseVec(point * freq, 0.2, randomize * 12.56637061);
+    cell = _Cell2NoiseVec(point * freq, 0.2, randomize);
     v = cell.xyz - point;
     v.y *= 1.9;
     rnd = hash1(cell.x);

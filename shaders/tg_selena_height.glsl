@@ -769,7 +769,7 @@ if (_cracksOctaves > 0)
 	
 	// GlobalModifier // Soften max/min height
 	height = softPolyMin(height, 0.99, 0.3);
-    height = softPolyMax(height, 0.00, 0.3);
+    height = softPolyMax(height, 0.00, 0.3);// - lavaCoverage;
 	
 	
 
@@ -786,7 +786,7 @@ void main()
 {
     vec3  point = GetSurfacePoint();
     float height = HeightMapSelena(point);
-    OutColor = vec4(height);
+	OutColor = vec4(height);
 }
 
 

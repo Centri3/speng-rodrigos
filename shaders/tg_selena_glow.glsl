@@ -46,7 +46,7 @@ vec4  GlowMapSelena(vec3 point, float height, float slope)
 void main()
 {
     vec3  point = GetSurfacePoint();
-    float height = 0, slope = 0;
+    float height =  - lavaCoverage, slope = 0;
     GetSurfaceHeightAndSlope(height, slope);
     OutColor = GlowMapSelena(point, height, slope);
 }
