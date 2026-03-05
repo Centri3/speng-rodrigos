@@ -293,9 +293,9 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 {
     Surface surf;
 	
-if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
+if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	{
-		_hillsMagn = 0.05;
+		_hillsMagn = 0.1;
 	}
 	else
 		{
@@ -380,7 +380,7 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
     float vary = Fbm(point * 1700.0 + Randomize);
     float snowLine   = biomeData.height + 0.25 * vary * biomeData.slope;
     float montHeight = saturate((biomeData.height - seaLevel) / (snowLevel - seaLevel));
-    climate = min(climate + heightTempGrad * montHeight, climatePole - 0.125);
+    climate = min(climate + heightTempGrad * montHeight, climatePole - 0.125 -10000);
     climate = mix(climate, climatePole, saturate((snowLine - snowLevel) * 100.0));
 
     // Ice caps
@@ -699,6 +699,12 @@ if (_hillsMagn < .05)   // Fix to spiky terrain before planet melts
     if(snowLevel == 2.0) {
         snow = 0.0;
     }
+
+//RODRIGO - chage surf.color.a to surf.color 
+    if(lavaCoverage > 0.0 && volcanoTemp > 0.7)
+        surf.color -= saturate((0.00001-biomeData.height) * 200000.0);
+
+    //ColorMap = surf.color;
 
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.8 * iceCap + snow);
 	

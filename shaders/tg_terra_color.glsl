@@ -201,9 +201,13 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
     // water mask for planets with oceans (oceanType == 0 on dry planets)
 
+
 //RODRIGO - chage surf.color.a to surf.color 
     if(oceanType != 0.0)
         surf.color += saturate((seaLevel - biomeData.height) * 200.0);
+		
+    if(lavaCoverage > 0.0 && volcanoTemp > 0.7 && oceanType == 0.0)
+        surf.color -= saturate((0.00001-biomeData.height) * 200000.0);
 
     ColorMap = surf.color;
 

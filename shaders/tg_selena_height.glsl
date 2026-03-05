@@ -328,9 +328,9 @@ if (volcanoActivity >= 1 && _cracksOctaves == 0)
 	_hillsFreq = hillsFreq * (pow(0.99,(1 / (5 - volcanoActivity * 2) * hillsFreq)) * 2 + 1);   // / (volcanoActivity * 2 - 1) ;  //Lower hillsFreq for smooter plains?
 }
 
-if (_hillsMagn < .05 && _hillsMagn > 0)   // Fix to spiky terrain before planet melts
+if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	{
-		_hillsMagn = 0.05;
+		_hillsMagn = 0.1;
 	}
 	else
 		{
@@ -769,9 +769,14 @@ if (_cracksOctaves > 0)
 	
 	// GlobalModifier // Soften max/min height
 	height = softPolyMin(height, 0.99, 0.3);
-    height = softPolyMax(height, 0.00, 0.3);// - lavaCoverage;
-	
-	
+    if (volcanoTemp > 0.7 && lavaCoverage > 0)
+	{
+	height = softPolyMax(height, 0.00, 0.3)-log(1.2*lavaCoverage+1);  //log(9*lavaCoverage+1)
+	}
+	else
+	{
+		height = softPolyMax(height, 0.00, 0.3);
+	}
 
 	
 	// Return height

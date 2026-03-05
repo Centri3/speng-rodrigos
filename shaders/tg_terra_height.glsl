@@ -190,9 +190,9 @@ if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)// || riversMagn =
 
 float hillsMagnn = hillsMagn;
 
-if (hillsMagn < .03 && hillsMagn > 0)   // Fix to spiky terrain before planet melts
+if (hillsMagn < 0.1)   // Fix to spiky terrain before planet melts
 	{
-		hillsMagnn = 0.05;
+		hillsMagnn = 0.1;
 	}
 	else
 		{
@@ -579,6 +579,15 @@ if (riversMagn > 0.0)
 	// smoothly limit the height
 	height = softPolyMin(height, 0.99, 0.3);
 	height = softPolyMax(height, 0.0, 0.3);
+
+	if (volcanoTemp > 0.7 && lavaCoverage > 0 && oceanType == 0)
+	{
+	height = softPolyMax(height, 0.00, 0.3)-log(1.2*lavaCoverage+1);  //log(9*lavaCoverage+1)
+	}
+	else
+	{
+		height = softPolyMax(height, 0.00, 0.3);
+	}
 
     if (oceanType > 0.5)  
 	{

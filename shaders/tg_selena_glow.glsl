@@ -13,13 +13,29 @@ vec4  GlowMapSelena(vec3 point, float height, float slope)
     noiseOctaves = 3;
 	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
     noiseOctaves = 8;
-	float varyTemp = abs(Fbm(p + dist));
+	float varyTemp = abs(Fbm(p + dist));  //surfTemperature
 
 	// Global surface melting
-	float surfTemp = surfTemperature *
-		(globTemp + varyTemp * 0.08) *
-		saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * height)) *
-		saturate((lavaCoverage - 0.01) * 25.0);
+//	float planTemp = surfTemperature *
+//		(globTemp + varyTemp * 0.08) *
+//		saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * height)) *
+//		saturate((lavaCoverage - 0.01) * 25.0);
+
+
+	// Global lava Cover
+float lavaTemp = volcanoTemp;
+
+if (surfTemperature > volcanoTemp || lavaCoverage == 0)
+	{
+		lavaTemp = surfTemperature;
+	}
+	
+	float surfTemp = lavaTemp *
+		(0.85 + varyTemp * 0.25) * saturate((0.00001-height) * 200000.0);
+		//saturate(1.0 * (lavaCoverage * 0.4 + 0.4 - 5000 * height));// *
+		//saturate((lavaCoverage - 0.01) * 25.0);
+
+
 
     // Io-like volcanoes
     //float volcIo = saturate(abs(Fbm(point * 6.3 + Randomize) * 1.4)); // * 1.4 * volcActivity));
