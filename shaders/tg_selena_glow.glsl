@@ -31,7 +31,7 @@ if (surfTemperature > volcanoTemp || lavaCoverage == 0)
 	}
 	
 	float surfTemp = lavaTemp *
-		(0.85 + varyTemp * 0.25) * saturate((0.00001-height) * 200000.0);
+		(globTemp + varyTemp * 0.08) * saturate((0.00001-height) * 200000.0);
 		//saturate(1.0 * (lavaCoverage * 0.4 + 0.4 - 5000 * height));// *
 		//saturate((lavaCoverage - 0.01) * 25.0);
 

@@ -700,9 +700,24 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
         snow = 0.0;
     }
 
+	// Lava Lakes
+	Surface obsidian = DetailTextureMulti(detUV, BIOME_ROCK);
+	p = point * 600.0 + Randomize;
+   // vec2 cell = Cell3Noise2(p + dist);
+	noiseOctaves = 5;
+	dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
+    float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
+	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
+	
+	if(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
+	{
+        surf = obsidian;
+		vary = (globTemp + varyTemp * 0.28)-1.5;
+	}
+
 //RODRIGO - chage surf.color.a to surf.color 
-    if(lavaCoverage > 0.0 && volcanoTemp > 0.7)
-        surf.color -= saturate((0.00001-biomeData.height) * 200000.0);
+//    if(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09))
+//        surf.color -= saturate((0.00001-biomeData.height) * 200000.0);
 
     //ColorMap = surf.color;
 

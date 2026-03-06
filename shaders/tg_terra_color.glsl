@@ -83,6 +83,9 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     climate = mix(climate, 0.375, volcMask.x);
     biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
 
+
+
+
     // Global albedo variations
 //RODRIGO - modify albedo noise
   noiseOctaves = 14.0;
@@ -104,6 +107,8 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 	
     vary = 1.0 - Fbm((point + distort) * (1.5 - RidgedMultifractal(pp, 8.0) + RidgedMultifractal(pp * 0.999, 8.0)));
     vary *= 0.5 * vary * vary;
+
+
 
     // Scale detail texture UV and add a small distortion to it to fix pixelization
     vec2 detUV = (TexCoord.xy * faceParams.z + faceParams.xy) * texScale;
@@ -169,6 +174,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
         surf = BlendMaterials(surf, snow, snowTransition);
     }
 
+
     // Sedimentary layers
     #define CLIFF_TRANSITION_BEGIN 0.35 // 0.50
     #define CLIFF_TRANSITION_END   0.65 // 0.55
@@ -196,6 +202,21 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
         vary *= mix(1.0, CrackColorNoise(point, mask), iceCap);
     vary += iceCap * 0.7;
 
+	// Lava Lakes
+	Surface obsidian = DetailTextureMulti(detUV, BIOME_ROCK);
+	p = point * 600.0 + Randomize;
+    vec2 cell = Cell3Noise2(p + dist);
+	noiseOctaves = 5;
+	dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
+    float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
+	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
+	
+	if(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
+	{
+        surf = obsidian;
+		vary = (globTemp + varyTemp * 0.18)-1.5;
+	}
+	
     // Apply albedo variations
     surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
 
@@ -206,9 +227,9 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     if(oceanType != 0.0)
         surf.color += saturate((seaLevel - biomeData.height) * 200.0);
 		
-    if(lavaCoverage > 0.0 && volcanoTemp > 0.7 && oceanType == 0.0)
-        surf.color -= saturate((0.00001-biomeData.height) * 200000.0);
-
+//    if(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0)
+//        surf.color -= saturate((0.00001-biomeData.height) * 200000.0);
+//
     ColorMap = surf.color;
 
     //SurfA   surf0 = DetailTextureNoTiled(detUV, 10.0, 0.0, 10.0);
