@@ -77,7 +77,7 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
 	// Global lava Cover
 float lavaTemp = volcanoTemp;
 
-if (surfTemperature > volcanoTemp || lavaCoverage == 0)
+if (surfTemperature > volcanoTemp && oceanType == 0)
 	{
 		lavaTemp = surfTemperature;
 	}
