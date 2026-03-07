@@ -203,18 +203,20 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     vary += iceCap * 0.7;
 
 	// Lava Lakes
-	Surface obsidian = DetailTextureMulti(detUV, BIOME_ROCK);
+	Surface obsidian = DetailTextureMulti(detUV, BIOME_LAVA);
 	p = point * 600.0 + Randomize;
     vec2 cell = Cell3Noise2(p + dist);
 	noiseOctaves = 5;
 	dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
-    float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
+    noiseOctaves = 3;
+	float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
+	noiseOctaves = 8;
 	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
 	
-	if(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
+	if(lavaCoverage > 0.0 && cracksOctaves == 0 && oceanType == 0.0 && biomeData.height <=0.00001)  //(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
 	{
         surf = obsidian;
-		vary = (globTemp + varyTemp * 0.18)-1.5;
+		vary = -(globTemp + varyTemp * 0.08)+0.5;
 	}
 	
     // Apply albedo variations
