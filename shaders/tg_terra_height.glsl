@@ -577,12 +577,17 @@ if (riversMagn > 0.0)
 	height = height + (0.3 * seaLevel + icecapHeight) * iceCap; // donatelo version
 
 	// smoothly limit the height
-	height = softPolyMin(height, 0.99, 0.3);
+	height = softPolyMin(height, 1.0, 0.3);
 	height = softPolyMax(height, 0.0, 0.3);
 
 	if (cracksOctaves == 0 && lavaCoverage > 0 && oceanType == 0)   //((volcanoTemp > 0.7 || hillsMagn <=0.05) && lavaCoverage > 0 && oceanType == 0)
 	{
 	height = softPolyMax(height, 0.00, 0.3)-log(1.2*lavaCoverage+1);  //log(9*lavaCoverage+1)
+	if (height <0.0002)
+	{
+		height = 0;
+	}
+	
 	}
 
 

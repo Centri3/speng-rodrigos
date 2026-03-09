@@ -68,25 +68,36 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
     float varyTemp = abs(Fbm(p + dist));
     //globTemp *= 1.0 - lithoCells;
 
-//    float surfTemp = surfTemperature *
-//        (globTemp + varyTemp * 0.08) *
-//        saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * height)) *
-//        saturate((lavaCoverage - 0.01) * 25.0) *
-//        saturate((0.875 - climate) * 50.0);
+    float surfTemp = surfTemperature *
+        (globTemp + varyTemp * 0.08) *
+        saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 5 * height)) *
+        saturate((lavaCoverage - 0.01) * 25.0) *
+        saturate((0.875 - climate) * 50.0);
 
 	// Global lava Cover
 float lavaTemp = volcanoTemp;
 
-if (surfTemperature > volcanoTemp || oceanType > 0)
+if (surfTemperature > volcanoTemp || oceanType > 0 || lavaCoverage ==0)
 	{
 		lavaTemp = surfTemperature;
 	}
-	
-	float surfTemp = lavaTemp *
+
+if (lavaCoverage > 0)
+{
+     surfTemp = lavaTemp *
+        (globTemp + varyTemp * 0.08) *
+        saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 5 * height)) *
+        saturate((lavaCoverage - 0.01) * 25.0) *
+        saturate((0.875 - climate) * 50.0);
+}
+
+if (height < 0.00001 && lavaCoverage > 0)
+{	
+	 surfTemp = lavaTemp *
 		(globTemp + varyTemp * 0.08) * saturate((0.00001-height) * 200000.0);
 		//saturate(1.0 * (lavaCoverage * 0.4 + 0.4 - 5000 * height));// *
 		//saturate((lavaCoverage - 0.01) * 25.0);
-
+}
     // Shield volcano lava
     if(volcanoOctaves > 0 && height > seaLevel + 0.1 && iceCap == 0.0) {
         // Global volcano activity mask

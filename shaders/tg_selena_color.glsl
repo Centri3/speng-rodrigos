@@ -684,6 +684,7 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	
 	// Lava Lakes
 	Surface obsidian = DetailTextureMulti(detUV, BIOME_LAVA);
+	Surface glacier = DetailTextureMulti(detUV, BIOME_ICE);
 	p = point * 600.0 + Randomize;
     //vec2 cell = Cell3Noise2(p + dist);
 	noiseOctaves = 5;
@@ -693,11 +694,17 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	noiseOctaves = 8;
 	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
 	
-	if(lavaCoverage > 0.0 && cracksOctaves == 0 && biomeData.height <=0.00001) //(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
+	if(lavaCoverage > 0.0 && cracksOctaves == 0 && biomeData.height ==0) //(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
 	{
         surf = obsidian;
-		vary = -(globTemp + varyTemp * 0.08)+0.5;
+		vary = 0;//-(globTemp + varyTemp * 0.08)+0.5;
 	}
+
+	if(biomeData.height < 0.00019 && biomeData.height > 0 && lavaCoverage > 0 && cracksOctaves == 0 && oceanType == 0.0)  
+	{
+        surf = DetailTextureMulti(detUV, BIOME_ROCK);;
+	}
+
 
     // GlobalModifier // ColorVary apply
 	surf.color.rgb *= mix(colorVary, vec3(1.0), vary);	
