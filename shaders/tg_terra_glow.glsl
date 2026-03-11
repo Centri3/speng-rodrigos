@@ -75,6 +75,7 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
         saturate((0.875 - climate) * 50.0);
 
 	// Global lava Cover
+
 float lavaTemp = volcanoTemp;
 
 if (surfTemperature > volcanoTemp || oceanType > 0 || lavaCoverage ==0)
@@ -82,12 +83,18 @@ if (surfTemperature > volcanoTemp || oceanType > 0 || lavaCoverage ==0)
 		lavaTemp = surfTemperature;
 	}
 
+float tempratio = pow(surfTemperature/volcanoTemp, 0.75);
+if (tempratio <=0.25)
+{
+	tempratio = 0.25;
+}
+
 if (lavaCoverage > 0)
 {
      surfTemp = lavaTemp *
         (globTemp + varyTemp * 0.08) *
-        saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 5 * height)) *
-        saturate((lavaCoverage - 0.01) * 25.0) *
+        saturate(2 * (tempratio*lavaCoverage * 0.4 + 0.4 - 5 * height)) *
+        saturate((tempratio*lavaCoverage - 0.01) * 25.0) *
         saturate((0.875 - climate) * 50.0);
 }
 
