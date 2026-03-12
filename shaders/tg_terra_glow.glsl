@@ -83,17 +83,18 @@ if (surfTemperature > volcanoTemp || oceanType > 0 || lavaCoverage ==0)
 		lavaTemp = surfTemperature;
 	}
 
-float tempratio = pow(surfTemperature/volcanoTemp, 0.75);
-if (tempratio <=0.25)
+float tempratio = (surfTemperature/volcanoTemp)*0.75+0.25;
+float _lavaCoverage = lavaCoverage;
+if (lavaCoverage >0.2)
 {
-	tempratio = 0.25;
+	_lavaCoverage = 0.2;
 }
 
 if (lavaCoverage > 0)
 {
      surfTemp = lavaTemp *
         (globTemp + varyTemp * 0.08) *
-        saturate(2 * (tempratio*lavaCoverage * 0.4 + 0.4 - 5 * height)) *
+        saturate(2 * (tempratio*_lavaCoverage * 0.4 + 0.4 - (8*heightTempGrad)  * height)) *
         saturate((tempratio*lavaCoverage - 0.01) * 25.0) *
         saturate((0.875 - climate) * 50.0);
 }
@@ -139,3 +140,38 @@ void main() {
 //-----------------------------------------------------------------------------
 
 #endif
+
+/*
+float tempratio = (surfTemperature/volcanoTemp)*0.75+0.25;
+float _lavaCoverage = lavaCoverage;
+if (lavaCoverage >0.2)
+{
+	_lavaCoverage = 0.2;
+}
+
+if (lavaCoverage > 0)
+{
+     surfTemp = lavaTemp *
+        (globTemp + varyTemp * 0.08) *
+        saturate(2 * (tempratio*_lavaCoverage * 0.4 + 0.4 - (16.8*heightTempGrad-5.5)  * height)) *
+        saturate((tempratio*lavaCoverage - 0.01) * 25.0) *
+        saturate((0.875 - climate) * 50.0);
+}
+*/
+
+/*
+float tempratio = pow(surfTemperature/volcanoTemp, 0.75);
+if (tempratio <=0.25)
+{
+	tempratio = 0.25;
+}
+
+if (lavaCoverage > 0)
+{
+     surfTemp = lavaTemp *
+        (globTemp + vary * 0.08) *
+        saturate(2 * (tempratio*lavaCoverage * 0.4 + 0.4 - 5 * height)) *
+        saturate((tempratio*lavaCoverage - 0.01) * 25.0) *
+        saturate((0.875 - climate) * 50.0);
+}
+*/

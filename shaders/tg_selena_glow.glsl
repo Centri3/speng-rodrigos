@@ -30,16 +30,17 @@ if (surfTemperature > volcanoTemp || lavaCoverage == 0)
 		lavaTemp = surfTemperature;
 	}
 
-float tempratio = pow(surfTemperature/volcanoTemp, 0.75);
-if (tempratio <=0.25)
+float tempratio = (surfTemperature/volcanoTemp)*0.75+0.25;
+float _lavaCoverage = lavaCoverage;
+if (lavaCoverage >0.2)
 {
-	tempratio = 0.25;
+	_lavaCoverage = 0.2;
 }
 if (lavaCoverage > 0)
 {
      surfTemp = lavaTemp  *
         (globTemp + varyTemp * 0.08) *
-        saturate(2 * (tempratio*lavaCoverage * 0.4 + 0.4 - 5 * height)) *
+        saturate(2 * (tempratio*_lavaCoverage * 0.4 + 0.4 - 5 * height)) *
 		saturate((tempratio*lavaCoverage - 0.01) * 25.0);
 }
 
