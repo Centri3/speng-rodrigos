@@ -207,7 +207,7 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
   float height =
       unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return height + offset;
+  return zones + height + offset;
 }
 
 //-----------------------------------------------------------------------------
@@ -255,7 +255,7 @@ void main() {
     height = 0.95 * (HeightMapCloudsGasGiantGmail(point, true, stripeZones) + 0.5 * HeightMapCloudsGasGiantGmail2(point) +  0.5 * HeightMapCloudsGasGiantGmail3(point));
 //	height = (0.05 * HeightMapCloudsGasGiantAli(point, _stripeFluct) + 0.1 * HeightMapCloudsGasGiantAli2(point, _stripeFluct) + 0.15 * HeightMapCloudsGasGiantAli3(point, _stripeFluct))*0.5;
 	
-	height = softPolyMax(height, 0.0, 0.0);
+	height = softPolyMax(height, 0.0, 0.2);
 
   }
   OutColor = vec4(height);
