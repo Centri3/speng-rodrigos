@@ -121,7 +121,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
     randomize.y = hash1(randomize.y);
     randomize.z = hash1(randomize.z);
 
-    float angleY = randomize.y;
+    float angleY = randomize.y * 6.283185;
 
     // clang-format off
     mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
@@ -206,7 +206,7 @@ float HeightMapCloudsGasGiantGmail2(vec3 point) {
   float height =
       unwrap_or(stripeFluct, 0.0) * 0.5 * (Fbm(twistedPoint) * 0.5 + 0.4);
 
-  return height + offset;
+  return zones + height + offset;
 }
 
 //-----------------------------------------------------------------------------
@@ -244,7 +244,9 @@ void main()
     float heightS = HeightMapSun(point);
     float heightB = 0.95*(HeightMapCloudsGasGiantGmail(point, true, stripeZones) + 0.5 * HeightMapCloudsGasGiantGmail2(point) + 0.5* HeightMapCloudsGasGiantGmail3(point));
     float height  = mix(heightB, heightS, erosion);
-    OutColor = vec4(height);
+    height = softPolyMax(height, 0.0, 0.2);
+	OutColor = vec4(height);
+
 }
 
 //-----------------------------------------------------------------------------

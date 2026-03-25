@@ -13,15 +13,17 @@ float   HeightMapFogGasGiant(vec3 point)
 void main() {
     // GlobalModifier // Convert height to color
     float height = GetSurfaceHeight();	
-	if (height >= 0.678)  //Height without boost can't go over 1.357 with boosts
+		
+	if (height >= 0.23)  //Height without boost can't go over 1.357 with boosts
 	{
-	 height = 0.678;
+	 height = 0.23;
 	}
 	
-	OutColor = GetGasGiantCloudsColor(max(height*2, 1 - float(BIOME_CLOUD_LAYERS) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
+	OutColor = GetGasGiantCloudsColor(max(height*5, 1 - float(BIOME_CLOUD_LAYERS) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
 	
 	height = GetSurfaceHeight();
-	
+	vec4 OutColor2 = GetGasGiantCloudsColor(max(height, 1 - float(BIOME_CLOUD_LAYERS) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
+	OutColor = OutColor * height + OutColor2 * (1-height);
 	if (volcanoActivity != 0.0) 
 	{
 	OutColor = GetGasGiantCloudsColor(max(height, 1.0 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
