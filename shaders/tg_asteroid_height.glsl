@@ -6,42 +6,39 @@
 
 float HeightMapAsteroid(vec3 point) {
   float _hillsMagn = hillsMagn;
-  if (hillsMagn < 0.05) {
-    _hillsMagn = 0.05;
+  if (hillsMagn < 0.1) {
+    _hillsMagn = 0.1;
   }
 
   // GlobalModifier // Global landscape
-  vec3 p = point * venusFreq + Randomize;
-  noiseOctaves = 10.0;
-  noiseLacunarity = 3.0;
-  float height = venusMagn *
-                 (0.5 - Noise(p) - RidgedMultifractal(p * mainFreq, 2.0) * 0.3);
+    // Global landscape
+    vec3  p = point * venusFreq + Randomize;
+    float height = venusMagn * (0.5 - Noise(p) * 2.0);
 
-  noiseOctaves = 10;
-  noiseLacunarity = 2.0;
-  height += 0.05 * iqTurbulence(point * 2.0 * mainFreq + Randomize, 0.35);
+    noiseOctaves = 10;
+    noiseLacunarity = 2.0;
+    height += 0.05 * iqTurbulence(point * 2.0 * mainFreq + Randomize, 0.35);
 
-  // TerrainFeature // Hills
-  noiseOctaves = 5;
-  noiseLacunarity = 2.218281828459;
-  float hills = (0.5 + 1.5 * Fbm(p * 0.0721)) * hillsFreq;
-  hills = Fbm(p * hills) * 0.15;
-  noiseOctaves = 2;
-  float hillsMod = smoothstep(0.0, 1.0, Fbm(p * hillsFraction) * 3.0);
-  height *= 1.0 + _hillsMagn * hills * hillsMod;
+    // Hills
+    noiseOctaves = 5;
+    noiseLacunarity  = 2.218281828459;
+    float hills = (0.5 + 1.5 * Fbm(p * 0.0721)) * hillsFreq;
+    hills = Fbm(p * hills) * 0.15;
+    noiseOctaves = 2;
+    float hillsMod = smoothstep(0.0, 1.0, Fbm(p * hillsFraction) * 3.0);
+    height *= 1.0 + hillsMagn * hills * hillsMod;
 
-  // TerrainFeature // Craters (Old)
-  heightFloor = -0.1;
-  heightPeak = 0.6;
-  heightRim = 0.4;
-  float crater = 0.4 * CraterNoise(point, craterMagn * 0.3, log(craterFreq * 10.0),
-                                   craterSqrtDensity, craterOctaves);
+    // Craters
+    heightFloor = -0.1;
+    heightPeak  =  0.6;
+    heightRim   =  0.4;
+    float crater = 0.4 * CraterNoise(point, craterMagn, craterFreq, craterSqrtDensity, craterOctaves);
 
-  noiseOctaves = 10;
-  noiseLacunarity = 2.0;
-  crater += montesMagn * crater * iqTurbulence(point * montesFreq, 0.52);
+    noiseOctaves = 10;
+    noiseLacunarity = 2.0;
+	crater += montesMagn * crater * iqTurbulence(point * montesFreq, 0.52);	
 
-  height += crater;
+    height += crater;
 
   // TerrainFeature // Equatorial ridge
   // 18-07-2024 by Sp_ce // Attempting improvement to bring inline with iapetus

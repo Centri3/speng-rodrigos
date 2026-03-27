@@ -177,7 +177,9 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 //                   latitude);
 		
 		Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
-        surf = BlendMaterials(surf, snow, snowTransition);
+        climate = mix(climate, climatePole, iceCap);
+		surf = BlendMaterials(surf, snow, snowTransition);
+
     }
 
 
