@@ -41,7 +41,13 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     noiseOctaves = 5.0;
     noiseLacunarity = 3.5;
     float vary = Fbm(point * 1700.0 + Randomize);
-    float snowLine = biomeData.height + 0.25 * vary * biomeData.slope;
+    float TempGrad = 4 * heightTempGrad -1.5;
+	float snowTrue = 1;
+	if (latIceCaps ==2.0)
+	{
+		snowTrue = 0;
+	}
+	float snowLine = biomeData.height + 0.25 * vary * biomeData.slope + ((latitude*latitude) * TempGrad  - latTropic);
     float montHeight = saturate((biomeData.height - seaLevel) / (snowLevel - seaLevel));
     climate = min(climate + heightTempGrad * montHeight, climatePole - 0.125);
     climate = mix(climate, climatePole, saturate((snowLine - snowLevel) * 100.0));
@@ -161,7 +167,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     }*/
 
     // Mountain/winter snow
-    if((climate > 0.9 && latitude > latTropic) || latitude > latIceCaps) 
+    if((climate > 0.9))// && latitude > latTropic) || latitude > latIceCaps) 
 	{
        float snowTransition = smoothstep(0.9, 0.92, climate);
        
