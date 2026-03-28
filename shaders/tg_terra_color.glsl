@@ -71,7 +71,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
         0.02 * (1.5 - RidgedMultifractal(pp * 100.0, 2.0));
     p += Fbm3D(p * 0.38) * 1.2;
     vary = Fbm(p) * 0.35 + 0.245;
-    climate += 2.8 * vary * saturate(1.0 - 3.0 * biomeData.slope) * saturate(1.0 - 1.333 * climate);
+   	climate += 0.8 * vary * saturate(1.0 - 3.0 * biomeData.slope) * saturate(1.0 - 1.333 * climate);
 
     float height = GetSurfaceHeight();
     // Shield volcano lava
