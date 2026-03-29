@@ -167,7 +167,9 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
     }*/
 
     // Mountain/winter snow
-    if((climate > 0.9))// && latitude > latTropic) || latitude > latIceCaps) 
+    if (oceanType !=0)
+	{
+	if((climate > 0.9 && biomeData.height >= 0.25*beachWidth+seaLevel) || latitude > latIceCaps )// && latitude > latTropic) || latitude > latIceCaps) 
 	{
        float snowTransition = smoothstep(0.9, 0.92, climate);
        
@@ -177,12 +179,39 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 //                   latitude);
 		
 		Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
-        climate = mix(climate, climatePole, iceCap);
+        //climate = mix(climate, climatePole, iceCap);
 		surf = BlendMaterials(surf, snow, snowTransition);
+		
+		//if (biom  suppress ice under beach
+		
+		if (surf == snow)
+		{
+		vary = vary*0.5+0.5;
+		}
 
     }
+	}
+    if (oceanType ==0)
+	{
+	if((climate > 0.9))
+	{
+       float snowTransition = smoothstep(0.9, 0.92, climate);
+      
 
+		Surface snow = DetailTextureMulti(detUV, BIOME_SNOW);
+        //climate = mix(climate, climatePole, iceCap);
+		surf = BlendMaterials(surf, snow, snowTransition);
+		
+		//if (biom  suppress ice under beach
+		
+		if (surf == snow)
+		{
+		vary = vary*0.5+0.5;
+		}
 
+    }
+	}
+	
     // Sedimentary layers
     #define CLIFF_TRANSITION_BEGIN 0.35 // 0.50
     #define CLIFF_TRANSITION_END   0.65 // 0.55
@@ -233,6 +262,10 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
         surf = DetailTextureMulti(detUV, BIOME_ROCK);;
 	}
 	
+	if(oceanType != 0 && biomeData.height == 0)
+	{
+	 vary = 0;
+	}
 	
     // Apply albedo variations
     surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
@@ -241,8 +274,10 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 
 
 //RODRIGO - chage surf.color.a to surf.color 
-    if(oceanType != 0.0)
+    if(oceanType >= 1)
         surf.color += saturate((seaLevel - biomeData.height) * 200.0);
+
+		
 		
 //    if(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0)
 //        surf.color -= saturate((0.00001-biomeData.height) * 200000.0);
