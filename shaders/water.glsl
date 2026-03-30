@@ -10,7 +10,7 @@
 // Effects:           	RINGS, ECL, ATMO, VSDBL, PLANEMO
 // Debug:               SQT
 // Vendor-specific:     INTEL, LOGVS, LOGFS
-#auto_defines 
+#auto_defines
 
 #ifdef LOGFS
 #extension GL_ARB_conservative_depth : enable
