@@ -34,9 +34,9 @@ void    _PseudoRivers(vec3 point, float global, float damping, inout float heigh
 		}
 
 	
-	float adjust = pow(0.992, (height))*0 +1;
+	//float adjust = pow(0.992, (height))*0 +1;
 	
-    float valleys = 1.0 - (saturate((0.36 * adjust) * abs(cell.y - cell.x) * riversMagn)); //1 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn))
+    float valleys = 1.0 - (saturate((0.36) * abs(cell.y - cell.x) * riversMagn)); //1 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn))
     valleys = smoothstep(0.0, 1.0, valleys) * damping;
     height = mix(height, seaLevel - 0.02 + errorcor*0.08, valleys); //.019 .042 .03  seaLevel - 0.019 + errorcor*0.082, valleys)
 

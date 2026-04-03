@@ -25,7 +25,7 @@ void main() {
 	
 	height = GetSurfaceHeight();
 	vec4 OutColor2 = GetGasGiantCloudsColor(max(height, 1 - float(BIOME_CLOUD_LAYERS+1) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
-	OutColor = OutColor * height + OutColor2 * (1-height);
+	OutColor = OutColor * (0.8*height+0.1) + OutColor2 * (-0.8*height+0.9);
 	
 	OutColor.rgb = (pow(OutColor.rgb, vec3(height*3)));
 

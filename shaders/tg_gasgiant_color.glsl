@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 //-----------------------------------------------------------------------------
@@ -20,11 +20,11 @@ void main() {
 	 height = 1/(boost);
 	}
 	
-	OutColor = GetGasGiantCloudsColor(max(height*boost, 1 - float(BIOME_CLOUD_LAYERS+5) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(height*boost);
+	OutColor = _GetGasGiantCloudsColor(max(height*boost, 1 - float(BIOME_CLOUD_LAYERS+5) / float(BIOME_SURF_LAYERS)))*0.3+0.4*_GetGasGiantCloudsColor(height*boost);
 	
 	height = GetSurfaceHeight();
 	vec4 OutColor2 = GetGasGiantCloudsColor(max(height, 1 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
-	OutColor = OutColor * height + OutColor2 * (1-height);
+	OutColor = OutColor * (0.8*height+0.1) + OutColor2 * (-0.8*height+0.9);
 	if (volcanoActivity != 0.0) 
 	{
 	//OutColor = GetGasGiantCloudsColor(max(height, 1.0 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
