@@ -250,6 +250,7 @@ void main() {
   {
     height = 3.0 * stripeFluct * HeightMapCloudsVenusAli(point) +
              HeightMapCloudsVenusAli2(point);
+			 height = softPolyMax(height, 0.0, 0.2);
   } else 
   {
     height = 0.95 * (HeightMapCloudsGasGiantGmail(point, true, stripeZones) + 0.5 * HeightMapCloudsGasGiantGmail2(point) +  0.5 * HeightMapCloudsGasGiantGmail3(point));

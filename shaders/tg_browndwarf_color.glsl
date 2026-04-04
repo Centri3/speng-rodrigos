@@ -1,4 +1,4 @@
-#include "tg_common.glh"
+#include "tg_rmr.glh"
 
 #ifdef _FRAGMENT_
 
@@ -21,7 +21,7 @@ void main() {
 	 height = 1/(boost);
 	}
 	
-	OutColor = GetGasGiantCloudsColor(max(height*boost, 1 - float(BIOME_CLOUD_LAYERS+5) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(height*boost);
+	OutColor = _GetGasGiantCloudsColor(max(height*boost, 1 - float(BIOME_CLOUD_LAYERS+5) / float(BIOME_SURF_LAYERS)))*0.3+0.4*_GetGasGiantCloudsColor(height*boost);
 	
 	height = GetSurfaceHeight();
 	vec4 OutColor2 = GetGasGiantCloudsColor(max(height, 1 - float(BIOME_CLOUD_LAYERS+1) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
