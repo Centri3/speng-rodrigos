@@ -245,8 +245,7 @@ void main() {
   float height;
   float _stripeFluct = 0.3 + stripeFluct * 1.2;
   
-  if (volcanoActivity !=
-      0.0) // volcanoActivity != 0.0 && colorDistFreq < 200000000
+  if (volcanoActivity !=0.0) // volcanoActivity != 0.0 && colorDistFreq < 200000000
   {
     height = 3.0 * stripeFluct * HeightMapCloudsVenusAli(point) +
              HeightMapCloudsVenusAli2(point);

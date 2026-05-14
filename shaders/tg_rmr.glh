@@ -36,10 +36,10 @@ float _VolcanoNoise(vec3 point, float globalLand, float localLand) {
 
   float frequency = 150.0 * volcanoFreq;
   float density = volcanoDensity;
-  float size = volcanoRadius;
+  float size =  volcanoRadius * 0.80;
   float newLand = localLand;
   float globLand = globalLand - 1.0;
-  float amplitude = 2.0 * volcanoMagn;
+  float amplitude = 2 * volcanoMagn * 0.80;
   vec2 cell;
   vec3 cellCenter = vec3(0.0);
   vec3 rotVec = normalize(Randomize);
@@ -121,7 +121,7 @@ vec2 _VolcanoGlowNoise(vec3 point) {
 
   float frequency = 150.0 * volcanoFreq;
   float density = volcanoDensity;
-  float size = volcanoRadius;
+  float size = volcanoRadius * 0.8;
   vec2 volcTempMask = vec2(0.0, 0.0);
   vec2 cell;
   vec3 cellCenter = vec3(0.0);

@@ -31,15 +31,7 @@ void main() {
 
 	// GlobalModifier // Change cloud alpha channel
 	   // Changed lowest cloud layer to be full alpha // by Sp_ce
-	if (cloudsLayer == 0) {
-		//OutColor = GetGasGiantCloudsColor(height);
-		OutColor.a = 1.0; 
-	}
-	else {
-		float height = HeightMapFogGasGiant(GetSurfacePoint());
-        OutColor.rgb = height * GetGasGiantCloudsColor(1.0).rgb;
-        OutColor.a = 1.0;
-	}
+OutColor.a = 1.0 * dot(OutColor.rgb, vec3(0.299, 0.587, 0.114));
 /*
 if (volcanoActivity != 0.0) {   //polar suppression  uncomment for full Centri Venus-likes
     float latitude = abs(GetSurfacePoint().y);

@@ -547,24 +547,29 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
     noiseH = 0.5;
     noiseLacunarity = 2.218281828459;
     noiseOffset = 0.8;
-    noiseOctaves = 5.0;
+    noiseOctaves =5.0;
 
     // We share this among all octaves as a speedup.
     vec3 europaDistort = Fbm3D(1.8 * europaP) +
                          Fbm3D(1.8 * europaP * 8.0) * 0.4 +
                          Fbm3D(1.8 * europaP * 32.0) * 0.1;
 
-    float europaCracksOctaves = _cracksOctaves + 6;
+    float europaCracksOctaves = 6;
     vary *= EuropaCrackColorNoise(europaP, europaCracksOctaves + 1, mask,
                                   europaDistort) *
             (0.2 * EuropaCrackColorNoise(europaP * 2.0, europaCracksOctaves,
-                                         mask, europaDistort) +
+                                         mask, europaDistort));
+	/* +
              0.2 * EuropaCrackColorNoise(europaP * 4.0, europaCracksOctaves,
                                          mask, europaDistort));
-    vary *= (0.2 * EuropaCrackColorNoise(europaP * 16.0, europaCracksOctaves,
+    
+	vary *= (0.2 * EuropaCrackColorNoise(europaP * 16.0, europaCracksOctaves,
                                          mask, europaDistort)) +
             (0.2 * EuropaCrackColorNoise(europaP * 32.0, europaCracksOctaves,
                                          mask, europaDistort));
+*/										 
+		// Disabled low level cracks for perfomance boost
+		
     surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
 
     float whiteCracks =
@@ -622,7 +627,7 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05) {
     float craterRayedDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
     float craterRayedOctaves =
-        floor(craterOctaves + smoothstep(0.0, 0.5, _craterRayedFactor) * 60.0);
+        floor(craterOctaves + smoothstep(0.0, 0.5, _craterRayedFactor) * 30.0);
     float crater = _RayedCraterColorNoise(point, craterFreq, craterRayedDensity,
                                           craterRayedOctaves);
     surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);

@@ -299,10 +299,10 @@ float _hillsMagn = hillsMagn;
 float   HeightMapSelena(vec3 point)
 {
 	// Fetch variables // Colors
-	vec4 bottomColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_BOTTOM), 0);
-	vec3 bottomColor = hsl2rgb2(bottomColorHSL.xyz);
-	float bottomAlpha = bottomColorHSL.w;
-	bool aquaria = (bottomAlpha == 0.001);
+//	vec4 bottomColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_BOTTOM), 0);
+//	vec3 bottomColor = hsl2rgb2(bottomColorHSL.xyz);
+//	float bottomAlpha = bottomColorHSL.w;
+//	bool aquaria = (bottomAlpha == 0.001);
 	
 
 	float _cracksOctaves = cracksOctaves;
@@ -610,20 +610,27 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
                          Fbm3D(1.8 * europaP * 8.0) * 0.4 +
                          Fbm3D(1.8 * europaP * 32.0) * 0.1;
 
-    float europaCracksOctaves = _cracksOctaves + 6;
+    float europaCracksOctaves = 6;
     height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
     height += 3.5 * EuropaCrackNoise(europaP, europaCracksOctaves + 1, mask,
                                      europaDistort);
     height += 1.2 * EuropaCrackNoise(europaP * 2.0, europaCracksOctaves, mask,
-                                     europaDistort) +
+                                     europaDistort); 
+/* +
               1.2 * EuropaCrackNoise(europaP * 4.0, europaCracksOctaves, mask,
                                      europaDistort);
+
     height += 0.3 * EuropaCrackNoise(europaP * 16.0, europaCracksOctaves, mask,
                                      europaDistort) +
               0.3 * EuropaCrackNoise(europaP * 32.0, europaCracksOctaves, mask,
                                      europaDistort);
+*/
+
+		// Disabled low level cracks for perfomance boost
+		
     height += 1.3 * EuropaCrackNoise(europaP * 3.0, europaCracksOctaves, mask,
                                      europaDistort);
+
   }
 	
 	
@@ -674,7 +681,7 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
     heightRim = 1.0;
     float craterRayedDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
     float craterRayedOctaves =
-        floor(craterOctaves + smoothstep(0.0, 0.5, _craterRayedFactor) * 60.0);
+        floor(craterOctaves + smoothstep(0.0, 0.5, _craterRayedFactor) * 30.0);
     float craterRayedMagn =
         craterMagn *
         0.25; // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned
@@ -779,10 +786,10 @@ if (_cracksOctaves > 0)
 	}
 	}
 	
-	else
-	{
-		height = softPolyMax(height, 0.00, 0.3);
-	}
+//	else
+//	{
+//		height = softPolyMax(height, 0.00, 0.3);
+//	}
 
 	
 	// Return height

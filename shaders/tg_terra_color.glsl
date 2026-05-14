@@ -262,9 +262,9 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
         surf = DetailTextureMulti(detUV, BIOME_ROCK);;
 	}
 	
-	if(oceanType != 0 && biomeData.height == 0)
+	if(oceanType != 0 && biomeData.height <= seaLevel)
 	{
-	 vary = 0;
+	 vary = vary*((1/seaLevel)*height);  //vary = vary*((1/seaLevel)*height)
 	}
 	
     // Apply albedo variations
