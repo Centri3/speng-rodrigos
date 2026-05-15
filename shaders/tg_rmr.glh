@@ -46,7 +46,7 @@ float _VolcanoNoise(vec3 point, float globalLand, float localLand) {
   vec3 binormal = normalize(vec3(
       -point.z, 0.0, point.x)); // = normalize(cross(point, vec3(0, 1, 0)));
   float distFreq = 18.361 * volcanoFreq;
-  float distMagn = 0.0003;
+  float distMagn = 0.000003;
 
   vec3 randomize = Randomize;
 
@@ -129,7 +129,7 @@ vec2 _VolcanoGlowNoise(vec3 point) {
   vec3 binormal = normalize(vec3(
       -point.z, 0.0, point.x)); // = normalize(cross(point, vec3(0, 1, 0)));
   float distFreq = 18.361 * volcanoFreq;
-  float distMagn = 0.0003;
+  float distMagn = 0.000003;
 
   vec3 randomize = Randomize;
 
