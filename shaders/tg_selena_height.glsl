@@ -777,7 +777,7 @@ if (_cracksOctaves > 0)
 	// GlobalModifier // Soften max/min height
 	height = softPolyMin(height, 0.99, 0.3);
     height = softPolyMax(height, 0.00, 0.3);
-	if (cracksOctaves == 0 && lavaCoverage > 0) //((volcanoTemp > 0.7 || hillsMagn <=0.09) && lavaCoverage > 0)
+	if ((cracksOctaves == 0 || volcanoTemp >= 0.75) && lavaCoverage > 0) //((volcanoTemp > 0.7 || hillsMagn <=0.09) && lavaCoverage > 0)
 	{
 	height = height-log(1.2*lavaCoverage+1);  //log(9*lavaCoverage+1)
 	if (height <0.0002)

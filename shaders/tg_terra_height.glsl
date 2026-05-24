@@ -601,7 +601,7 @@ if (riversMagn > 0.0)
 	height = softPolyMin(height, 1.0, 0.3);
 	height = softPolyMax(height, 0.0, 0.3);
 
-	if (cracksOctaves == 0 && lavaCoverage > 0 && oceanType == 0)   //((volcanoTemp > 0.7 || hillsMagn <=0.05) && lavaCoverage > 0 && oceanType == 0)
+	if ((cracksOctaves == 0 || volcanoTemp >= 0.75) && lavaCoverage > 0 && oceanType == 0)   //((volcanoTemp > 0.7 || hillsMagn <=0.05) && lavaCoverage > 0 && oceanType == 0)
 	{
 	height = height-log(1.2*lavaCoverage+1);  //log(9*lavaCoverage+1)
 	if (height <0.0002)

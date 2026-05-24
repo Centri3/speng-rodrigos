@@ -699,7 +699,7 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	noiseOctaves = 8;
 	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
 	
-	if(lavaCoverage > 0.0 && cracksOctaves == 0 && biomeData.height ==0) //(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
+	if(lavaCoverage > 0.0 && (cracksOctaves == 0 || volcanoTemp >= 0.75) && biomeData.height ==0) //(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
 	{
         surf = obsidian;
 		vary = 0;//-(globTemp + varyTemp * 0.08)+0.5;
