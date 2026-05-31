@@ -25,8 +25,11 @@ void main() {
 	height = GetSurfaceHeight();
 	vec4 OutColor2 = _GetGasGiantCloudsColor(max(height, 1 - float(BIOME_CLOUD_LAYERS+2*Randomize.z) / float(BIOME_SURF_LAYERS)))*0.3+0.4*GetGasGiantCloudsColor(min(height, 0.7 - float(BIOME_CLOUD_LAYERS-1) / float(BIOME_SURF_LAYERS)));
 	
-	//Blended function (Hard+Soft) (Comment out for harsh gas giant colors)
-	OutColor = OutColor * (0.8*height+0.1) + OutColor2 * (-0.8*height+0.9);
+	//Original Blended function (Comment out for harsh gas giant colors)
+	//OutColor = OutColor * (0.8*height+0.1) + OutColor2 * (-0.8*height+0.9);
+	
+	//Reduced blend function
+	OutColor = OutColor * (0.6*height+0.2) + OutColor2 * (-0.6*height+0.8);
 	
 	//Hard Function only (Uncomment for harsh gas giant colors)
 	OutColor = OutColor;
