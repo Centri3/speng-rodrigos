@@ -1,0 +1,4 @@
+// Configuration for RDH
+
+//Gas Giant Color method
+float GasGiantColor = 0;   // 0 is for blended colors, 1 is for harsh colors
