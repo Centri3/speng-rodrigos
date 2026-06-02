@@ -53,7 +53,14 @@ if (volcanoActivity != 0.0) {   //polar suppression  uncomment for full Centri V
   }
 */
 	// GlobalModifier // Output color
-    OutColor.rgb *= pow(OutColor.rgb, colorGamma);
+    if (GasGiantVibe == 0)
+	{
+	OutColor.rgb *= pow(OutColor.rgb, colorGamma);
+	}
+	else
+	{
+	OutColor.rgb = pow(OutColor.rgb, colorGamma);
+	}
 }
 
 //-----------------------------------------------------------------------------

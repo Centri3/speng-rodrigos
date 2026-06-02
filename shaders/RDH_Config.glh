@@ -1,10 +1,10 @@
 // Configuration for RDH
 
 //Gas Giant/Brown Dwarf Color method
-float GasGiantColor = 1;   // 0 is for blended colors, 1 is for harsh colors
+const float GasGiantColor = 1;   // 0 is for blended colors, 1 is for harsh colors
 
 //Gas Giant Color Vibrance
-float GasGiantVibe = 0;		//0 is for vibrant colors, 1 is for muted colors
+const float GasGiantVibe = 0;		//0 is for vibrant colors, 1 is for muted colors (more realistic)
 
 // 0.991 Hills Freq Boost
-float SEversion = 1;		//0 is for 0.990, 1 is for 0.991
+const float SEversion = 1;		//0 is for 0.990, 1 is for 0.991
