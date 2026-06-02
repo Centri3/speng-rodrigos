@@ -31,7 +31,10 @@ void main() {
 	//OutColor = OutColor * (0.8*height+0.1) + OutColor2 * (-0.8*height+0.9);
 	
 	//Reduced blend function
+	if (GasGiantColor == 0)
+	{
 	OutColor = OutColor * (0.6*height+0.2) + OutColor2 * (-0.6*height+0.8);
+	}
 	
 	//Hard Function only (Uncomment for harsh gas giant colors)
 	OutColor = OutColor;
