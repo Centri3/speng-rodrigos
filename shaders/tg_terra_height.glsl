@@ -216,7 +216,7 @@ if (oceanType > 0)
 
 float _hillsFreqq = hillsFreq;
 
-if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)// || riversMagn == 0.0 && cracksOctaves > 0)   // exclude icy and small planets
+if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200 && SEversion == 1)// || riversMagn == 0.0 && cracksOctaves > 0)   // exclude icy and small planets
 	{
 		_hillsFreqq = hillsFreq*5;
 	}

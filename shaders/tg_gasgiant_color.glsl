@@ -52,8 +52,16 @@ void main() {
 	}
 	else {
 		float height = HeightMapFogGasGiant(GetSurfacePoint());
-        OutColor.rgb = height * GetGasGiantCloudsColor(1.0).rgb;
-        OutColor.a = 1.0;
+        if (GasGiantVibe == 0)
+	{
+		OutColor.rgb = height * GetGasGiantCloudsColor(0.25).rgb;
+    }
+		else
+		{
+		OutColor.rgb = height * GetGasGiantCloudsColor(1.0).rgb;
+		}
+		
+		OutColor.a = 1.0;
 	}
 /*
 if (volcanoActivity != 0.0) {   //polar suppression  uncomment for full Centri Venus-likes
@@ -64,7 +72,14 @@ if (volcanoActivity != 0.0) {   //polar suppression  uncomment for full Centri V
   }
 */
 	// GlobalModifier // Output color
-    OutColor.rgb *= pow(OutColor.rgb, colorGamma);
+    if (GasGiantVibe == 0)
+	{
+	OutColor.rgb *= pow(OutColor.rgb, colorGamma);
+	}
+	else
+	{
+	OutColor.rgb = pow(OutColor.rgb, colorGamma);
+	}
 }
 
 //-----------------------------------------------------------------------------
