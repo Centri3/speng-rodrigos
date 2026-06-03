@@ -3,7 +3,7 @@
 //Gas Giant/Brown Dwarf Color method
 const float GasGiantColor = 1;   // 0 is for blended colors, 1 is for harsh colors
 
-//Gas Giant Color Vibrance
+//Gas Giant/Brown Dwarf Color Vibrance
 const float GasGiantVibe = 0;		//0 is for vibrant colors, 1 is for muted colors (more realistic)
 
 // 0.991 Hills Freq Boost

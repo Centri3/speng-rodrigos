@@ -31,7 +31,7 @@ void main() {
 	//OutColor = OutColor * (0.8*height+0.1) + OutColor2 * (-0.8*height+0.9);
 	
 	//Reduced blend function
-	if (GasGiantColor == 0)
+	if (GasGiantColor == 0 &&  cracksOctaves <= 0 ||cracksOctaves == 3 || cracksOctaves == 4)
 	{
 	OutColor = OutColor * (0.6*height+0.2) + OutColor2 * (-0.6*height+0.8);
 	}
@@ -53,7 +53,7 @@ if (volcanoActivity != 0.0) {   //polar suppression  uncomment for full Centri V
   }
 */
 	// GlobalModifier // Output color
-    if (GasGiantVibe == 0)
+    if (GasGiantVibe == 0 &&  cracksOctaves <= 0||cracksOctaves == 1 || cracksOctaves == 3)
 	{
 	OutColor.rgb *= pow(OutColor.rgb, colorGamma);
 	}
