@@ -195,23 +195,26 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
     strength *= 1.3;
     point = twistedPoint;
   }
-/*	
+	
 	// polar round cyclones
+
+if (PolCyclone ==1)
+{
      vec2  cell;
 	 vec3  cellCenter = vec3(0.0);
 	 float r, fi, rnd, dist, dist2, dir;
 	float latitude = abs(point.y);
 	
 	strength = 7.125;
-    freq = cycloneFreq2 * 7.0;
+    freq = cycloneFreq2 * 10.0;
     dens = 0;
 //	if (latitude >= cycloneLatitude2)
 //	{
-	dens = 10.0* smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y)) * latitude*latitude*latitude;
+	dens = 100.0* smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y));
 //    }
 	
-	size =  0.3;
-    offs = cycloneMagn2 * 5;// * smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y));
+	size =  0.2 / smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y));
+    offs = cycloneMagn2*2;// * smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y));
 
     for (int i=0; i<cycloneOctaves2; i++)
 {
@@ -295,7 +298,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
     strength *= 1.3;
     point = twistedPoint;
   }
-*/
+}
   return twistedPoint;
 }
 
