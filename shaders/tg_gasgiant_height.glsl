@@ -131,6 +131,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
     vec3 p_freq = point * freq;
     vec3 cell_base = floor(p_freq);
     
+
     // Accumulators for our splatted displacements
     vec3 point_disp = vec3(0.0);
     float offset_disp = 0.0;
@@ -178,7 +179,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
               
               // Accumulate the displacement vectors
               point_disp += (rotated_p - point);
-              offset_disp += offs * fi * dir * 0.3;
+              offset_disp += offs * fi * dir * 0.4;
             }
           }
         }
@@ -194,7 +195,107 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
     strength *= 1.3;
     point = twistedPoint;
   }
+/*	
+	// polar round cyclones
+     vec2  cell;
+	 vec3  cellCenter = vec3(0.0);
+	 float r, fi, rnd, dist, dist2, dir;
+	float latitude = abs(point.y);
+	
+	strength = 7.125;
+    freq = cycloneFreq2 * 7.0;
+    dens = 0;
+//	if (latitude >= cycloneLatitude2)
+//	{
+	dens = 10.0* smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y)) * latitude*latitude*latitude;
+//    }
+	
+	size =  0.3;
+    offs = cycloneMagn2 * 5;// * smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y));
 
+    for (int i=0; i<cycloneOctaves2; i++)
+{
+    randomize.x = hash1(randomize.x);
+    randomize.y = hash1(randomize.y);
+    randomize.z = hash1(randomize.z);
+
+    float angleY = randomize.y * 6.283185;
+    // clang-format off
+    mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY),
+                         0.0, 1.0, 0.0,
+                         -sin(angleY), 0.0, cos(angleY));
+    // clang-format on
+
+    point *= rotY;
+    
+    vec3 p_freq = point * freq;
+    vec3 cell_base = floor(p_freq);
+    
+
+    // Accumulators for our splatted displacements
+    vec3 point_disp = vec3(0.0);
+    float offset_disp = 0.0;
+
+    // Search the surrounding 3x3x3 grid cells
+    for (float z = -1.0; z <= 1.0; z++) {
+      for (float y = -1.0; y <= 1.0; y++) {
+        for (float x = -1.0; x <= 1.0; x++) {
+          vec3 d = vec3(x, y, z);
+          vec3 grid_cell = cell_base + d;
+          
+          // Generate a stable hash for this specific grid cell to determine density
+          float rnd = hash1(grid_cell.x * 127.1 + grid_cell.y * 311.7 + grid_cell.z * 74.7);
+          
+          if (rnd < dens) {
+            // Get jittered position for the storm core (using your 0.2 jitter)
+            vec3 rnd_offset = NoiseNearestUVec4((grid_cell + randomize) / NOISE_TEX_3D_SIZE).xyz * 0.2;
+            vec3 local_center = grid_cell + vec3(0.5) + rnd_offset;
+            
+            vec3 v = local_center - p_freq;
+            v.y *= 1.9; //  Squish
+            
+            float dist = length(v);
+            
+            // CRITICAL: max_rad must be <= 1.4 to ensure the storm's influence 
+            // drops to absolute zero before it escapes our 3x3x3 search box. 
+            // This guarantees no tearing.
+            float max_rad = 1.3; 
+            
+            if (dist < max_rad) {
+              float dir = sign(0.5 * dens - rnd);
+              
+              // Normalize distances for your original shaping math
+              float dist_norm = saturate(1.0 - (dist / max_rad));
+              float dist2_norm = saturate(0.5 - (dist / max_rad));
+              
+              // Your original falloff formula
+              float fi = pow(dist_norm, 40.0 * size) * (exp(-60.0 * dist2_norm * dist2_norm) + 0.5);
+              
+              // The spherical axis of rotation for this specific storm
+              vec3 axis = normalize(local_center); 
+              
+              // Calculate how much this specific storm wants to rotate our point
+              vec3 rotated_p = Rotate(dir * cycloneMagn * sign(axis.y) * fi, axis, point);
+              
+              // Accumulate the displacement vectors
+              point_disp += (rotated_p - point);
+              offset_disp += offs * fi * dir * 0.4;
+            }
+          }
+        }
+      }
+    }
+
+    // Apply the accumulated twists to the point
+    twistedPoint = point + point_disp;
+    offset += offset_disp;
+
+    freq *= 1.5;
+    size *= 1.5;
+    strength *= 1.3;
+    point = twistedPoint;
+  }
+*/
   return twistedPoint;
 }
 
