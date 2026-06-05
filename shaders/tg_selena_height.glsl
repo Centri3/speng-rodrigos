@@ -71,7 +71,7 @@ void    _RiftsNoise(vec3 point, float damping, inout float height)
         float slope = smoothstep(0.1, 0.9, 1.0 - 2.0 * abs(rifts * 0.35 - 0.5));
         float slopeMod = 0.5*slope * RidgedMultifractalErodedDetail(point * 5.0 * canyonsFreq + Randomize, 8.0, erosion, 8.0);
         slopeMod *= 0.05*riftsModulate;
-        height = softExpMaxMin(height - slopeMod, riftsBottom, 100.0);
+        height = softExpMaxMin(height - slopeMod, riftsBottom, 75.0);
     }
 
 }

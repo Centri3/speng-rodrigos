@@ -87,28 +87,7 @@ void    _Rifts(vec3 point, float damping, inout float height)
 }
 
 //-----------------------------------------------------------------------------
-// Hydraulic Flow Warp (Shadertoy Inspired)
-// Uses domain warping to bend terrain coordinates, simulating flowing sediment
-vec3 _HydraulicErosionWarp(vec3 point, float frequency, float strength) {
-    vec3 warp = vec3(0.0);
-    float amp = 1.0;
-    float freq = frequency;
-    
-    // Keep internal octaves low to ensure the flow channels remain smooth and fluid
-    float oldOctaves = noiseOctaves;
-    noiseOctaves = 2.0; 
-    
-    for (int i = 0; i < 3; i++) {
-        vec3 flow = Fbm3D(point * freq + warp);
-        warp += flow * amp * strength;
-        amp *= 0.5;
-        freq *= 2.0;
-    }
-    
-    noiseOctaves = oldOctaves;
-    return warp * 0.015; // Scale the distortion to keep mountains structurally intact
-}
-//-----------------------------------------------------------------------------
+
 
 void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 {
@@ -298,7 +277,6 @@ global += rr;
     //height = height * oceaniaFade + (_seaLevel + icecapHeight) * iceCap; // old version
 	//height = height * oceaniaFade + (0.3 * _seaLevel + icecapHeight) * iceCap; // donatelo version
 
-float newmount = 0;
 
     if (biome < dunesFraction)
     {
@@ -313,7 +291,7 @@ float newmount = 0;
     else if (biome < hillsFraction)
     {
 		// Mountains
-		if (erosion > 0.0 && newmount == 0)
+		if (erosion > 0.0)
 		{
 			noiseOctaves = 10.0;
 			noiseH       = 0.90;  // Going to tweak some
@@ -321,21 +299,6 @@ float newmount = 0;
 			noiseOffset  = montesSpiky;    // Also caused offset
 			height = hillsMagnn * 2.88 * ((1.25 + iqTurbulence(point * 0.5 * _hillsFreqq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * _hillsFreqq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
 		}
-		//New mountians
-		else if (erosion > 0.0 && newmount == 1)
-		{
-			noiseOctaves = 10.0;
-			noiseH       = 0.90; 
-			noiseLacunarity = 2.0;
-			noiseOffset  = montesSpiky;
-
-            // SHADERTOY WARP: Bend the coordinates to create flow lines
-            vec3 warp = _HydraulicErosionWarp(point + Randomize, _hillsFreqq * 0.5, erosion);
-            vec3 warpedPoint = point + warp;
-
-            // ORIGINAL SPACEENGINE MOUNTAINS: High detail fractal rock, using warped coordinates
-            height = hillsMagnn * 2.88 * ((1.25 + iqTurbulence(warpedPoint * 0.5 * _hillsFreqq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(warpedPoint * 1.0 * _hillsFreqq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
-		}		
 		else
 		{
 			noiseOctaves = 10.0;
@@ -400,7 +363,7 @@ float newmount = 0;
     else
     {
 		// Mountains
-		if (erosion > 0.0 && newmount == 0)
+		if (erosion > 0.0)
 		{
 			noiseOctaves = 10.0;
 			noiseH       = 1.0;
@@ -408,21 +371,6 @@ float newmount = 0;
 			noiseOffset  = montesSpiky;
 			// height = montesMagn * 5.0 * (0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55))* 0.7* montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale)+ 0.6 * biomeScale * hillsMagnn * JordanTurbulence(point/4 * _hillsFreqq/4 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
 			height = (0.5 + 0.4 * iqTurbulence(point * 0.5 * (montesFreq * 3) + Randomize, 0.55)) * 0.4 * montesMagn * 0.8* montRange * RidgedMultifractalErodedDetail(point * (montesFreq * 3) * inv2montesSpiky + Randomize, 2, erosion, montBiomeScale);
-		}
-		//New Mountains
-		else if (erosion > 0.0 && newmount == 1)
-		{
-			noiseOctaves = 10.0;
-			noiseH       = 1.0;
-			noiseLacunarity = 2.1;
-			noiseOffset  = montesSpiky;
-
-            // SHADERTOY WARP: Bend the coordinates to create flow lines
-            vec3 warp = _HydraulicErosionWarp(point + Randomize, montesFreq * 0.5, erosion);
-            vec3 warpedPoint = point + warp;
-
-            // ORIGINAL SPACEENGINE MOUNTAINS: High detail fractal rock, using warped coordinates
-            height = (0.5 + 0.4 * iqTurbulence(warpedPoint * 0.5 * (montesFreq * 3.0) + Randomize, 0.55)) * 0.4 * montesMagn * 0.8 * montRange * RidgedMultifractalErodedDetail(warpedPoint * (montesFreq * 3.0) * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale);
 		}
 		else
 		{
