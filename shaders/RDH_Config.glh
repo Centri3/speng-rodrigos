@@ -16,5 +16,3 @@ const float SEversion = 1;		//0 is for 0.990, 1 is for 0.991
 const float Sp_ce = 0;		// 0 is for default stable craters, 1 is for experimental Sp_ce craters.  Note Sp_ce craters have worse performance than default
 
 
-// Polar Cyclones Gas Giants
-const float PolCyclone = 1;		//0 is for disabled, 1 enables them (these seem to be working properly).

@@ -197,8 +197,7 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
 	
 	// polar round cyclones
 
-if (PolCyclone ==1)
-{
+
      vec2  cell;
 	 vec3  cellCenter = vec3(0.0);
 	 float r, fi, rnd, dist, dist2, dir;
@@ -297,7 +296,7 @@ if (PolCyclone ==1)
     strength *= 1.3;
     point = twistedPoint;
   }
-}
+
   return twistedPoint;
 }
 
