@@ -214,7 +214,7 @@ if (PolCyclone ==1)
 //    }
 	
 	size =  0.2 / smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y));
-    offs = cycloneMagn2*2;// * smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y));
+    offs = -cycloneMagn2 *1.5 / (cloudsLayer + 1.0);// * smoothstep(cycloneLatitude2 - 0.1, cycloneLatitude2 + 0.1, abs(point.y));
 
     for (int i=0; i<cycloneOctaves2; i++)
 {

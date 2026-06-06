@@ -17,4 +17,4 @@ const float Sp_ce = 0;		// 0 is for default stable craters, 1 is for experimenta
 
 
 // Polar Cyclones Gas Giants
-const float PolCyclone = 1;		//0 is for disabled, 1 enables them these seem to be working properly.
+const float PolCyclone = 1;		//0 is for disabled, 1 enables them (these seem to be working properly).
