@@ -314,11 +314,16 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 {
 	Surface surf;
 	
+	float _hillsFreq = hillsFreq;
 	float _hillsMagn = hillsMagn;
-	if (hillsMagn < 0.05)
+	if (hillsMagn < 0.1)
 	{
-		_hillsMagn = 0.05;
+		_hillsMagn = 0.1;
 	}
+	else
+	{
+		_hillsMagn = hillsMagn;
+	}	
 	
 	// Fetch variables // Colors
 	vec4 iceColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_ICE), 0);
@@ -430,18 +435,20 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	float vary = saturate((Fbm(p) + 0.7) * 0.7);
 	
 	// TerrainFeature // Shield volcano lava
+    vec2 volcMask = vec2(0.0);
 	if (volcanoOctaves > 0)
 	{
-		// Global volcano activity mask
-		noiseOctaves = 3;
-		float volcActivity = saturate((Fbm(point * 1.37 + Randomize) - 1.0 + volcanoActivity) * 5.0);
-		// Lava in volcano caldera and flows
-		vec2 volcMask = VolcanoGlowNoise(point);
-		volcMask.x *= volcActivity;
-		// Model lava as rocks texture
-		climate = mix(climate, 0.0, volcMask.x);
-		biomeData.slope = mix(biomeData.slope, 0.0, volcMask.x);
+        // Global volcano activity mask
+        noiseOctaves = 3.0;
+        float volcActivity = saturate((Fbm(point * 1.37 + Randomize) - 1.0 + volcanoActivity) * 5.0);
+        // Lava in volcano caldera and flows
+        volcMask = _VolcanoGlowNoise(point);
+        volcMask.x *= volcActivity;
 	}
+
+    // Model lava as rocks texture
+    climate = mix(climate, 0.375, volcMask.x);
+    biomeData.slope = mix(biomeData.slope, 1.0, volcMask.x);
 	
 	// GlobalModifier // Scale detail texture UV and add a small distortion to it to fix pixelization
 	vec2 detUV = (TexCoord.xy * faceParams.z + faceParams.xy) * texScale;
@@ -454,19 +461,21 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	// GlobalModifier // ColorVary setup
 	vec3 zz = (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
 	noiseOctaves = 14.0;
-	vec3 albedoVaryDistort = Fbm3D((point * 1 + Randomize) * .07) * (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
+	vec3 albedoVaryDistort = Fbm3D((point * 1 + Randomize) * 0.07) * (1.5 + venusMagn); // Fbm3D((point + Randomize) * 0.07) * 1.5;
 
 	if (_cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-		albedoVaryDistort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
+			albedoVaryDistort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
 	}
 	else if (_cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
-		albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5; // Io like on atmosphered planets
+			albedoVaryDistort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on atmosphered planets
 	}
+	
 	else if (_cracksOctaves > 0)
 	{
-		albedoVaryDistort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) * (1.5 + venusMagn) + saturate(iqTurbulence3D(point + Randomize, 0.15) * volcanoActivity);
+	
+		albedoVaryDistort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
 	}
 
 	if (europaLike)
@@ -480,10 +489,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	}
 	vary *= 0.5 * vary * vary;
 	
-	// TerrainFeature // Ice cracks
-		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
-	float mask = 1.0;
-	
 	if (craterSqrtDensity > 0.05)
 	{
 		// Young terrain - suppress craters
@@ -493,6 +498,14 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 		float young = 1.0 - Fbm(point + youngDistort);
 		young = smoothstep(0.0, 1.0, young * young * young);
 		vary = mix(0.0, vary, young);
+	}
+	
+    // TerrainFeature // Ice cracks
+		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
+    float mask = 1.0;
+    if (_cracksOctaves > 0.0)
+	{
+		vary *= CrackColorNoise(point, mask);	// CrackColorNoise(point, mask);
 	}
 	
 	// PlanetTypes // Enceladuslike terrain
@@ -566,9 +579,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 		vary = saturate(vary / europaLikeness);
 	}
 	
-	// GlobalModifier // ColorVary apply
-	surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
-	
 	// TerrainFeature // Vegetation
 	if (plantsBiomeOffset > 0.0)
 	{
@@ -588,12 +598,24 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 		ModifySurfaceByPlants(surf, detUV, climate, plantsFade, plantsTransFractal);
 	}
 	
-	// TerrainFeature // Rayed craters
-	if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05)
+	float _craterRayedFactor = craterRayedFactor;
+	
+	if (volcanoActivity > 1)
 	{
-		float craterRayedDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-		float craterRayedOctaves = floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
-		float crater = _RayedCraterColorNoise(point, craterFreq, craterRayedDensity, craterRayedOctaves);
+		_craterRayedFactor = craterRayedFactor *(volcanoActivity * -0.95 + 1.95);
+	}
+	
+	if (hillsMagn == 0)
+	{
+		_craterRayedFactor = 0;
+	}
+	
+	// TerrainFeature // Rayed craters
+	if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05)
+	{
+		float craterRayedDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
+		float craterRayedOctaves = floor(craterOctaves + smoothstep(0.0, 0.5, _craterRayedFactor) * 30.0);
+		float crater = _RayedCraterColorNoise(point, craterFreq, craterRayedDensity, _craterRayedFactor);
 		// float craterRayedOctaves = floor(craterOctaves * craterRayedFactor);
 		// float crater = RayedCraterColorNoise(point, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
 		surf.color.rgb = mix(surf.color.rgb, vec3(1.0), crater);
@@ -637,6 +659,32 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 			surf.color.rgb *= mix(vec3(0.45) + tholinColor * 0.55, vec3(1.0), z);
 		}
 	}
+	
+	// Lava Lakes
+	Surface obsidian = DetailTextureMulti(detUV, BIOME_LAVA);
+	Surface glacier = DetailTextureMulti(detUV, BIOME_ICE);
+	p = point * 600.0 + Randomize;
+    //vec2 cell = Cell3Noise2(p + dist);
+	noiseOctaves = 5;
+	dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
+    noiseOctaves = 3;
+	float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
+	noiseOctaves = 8;
+	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
+	
+	if(lavaCoverage > 0.0 && (cracksOctaves == 0 || volcanoTemp >= 0.75) && biomeData.height == 0) //(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
+	{
+        surf = obsidian;
+		vary = 0;//-(globTemp + varyTemp * 0.08)+0.5;
+	}
+
+	if(biomeData.height < 0.00019 && biomeData.height > 0 && lavaCoverage > 0 && cracksOctaves == 0 && oceanType == 0.0)  
+	{
+        surf = DetailTextureMulti(detUV, BIOME_ROCK);;
+	}
+	
+	// GlobalModifier // ColorVary apply
+	surf.color.rgb *= mix(colorVary, vec3(1.0), vary);
 	
 	// TerrainFeature // Polar slope ice 
 		// 22-10-2024 by Sp_ce // Changed vec3(1.0) to snowColor

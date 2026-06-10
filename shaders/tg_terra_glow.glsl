@@ -4,41 +4,39 @@
 
 //-----------------------------------------------------------------------------
 
-vec4 GlowMapTerra(vec3 point, BiomeData biomeData) {
-  // Assign a climate type
-  noiseOctaves = 12.0;
-  noiseH = 0.5;
-  noiseLacunarity = 2.218281828459;
-  noiseOffset = 0.8;
-  float climate, latitude, dist;
-  if (tidalLock <= 0.0) {
-    latitude = abs(point.y);
-    latitude += 0.15 * (Fbm(point * 0.7 + Randomize) - 1.0);
-    latitude = saturate(latitude);
-    if (latitude < latTropic - tropicWidth)
-      climate = mix(climateTropic, climateEquator,
-                    (latTropic - tropicWidth - latitude) / latTropic);
-    else if (latitude > latTropic + tropicWidth)
-      climate = mix(climateTropic, climatePole,
-                    (latitude - latTropic - tropicWidth) / (1.0 - latTropic));
-    else
-      climate = climateTropic;
-  } else {
-    latitude = 1.0 - point.x;
-    latitude += 0.15 * (Fbm(point * 0.7 + Randomize) - 1.0);
-    climate = mix(climateTropic, climatePole, saturate(latitude));
-  }
+vec4 GlowMapTerra(vec3 point, float height, float slope) {
+    // Assign a climate type
+    noiseOctaves = (oceanType == 1.0) ? 5.0 : 12.0; // Reduce terrain octaves on oceanic planets (oceanType == 0.1)
+    noiseH = 0.5;
+    noiseLacunarity = 2.218281828459;
+    noiseOffset = 0.8;
+    float climate, latitude, dist;
+    if(tidalLock <= 0.0) {
+        latitude = abs(point.y);
+        latitude += 0.15 * (Fbm(point * 0.7 + Randomize) - 1.0);
+        latitude = saturate(latitude);
+        if(latitude < latTropic - tropicWidth)
+            climate = mix(climateTropic, climateEquator, (latTropic - tropicWidth - latitude) / latTropic);
+        else if(latitude > latTropic + tropicWidth)
+            climate = mix(climateTropic, climatePole, (latitude - latTropic - tropicWidth) / (1.0 - latTropic));
+        else
+            climate = climateTropic;
+    } else {
+        latitude = 1.0 - point.x;
+        latitude += 0.15 * (Fbm(point * 0.7 + Randomize) - 1.0);
+        climate = mix(climateTropic, climatePole, saturate(latitude));
+    }
 
-  // Litosphere cells
-  // float lithoCells = LithoCellsNoise(point, climate, 1.5);
+    // Litosphere cells
+    //float lithoCells = LithoCellsNoise(point, climate, 1.5);
 
     // Change climate with elevation
-    float montHeight = saturate((biomeData.height - seaLevel) / (snowLevel - seaLevel));
+    float montHeight = saturate((height - seaLevel) / (snowLevel - seaLevel));
     climate = min(climate + heightTempGrad * montHeight, climatePole);
 
-  // Ice caps
-  float iceCap = saturate((latitude / latIceCaps - 1.0) * 50.0);
-  climate = mix(climate, climatePole, iceCap);
+    // Ice caps
+    float iceCap = saturate((latitude / latIceCaps - 1.0) * 50.0);
+    climate = mix(climate, climatePole, iceCap);
 
 /*
     // Thermal glow variations
@@ -50,7 +48,7 @@ vec4 GlowMapTerra(vec3 point, BiomeData biomeData) {
     ////float varyTemp = 0.5 * sqrt(abs(cell.y - cell.x));
     //float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
     //float flow  = saturate(varyTemp * 0.2 * lavaCoverage);
-    noiseOctaves = 8;
+    noiseOctaves = 9;
 	float varyTemp = abs(Fbm(p + dist));
 	// Thermal emission temperature (in thousand Kelvins)
 	float surfTemp = 0.0;
@@ -65,28 +63,51 @@ vec4 GlowMapTerra(vec3 point, BiomeData biomeData) {
     float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
     float flow  = saturate(varyTemp * 0.2 * lavaCoverage);*/
     noiseOctaves = 3;
-	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
+    float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
     noiseOctaves = 8;
-	float varyTemp = abs(Fbm(p + dist));
+    float varyTemp = abs(Fbm(p + dist));
     //globTemp *= 1.0 - lithoCells;
 
-    // Copied from height shader, for extra detail
-    float venus = 0.0;
-    
-    noiseOctaves = 4;
-    noiseH = 0.9;
-    vec3 distort = Fbm3D(point * 0.3) * 1.5;
-    noiseOctaves = 6;
-    venus = Fbm((point + distort) * 1.0) * (0.3);
-
     float surfTemp = surfTemperature *
-        (globTemp + venus * varyTemp * 0.04) *
-        saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 0.8 * biomeData.height)) *
+        (globTemp + varyTemp * 0.08) *
+        saturate(2.0 * (lavaCoverage * 0.4 + 0.4 - 5 * height)) *
         saturate((lavaCoverage - 0.01) * 25.0) *
         saturate((0.875 - climate) * 50.0);
 
+	// Global lava Cover
+
+float lavaTemp = volcanoTemp;
+
+if (surfTemperature > volcanoTemp || oceanType > 0 || lavaCoverage ==0)
+	{
+		lavaTemp = surfTemperature;
+	}
+
+float tempratio = (surfTemperature/lavaTemp)*0.75+0.25;
+float _lavaCoverage = lavaCoverage;
+if (lavaCoverage >0.24)
+{
+	_lavaCoverage = 0.24;
+}
+
+if (lavaCoverage > 0)
+{
+     surfTemp = lavaTemp *
+        (globTemp + varyTemp * 0.08) *
+        saturate(2 * (tempratio*_lavaCoverage * 0.4 + 0.4 - (8*heightTempGrad)  * height)) *
+        saturate((tempratio*lavaCoverage - 0.01) * 25.0) *
+        saturate((0.875 - climate) * 50.0);
+}
+
+if (height < 0.00001 && lavaCoverage > 0)
+{	
+	 surfTemp = lavaTemp *
+		(globTemp + varyTemp * 0.08) * saturate((0.00001-height) * 200000.0);
+		//saturate(1.0 * (lavaCoverage * 0.4 + 0.4 - 5000 * height));// *
+		//saturate((lavaCoverage - 0.01) * 25.0);
+}
     // Shield volcano lava
-    if(volcanoOctaves > 0 && biomeData.height > seaLevel + 0.1 && iceCap == 0.0) {
+    if(volcanoOctaves > 0 && height > seaLevel + 0.1 && iceCap == 0.0) {
         // Global volcano activity mask
         noiseOctaves = 3;
         float volcActivity = saturate((Fbm(point * 1.37 + Randomize) - 1.0 + volcanoActivity) * 5.0);
@@ -111,9 +132,46 @@ vec4 GlowMapTerra(vec3 point, BiomeData biomeData) {
 
 void main() {
     vec3 point = GetSurfacePoint();
-    OutColor = GlowMapTerra(point, GetSurfaceBiomeData());
+    float height = 0, slope = 0;
+    GetSurfaceHeightAndSlope(height, slope);
+    OutColor = GlowMapTerra(point, height, slope);
 }
 
 //-----------------------------------------------------------------------------
 
 #endif
+
+/*
+float tempratio = (surfTemperature/volcanoTemp)*0.75+0.25;
+float _lavaCoverage = lavaCoverage;
+if (lavaCoverage >0.2)
+{
+	_lavaCoverage = 0.2;
+}
+
+if (lavaCoverage > 0)
+{
+     surfTemp = lavaTemp *
+        (globTemp + varyTemp * 0.08) *
+        saturate(2 * (tempratio*_lavaCoverage * 0.4 + 0.4 - (16.8*heightTempGrad-5.5)  * height)) *
+        saturate((tempratio*lavaCoverage - 0.01) * 25.0) *
+        saturate((0.875 - climate) * 50.0);
+}
+*/
+
+/*
+float tempratio = pow(surfTemperature/volcanoTemp, 0.75);
+if (tempratio <=0.25)
+{
+	tempratio = 0.25;
+}
+
+if (lavaCoverage > 0)
+{
+     surfTemp = lavaTemp *
+        (globTemp + vary * 0.08) *
+        saturate(2 * (tempratio*lavaCoverage * 0.4 + 0.4 - 5 * height)) *
+        saturate((tempratio*lavaCoverage - 0.01) * 25.0) *
+        saturate((0.875 - climate) * 50.0);
+}
+*/

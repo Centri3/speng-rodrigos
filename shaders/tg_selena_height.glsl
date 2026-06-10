@@ -71,11 +71,12 @@ void	_RiftsNoise(vec3 point, float damping, inout float height)
 		float slope = smoothstep(0.1, 0.9, 1.0 - 2.0 * abs(rifts * 0.35 - 0.5));
 		float slopeMod = 0.5 * slope * RidgedMultifractalErodedDetail(point * 5.0 * canyonsFreq + Randomize, 8.0, erosion, 8.0);
 		slopeMod *= 0.05 * riftsModulate;
-		height = softExpMaxMin(height - slopeMod, riftsBottom, 32.0);
+		height = softExpMaxMin(height - slopeMod, riftsBottom, 75.0);
 	}
 }
 
-void EnceladusNoise(in vec3 point, inout float height, float europaLikeness) {
+void EnceladusNoise(in vec3 point, inout float height, float europaLikeness)
+{
   noiseOctaves = 2;
   noiseH = 1.0;
   noiseLacunarity = 2.0;
@@ -115,7 +116,8 @@ void EnceladusNoise(in vec3 point, inout float height, float europaLikeness) {
   height = mix(height, height - (0.13 * europaLikeness), cracks.y);
 }
 
-float EuropaCrackHeightFunc(float land, float height, float r, vec3 p) {
+float EuropaCrackHeightFunc(float land, float height, float r, vec3 p)
+{
   p.x += 0.05 * r;
   float inner = smoothstep(0.0, 0.5, r);
   float outer = smoothstep(0.5, 1.0, r);
@@ -216,22 +218,12 @@ float   _MareNoise(vec3 point, float globalLand, float bottomLand, inout float m
 	float  cell;
 	float  radFactor = 1.0 / mareSqrtDensity;
 
-	
 	radPeak  = 0.0;
 	radInner = 0.5;
 	radRim   = 0.6;
 	radOuter = 1.0;
 	heightFloor = 0.0;
 	heightRim   = 0.2;
-	
-	/*
-	radPeak  = 0.0;
-	radInner = 0.5;
-	radRim   = 0.6;
-	radOuter = 1.0;
-	heightFloor = 0.0;
-	heightRim   = 0.2;
-	*/
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -255,22 +247,22 @@ float   _MareNoise(vec3 point, float globalLand, float bottomLand, inout float m
 // Function // Altered Crater Height Formula
 float   _CraterHeightFunc(float lastlastLand, float lastLand, float height, float r, float cratOctaves, float i, float mareSuppress)
 {
-	float distHeight = craterDistortion * height;
+    float distHeight = craterDistortion * height;
 
-	float t = 1.0 - r / radPeak;
-	float peak = 2 * heightPeak * craterDistortion * smoothstep(0.0, 1.0, t);
+    float t = 1.0 - r/radPeak;
+    float peak = heightPeak * craterDistortion * smoothstep(0.0, 1.0, t);
 
-	t = smoothstep(0.0, 1.0, (r - radInner) / (radRim - radInner));
-	float inoutMask = t * t * t;
-	float innerRim = heightRim * distHeight * smoothstep(0.0, 1.0, inoutMask);
+    t = smoothstep(0.0, 1.0, (r - radInner) / (radRim - radInner));
+    float inoutMask = t*t*t;
+    float innerRim = heightRim * distHeight * smoothstep(0.0, 1.0, inoutMask);
 
-	t = smoothstep(0.0, 1.0, (radOuter - r) / (radOuter - radRim));
-	float outerRim = distHeight * mix(0.05, heightRim, t * t);
+    t = smoothstep(0.0, 1.0, (radOuter - r) / (radOuter - radRim));
+    float outerRim = distHeight * mix(0.05, heightRim, t*t);
 
-	t = saturate((1.0 - r) / (1.0 - radOuter));
-	float halo = 0.05 * distHeight * t;
+    t = saturate((1.0 - r) / (1.0 - radOuter));
+    float halo = 0.05 * distHeight * t;
 
-	return mix(lastlastLand + height * heightFloor + peak + innerRim, lastLand + outerRim + halo, inoutMask);
+    return mix(lastlastLand + height * heightFloor + peak + innerRim, lastLand + outerRim + halo, inoutMask);
   //return mix(lastlastLand + height * heightFloor + peak + innerRim, lastLand + outerRim + halo, mareSuppress * (1 - (i / cratOctaves)) * inoutMask);
   //return mix(lastlastLand + height * heightFloor + peak + innerRim, lastLand + outerRim + halo, 1 + mareSuppress * ((i/cratOctaves) - 1) * inoutMask); // NEW SUPPRESS
 }
@@ -282,79 +274,180 @@ float   _CraterHeightFunc(float lastlastLand, float lastLand, float height, floa
 // Function // Altered Crater Noise
 float   _CraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtDensity, float cratOctaves, float mareSuppress)
 {
-	//craterSphereRadius = cratFreq * cratSqrtDensity;
-	//point *= craterSphereRadius;
-	point = (point * cratFreq + Randomize) * cratSqrtDensity;
+    //craterSphereRadius = cratFreq * cratSqrtDensity;
+    //point *= craterSphereRadius;
+    point = (point * cratFreq + Randomize) * cratSqrtDensity;
 
-	float  newLand = 0.0;
-	float  lastLand = 0.0;
-	float  lastlastLand = 0.0;
-	float  lastlastlastLand = 0.0;
-	float  amplitude = 1.0;
-	float  cell;
-	float  radFactor = 1.0 / cratSqrtDensity;
+    float  newLand = 0.0;
+    float  lastLand = 0.0;
+    float  lastlastLand = 0.0;
+    float  lastlastlastLand = 0.0;
+    float  amplitude = 1.0;
+    float  cell;
+    float  radFactor = 1.0 / cratSqrtDensity;
 
-	// Craters roundness distortion
-	noiseLacunarity  = 2.218281828459;
-	noiseOffset	  = 0.8;
-	noiseOctaves	 = 3;
-	craterDistortion = 1.0;
-	craterRoundDist  = 0.03;
+    // Craters roundness distortion
+    noiseH           = 0.5;
+    noiseLacunarity  = 2.218281828459;
+    noiseOffset      = 0.8;
+    noiseOctaves     = 3;
+    craterDistortion = 1.0;
+    craterRoundDist  = 0.03;
+
+    radPeak  = 0.03;
+    radInner = 0.15;
+    radRim   = 0.2;
+    radOuter = 0.8;
+
+    for (int i=0; i<cratOctaves; i++)
+    {
+        lastlastlastLand = lastlastLand;
+        lastlastLand = lastLand;
+        lastLand = newLand;
+
+        //vec3 dist = craterRoundDist * Fbm3D(point*2.56);
+        //cell = Cell2NoiseSphere(point + dist, craterSphereRadius, dist).w;
+        //craterSphereRadius *= 1.83;
+        cell = Cell3Noise(point + craterRoundDist * Fbm3D(point * 2.56));
+        newLand = _CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell * radFactor, cratOctaves, i, mareSuppress);
+
+        //cell = inverseSF(point + 0.2 * craterRoundDist * Fbm3D(point*2.56), fibFreq);
+        //rad = hash1(cell.x * 743.1) * 0.9 + 0.1;
+        //newLand = CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y * radFactor / rad);
+        //fibFreq   *= craterFreqPower;
+        //radFactor *= craterRadFactorPower;
+
+        if (cratOctaves > 1)
+        {
+            point       *= craterFreqPower;
+            amplitude   *= craterAmplPower;
+            heightPeak  *= craterPeakPower;
+            heightFloor *= craterFloorPower;
+            radInner    *= craterRadiusPower;
+        }
+    }
+
+    return  cratMagn * newLand;
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+// Function // Altered Crater Height Formula
+	// 19-11-2024 by Sp_ce // Doubled peak height
+float   Sp_ceCraterHeightFunc(float lastlastLand, float lastLand, float height, float r)
+{
+    float distHeight = craterDistortion * height;
+
+    float t = 1.0 - r/radPeak;
+    float peak = 2 * heightPeak * craterDistortion * smoothstep(0.0, 1.0, t);
+
+    t = smoothstep(0.0, 1.0, (r - radInner) / (radRim - radInner));
+    float inoutMask = t*t*t;
+    float innerRim = heightRim * distHeight * smoothstep(0.0, 1.0, inoutMask);
+
+    t = smoothstep(0.0, 1.0, (radOuter - r) / (radOuter - radRim));
+    float outerRim = distHeight * mix(0.05, heightRim, t*t);
+
+    t = saturate((1.0 - r) / (1.0 - radOuter));
+    float halo = 0.05 * distHeight * t;
+
+    return mix(lastlastLand + height * heightFloor + peak + innerRim, lastLand + outerRim + halo, inoutMask);
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+// Function // Altered Crater Noise
+	// 14-11-2024 by Sp_ce // Changed rad values
+	// 19-11-2024 by Sp_ce // Changed lastlastlastLand to lastlastLand
+float   Sp_ceCraterNoise(vec3 point, float cratMagn, float cratFreq, float cratSqrtDensity, float cratOctaves)
+{
+    //craterSphereRadius = cratFreq * cratSqrtDensity;
+    //point *= craterSphereRadius;
+    point = (point * cratFreq + Randomize) * cratSqrtDensity;
+
+    float  newLand = 0.0;
+    float  lastLand = 0.0;
+    float  lastlastLand = 0.0;
+    float  lastlastlastLand = 0.0;
+    float  amplitude = 1.0;
+    float  cell;
+    float  radFactor = 1.0 / cratSqrtDensity;
+
+    // Craters roundness distortion
+    noiseH           = 0.5;
+    noiseLacunarity  = 2.218281828459;
+    noiseOffset      = 0.8;
+    noiseOctaves     = 3;
+    craterDistortion = 1.0;
+    craterRoundDist  = 0.03;
 	
-	radPeak  = 0.1;
-	radInner = 0.1; //0.1
-	radRim   = 0.35;//0.4
-	radOuter = 0.7; //0.8
+    radPeak  = 0.1;
+    radInner = 0.1; //0.1
+    radRim   = 0.35;//0.4
+    radOuter = 0.7; //0.8
 	/*
 	radPeak  = 0.03;
-	radInner = 0.15;
-	radRim   = 0.2;
-	radOuter = 0.8;
+    radInner = 0.15;
+    radRim   = 0.2;
+    radOuter = 0.8;
 	*/
-	for (int i = 0; i < cratOctaves; i++)
-	{
-		lastlastlastLand = lastlastLand;
-		lastlastLand = lastLand;
-		lastLand = newLand;
+    for (int i=0; i<cratOctaves; i++)
+    {
+        lastlastlastLand = lastlastLand;
+        lastlastLand = lastLand;
+        lastLand = newLand;
 
-		//vec3 dist = craterRoundDist * Fbm3D(point*2.56);
-		//cell = Cell2NoiseSphere(point + dist, craterSphereRadius, dist).w;
-		//craterSphereRadius *= 1.83;
-		cell = Cell3Noise(point + craterRoundDist * Fbm3D(point * 2.56));
-		newLand = _CraterHeightFunc(lastlastLand, lastLand, amplitude, cell * radFactor, cratOctaves, i, mareSuppress);
-		// newLand = _CraterHeightFunc(lastlastLand, lastLand, amplitude, cell * radFactor);
+        /*
+		vec3 dist = craterRoundDist * Fbm3D(point*2.56);
+        //cell = Cell2NoiseSphere(point + dist, craterSphereRadius, dist).w;
+        //craterSphereRadius *= 1.83;
+		*/
+        cell = Cell3Noise(point + craterRoundDist * Fbm3D(point * 2.56));
+        newLand = Sp_ceCraterHeightFunc(lastlastLand, lastLand, amplitude, cell * radFactor);
 
+        /*
 		//cell = inverseSF(point + 0.2 * craterRoundDist * Fbm3D(point*2.56), fibFreq);
-		//rad = hash1(cell.x * 743.1) * 0.9 + 0.1;
-		//newLand = CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y * radFactor / rad);
-		//fibFreq   *= craterFreqPower;
-		//radFactor *= craterRadFactorPower;
+        //rad = hash1(cell.x * 743.1) * 0.9 + 0.1;
+        //newLand = CraterHeightFunc(lastlastlastLand, lastLand, amplitude, cell.y * radFactor / rad);
+        //fibFreq   *= craterFreqPower;
+        //radFactor *= craterRadFactorPower;
+		*/
 
-		if (cratOctaves > 1)
-		{
-			point	   *= craterFreqPower;
-			amplitude   *= craterAmplPower;
-			heightPeak  *= craterPeakPower;
-			heightFloor *= craterFloorPower;
-			radInner	*= craterRadiusPower;
-		}
-	}
+        if (cratOctaves > 1)
+        {
+            point       *= craterFreqPower;
+            amplitude   *= craterAmplPower;
+            heightPeak  *= craterPeakPower;
+            heightFloor *= craterFloorPower;
+            radInner    *= craterRadiusPower;
+        }
+    }
 
-	return  cratMagn * newLand;
+    return  cratMagn * newLand;
 }
 
 //-----------------------------------------------------------------------------
 
 // Function // Construct Height Map
+
 float   HeightMapSelena(vec3 point)
 {
+	float _hillsFreq = hillsFreq;  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
+	//float _hillsFreq = hillsFreq * (pow(0.99, (1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
 	float _hillsMagn = hillsMagn;
-	if (hillsMagn < 0.05)
+	if (_hillsMagn < 0.1)   // Fix to spiky terrain before planet melts
 	{
-		_hillsMagn = 0.05;
+		_hillsMagn = 0.1;
 	}
-	float _hillsFreq = hillsFreq * (pow(0.99, (1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  // crinkle the surface for volcanic worlds 11/21/2025.... scale down for large planets
-
+	else
+	{
+		_hillsMagn = hillsMagn;
+	}
+	
 	// Fetch variables // Colors
 	vec4 bottomColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_BOTTOM), 0);
 	vec3 bottomColor = hsl2rgb2(bottomColorHSL.xyz);
@@ -362,9 +455,25 @@ float   HeightMapSelena(vec3 point)
 	bool aquaria = (bottomAlpha == 0.001);
 	
 	float _cracksOctaves = cracksOctaves;
+
+	if (_cracksOctaves > 0)
+	{
+		_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 5 + 1);  //Let aquarias have some fun
+	}
+
+	if (volcanoActivity < 1 && _cracksOctaves == 0)
+	{
+		_hillsFreq = hillsFreq * (pow(0.99,(1 / (1 + volcanoActivity * 2) * hillsFreq)) * 2 + 1);  //Lower hillsFreq for smooter plains?
+	}
+
+	if (volcanoActivity >= 1 && _cracksOctaves == 0)
+	{
+		_hillsFreq = hillsFreq * (pow(0.99,(1 / (5 - volcanoActivity * 2) * hillsFreq)) * 2 + 1);   // / (volcanoActivity * 2 - 1) ;  //Lower hillsFreq for smooter plains?
+	}
 	
 	// Fetch variables // Planet types
 		// 21-10-2024 by Sp_ce // Added europaLikeness
+	// bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.54) && (mareFreq < 1.7) && (cracksFreq < 0.6));
 	bool enceladusLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq < 0.6));
 	bool europaLike = ((cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6));
 	
@@ -396,7 +505,7 @@ float   HeightMapSelena(vec3 point)
 	float montRange = saturate(DistNoise(point * 22.6 + Randomize, 2.5) + 0.5);
 	montRange *= montRange;
 	float montBiomeScale = min(pow(2.2 * biomeScale, 2.5), 1.0) * montRange;
-	float inv2montesSpiky = 1.0 /(montesSpiky * montesSpiky);
+	float inv2montesSpiky = 1.0 / (montesSpiky * montesSpiky);
 	
 	// GlobalModifier // Global landscape
 	noiseOctaves = 5;
@@ -406,18 +515,15 @@ float   HeightMapSelena(vec3 point)
 	noiseH = 1.0;
 	// noiseLacunarity = 2.3;  // Caused offset
 	noiseOffset = montesSpiky;
-	float rocks = -0.005 * iqTurbulence(point * 80.0, 1.0) * smoothstep(2, 1, volcanoActivity); 
+	float rocks = -0.005 * iqTurbulence(point * 80.0, 1.0);  // * smoothstep(2, 1, volcanoActivity); 
 
 	noiseOctaves = 4.0;
-	// distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
 	distort += 0.005 * (1.0 - abs(RidgedMultifractalDetail(p * 132.3, _hillsFreq, _hillsMagn)));
 	vec3 pp = (point + Randomize) * (0.0005 * _hillsFreq / (_hillsMagn * _hillsMagn));
+	
 	float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
-	noiseOctaves = 12.0;
-	// float global = 1.0 - Cell3Noise(p + distort);
+	// noiseOctaves = 12.0;
 	float global = 1.0 - JordanTurbulence(p * _hillsMagn + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0); // Mine
-	// float global = 1.0 - JordanTurbulence(p * 0.2 + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0); // Centri
-	// float global = 1.0 - iqTurbulence(point * 0.001 * _hillsFreq + Randomize, _hillsMagn);
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 	
 	// GlobalModifier // Venus
@@ -456,7 +562,7 @@ float   HeightMapSelena(vec3 point)
 	float mare = height;
 	float mareFloor = height;
 	float mareSuppress = 1.0;
-	if (mareSqrtDensity > 0.05 && mareFreq != 0.0)
+	if (mareSqrtDensity > 0.05)  // && mareFreq != 0.0)
 	{
 		noiseOctaves = 2.0;
 		mareFloor = 0.6 * (1.0 - Cell3Noise(0.3 * p));
@@ -471,18 +577,15 @@ float   HeightMapSelena(vec3 point)
 	float crater = 0.0;
 	if (craterSqrtDensity > 0.05)
 	{
-		
 		float craterSqrtDensityAltered = max(craterSqrtDensity * (0.2 + 0.8 * (1.0 - europaLikeness)), 10 * (craterSqrtDensity - 0.9));
 	
 		noiseOctaves = 3;  // Craters roundness distortion
-		craterDistortion = 1.0;
-		craterRoundDist  = 0.03;
 		heightFloor = -0.1;
 		heightPeak  =  0.6;
 		heightRim   =  1.0;
 		float craterFreqNew = max(craterFreq, 3.0);
-		//crater = _CraterNoise(point, craterMagn, craterFreq, craterSqrtDensity, craterOctaves, mareSuppress); // NEW SUPPRESS
-		crater = saturate(mareSuppress + Fbm(10 * point)) * _CraterNoise(point, craterMagn, craterFreq, (craterSqrtDensityAltered * (1 - (volcanoActivity / 2.5))), craterOctaves, mareSuppress);  // Supress craters on volcanic worlds
+		// crater = saturate(mareSuppress + Fbm(10 * point)) * Sp_ceCraterNoise(point, craterMagn, craterFreq, (craterSqrtDensityAltered * (1 - (volcanoActivity / 2.1))), craterOctaves, mareSuppress);  // Supress craters on volcanic worlds
+		crater = saturate(mareSuppress + Fbm(pp)) * Sp_ceCraterNoise(point, craterMagn, craterFreq, craterSqrtDensityAltered * (1 - (volcanoActivity / 2.1)), craterOctaves);
 		noiseOctaves	= 10.0;
 		noiseLacunarity = 2.0;
 		// crater = 0.25 * crater + 0.05 * crater * iqTurbulence(point * montesFreq + Randomize, 0.55);
@@ -495,20 +598,6 @@ float   HeightMapSelena(vec3 point)
 			crater = 0.25 * crater + 0.05 * crater * RidgedMultifractalDetail(point * 0.5 * montesFreq + Randomize, 1.5, 0.55 * crater);
 		}
 		// crater = 0.25 * crater - 0.1;
-		
-		/*
-		noiseOctaves = 3;  // Craters roundness distortion
-		craterDistortion = 1.0;
-		craterRoundDist  = 0.03;
-		heightFloor = -0.1;
-		heightPeak  = 0.6;
-		heightRim   = 1.0;
-		crater = mareSuppress * CraterNoise(point, craterMagn, craterFreq, craterSqrtDensity, craterOctaves);
-		noiseOctaves = 11.0;
-		noiseH	   = 1.0;
-		noiseOffset  = 1.0;
-		crater = 0.5 * RidgedMultifractalDetail(point * 0.5 * montesFreq + Randomize, 2.0, 0.25 * crater);
-		*/
 		
 		// Young terrain - suppress craters
 		noiseOctaves = 4.0;
@@ -546,9 +635,9 @@ float   HeightMapSelena(vec3 point)
 		else if (biome < canyonsFraction)
 		{
 			// TerrainFeature // Rimae
-			noiseOctaves	 = 3.0;
-			noiseLacunarity  = 2.218281828459;
-			noiseOffset	  = 0.5;
+			noiseOctaves	= 3.0;
+			noiseLacunarity = 2.218281828459;
+			noiseH	        = 0.9;
 			p = point * mainFreq + Randomize;
 			distort  = 0.035 * Fbm3D(p * riversSin * 5.0);
 			distort += 0.350 * Fbm3D(p * riversSin);
@@ -566,10 +655,11 @@ float   HeightMapSelena(vec3 point)
 		}
 	}
 
-	// TerrainFeature // Shield volcano
-	if (volcanoOctaves > 0)
+	// TerrainFeature // Ice cracks
+		// 26-10-2024 by Sp_ce // Removed europaLike cracks and added them into europaLike section
+    if (_cracksOctaves > 0.0 && !europaLike)
 	{
-		height = VolcanoNoise(point, global, height);
+		height += 0.5 * CrackNoise(point, mask);     //height += 0.5*CrackNoise(point, mask);
 	}
 
 	// PlanetTypes // Plutolike terrain
@@ -648,19 +738,7 @@ float   HeightMapSelena(vec3 point)
 		height += 0.3 * EuropaCrackNoise(europaP * 16.0, europaCracksOctaves, mask, europaDistort) + 0.3 * EuropaCrackNoise(europaP * 32.0, europaCracksOctaves, mask, europaDistort);
 		height += 1.3 * EuropaCrackNoise(europaP * 3.0, europaCracksOctaves, mask, europaDistort);
 	}
-	
-	// TerrainFeature // Equatorial ridge
-	/*
-	if (eqridgeMagn > 0.0)
-	{
-		noiseOctaves = 2.5;
-		float x = point.y / eqridgeWidth;
-		float ridgeHeight = exp(-0.75 * pow(abs(x), 1.5));
-		float ridgeModulate = saturate(1.0 - eqridgeModMagn * (Fbm(point * eqridgeModFreq - Randomize) * 0.5 + 0.5));
-		height += eqridgeMagn * ridgeHeight * ridgeModulate;
-	}
-	*/
-	
+
 	// TerrainFeature // Equatorial ridge 
 	   // 18-7-2024 by Sp_ce // Attempting improvement to bring inline with iapetus
 	if (eqridgeMagn > 0.0)
@@ -670,7 +748,7 @@ float   HeightMapSelena(vec3 point)
 		noiseLacunarity = 2.0;
 		noiseH		  = 0.9;
 		noiseOffset	 = 0.5;
-		float x = (point.y + 0.1 * Fbm(point)) / eqridgeWidth;
+		float x = (point.y + 0.1 * Fbm(point + Randomize)) / eqridgeWidth;
 		float ridgeHeight = exp(-0.75 * pow(abs(x), 1.5));
 	  //height = max(height + (eqridgeMagn * ridgeHeight * iqTurbulence(point * 1.0 * eqridgeModFreq + Randomize, eqridgeModMagn)), height);
 	  //eqridgeModMagn 0.7 - 1.2
@@ -678,18 +756,24 @@ float   HeightMapSelena(vec3 point)
 		float eqridgeHeight = pow(eqridgeMagn, 1.25);
 		height = max(height + (eqridgeMagn * ridgeHeight * iqTurbulence(point * 0.4 * eqridgeModFreq + Randomize, 0.2 * eqridgeModMagn)), height);
 	}
-	
+
+	float _craterRayedFactor = craterRayedFactor;
+
+	if (volcanoActivity > 1)
+	{
+		_craterRayedFactor = craterRayedFactor *(volcanoActivity * -0.95 + 1.95);
+	}
+
 	// TerrainFeature // Rayed craters
-	if (craterSqrtDensity * craterSqrtDensity * craterRayedFactor > 0.05 * 0.05)
+	// Centri Rayed Craters
+	if (craterSqrtDensity * craterSqrtDensity * _craterRayedFactor > 0.05 * 0.05)
 	{
 		noiseOctaves = 3;  // Craters roundness distortion
-		craterDistortion = 1.0;
-		craterRoundDist  = 0.03;
 		heightFloor = -1.5;
 		heightPeak  =  0.15;
 		heightRim   =  1.0;
-		float craterRayedSqrtDensity = craterSqrtDensity * sqrt(craterRayedFactor);
-		float craterRayedOctaves = floor(craterOctaves + smoothstep(0.0, 0.5, craterRayedFactor) * 60.0);
+		float craterRayedSqrtDensity = craterSqrtDensity * sqrt(_craterRayedFactor);
+		float craterRayedOctaves = floor(craterOctaves + smoothstep(0.0, 0.5, _craterRayedFactor) * 30.0);
 		float craterRayedMagn = craterMagn * 0.25;   // removed * pow(1.0, craterOctaves - craterRayedOctaves),  toned down rayed crater depth donatelo200 12/07/2025
 		crater = _RayedCraterNoise(point, craterRayedMagn, craterFreq, craterRayedSqrtDensity, craterRayedOctaves);
 		height += crater * (height + 0.2); // toned down rayed crater depth donatelo200 12/07/2025  (mostly works but some edge cases still break
@@ -713,24 +797,25 @@ float   HeightMapSelena(vec3 point)
 	noiseH = 0.55 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5; // Fbm3D((point + Randomize) * 0.07) * 1.5;
 	float SmallDistort = 0;
-	if (_cracksOctaves > 0)
+	if (_cracksOctaves > 0) 
 	{
-		// noiseH += 0.3;
+		//noiseH += 0.3;
 		noiseH = 0.6 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.8;
 	}
+	
 	if (_cracksOctaves == 0 && volcanoActivity >= 1.0)
 	{
-		distort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);
-		SmallDistort = saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1) + rocks;
-	} 
+			distort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			SmallDistort = saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1))) * (volcanoActivity - 1) + rocks;
+	}
 	else if (_cracksOctaves == 0 && volcanoActivity < 1.0)
 	{
-		distort = Fbm3D((point + Randomize) * 0.07) * 1.5; // Io like on airless planets donatelo200 12/09/2025
-		SmallDistort = rocks;
+			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //Io like on airless planets donatelo200 12/09/2025
+			SmallDistort = rocks;
 	}
 	else if (_cracksOctaves > 0)
 	{
-		distort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2 + 1)) * (1.5 + venusMagn) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);
+		distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);
 	}
 	
 	float vary = 1.0 - 5 * (Fbm((point + distort + (SmallDistort * 0.015)) * (1.5 - RidgedMultifractal(pp, 8.0) + RidgedMultifractal(pp * 0.999, 8.0))));
@@ -742,9 +827,30 @@ float   HeightMapSelena(vec3 point)
 		height = mix(height, height + 0.05, vary) - 0.05;
 	}
 	
+	// TerrainFeature // Shield volcano
+    if (volcanoOctaves > 0)
+	{
+        height = _VolcanoNoise(point, global, height);
+	}	
+	// Io-like Cauldera
+	//height = mix(height, height-0.1, smoothstep(0.7, 1.0, Fbm(point * 50.0)));
+	
 	// GlobalModifier // Soften max/min height
 	height = softPolyMin(height, 0.99, 0.3);
-	height = softPolyMax(height, 0.01, 0.3);
+	height = softPolyMax(height, 0.0, 0.3);
+	
+	if ((cracksOctaves == 0 || volcanoTemp >= 0.75) && lavaCoverage > 0) //((volcanoTemp > 0.7 || hillsMagn <=0.09) && lavaCoverage > 0)
+	{
+		height = height-log(1.2 * lavaCoverage + 1);  //log(9*lavaCoverage+1)
+		if (height <0.0002)
+		{
+			height = 0;
+		}
+	}
+	else
+	{
+		height = softPolyMax(height, 0.00, 0.3);
+	}
 
 	// Return height
 	return height;
