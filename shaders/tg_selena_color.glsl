@@ -112,46 +112,6 @@ float SlopedIceCaps(float slope, float latitude) {
          smoothstep(saturate(latIceCaps - 0.3), 1.0, latitude + 0.5) * 0.4;
 }
 
-float EnceladusColorNoise(in vec3 point, float europaLikeness) {
-  noiseOctaves = 2;
-  noiseH = 1.0;
-  noiseLacunarity = 2.0;
-
-  vec2 cracks = vec2(0.0);
-  vec3 p = point * 0.1 + Randomize;
-  vec3 distort = 0.3 * Fbm3D(p * 3.0) + 0.05 * Fbm3D(p * 6.0);
-
-  noiseOctaves = 8.0;
-  noiseLacunarity = 2.3;
-
-  for (int i = 0; i < 16 + cracksOctaves; i++) {
-    distort += Fbm3D(p * 3.0) * 0.3;
-
-    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
-    float width = (0.35 + i * 0.01) *
-                  (unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) * 4.0) *
-                  europaLikeness * abs(cell.y - cell.x);
-    cracks.x += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 2));
-
-    p *= 1.1;
-  }
-
-  for (int i = 0; i < 16 + cracksOctaves; i++) {
-    distort += Fbm3D(p * 3.0) * 0.3;
-
-    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
-    float width = (0.35 + i * 0.01) *
-                  (unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) * 4.0) *
-                  europaLikeness * abs(cell.y - cell.x);
-    cracks.y += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 2));
-
-    p *= 1.1;
-  }
-
-  return max(cracks.x, cracks.y);
-}
-
-
 //-----------------------------------------------------------------------------
 
 
@@ -752,7 +712,7 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	
   // TerrainFeature // Polar slope ice
   // 22-10-2024 by Sp_ce // Changed vec3(1.0) to snowColor
-  float slopedFactor = SlopedIceCaps(slope*3, latitude*latitude*latitude);
+  float slopedFactor = SlopedIceCaps(slope*2, latitude*latitude*latitude);
   float iceCap = saturate((latitude - latIceCaps + 0.3) * 2.0 * slopedFactor);
   // BUG: negative snowLevel results in black snow. But it looks too cool to not
   // keep.

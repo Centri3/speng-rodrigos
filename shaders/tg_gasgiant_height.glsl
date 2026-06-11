@@ -164,11 +164,11 @@ vec3 CycloneNoiseGasGiantAli(vec3 point, inout float offset) {
             if (dist < max_rad) {
               float dir = sign(0.5 * dens - rnd);
               
-              // Normalize distances for your original shaping math
+              // Normalize distances 
               float dist_norm = saturate(1.0 - (dist / max_rad));
               float dist2_norm = saturate(0.5 - (dist / max_rad));
               
-              // Your original falloff formula
+              // Falloff formula
               float fi = pow(dist_norm, 40.0 * size) * (exp(-60.0 * dist2_norm * dist2_norm) + 0.5);
               
               // The spherical axis of rotation for this specific storm
