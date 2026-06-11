@@ -14,7 +14,10 @@ void main() {
     // GlobalModifier // Convert height to color
     float height = GetSurfaceHeight();	
 	float boost = 5 + Randomize.z;
-	
+	if (heightTempGrad >= 0)
+	{
+	boost = 3 + 4*heightTempGrad;
+	}
 	
 	if (height >= 1/(boost))  //Height without boost can't go over 1.357 with boosts
 	{
