@@ -495,6 +495,25 @@ float   HeightMapSelena(vec3 point)
 	
 	// GlobalModifier // Biome domains
 	vec3  p = point * mainFreq + Randomize;
+	
+	// Give the global landscape a random angle to reduce chances of "vertical"
+	// continents
+	float angleX = Randomize.x * 6.283185;
+	float angleY = Randomize.y * 6.283185;
+	float angleZ = Randomize.z * 6.283185;
+
+	// clang-format off
+	mat3x3 rotX = mat3x3(1.0, 0.0, 0.0, 0.0, cos(angleX), -sin(angleX), 0.0, sin(angleX), cos(angleX));
+
+	mat3x3 rotY = mat3x3(cos(angleY), 0.0, sin(angleY), 0.0, 1.0, 0.0, -sin(angleY), 0.0, cos(angleY));
+
+	mat3x3 rotZ = mat3x3(cos(angleZ), -sin(angleZ), 0.0, sin(angleZ), cos(angleZ), 0.0, 0.0, 0.0, 1.0);
+	// clang-format on
+
+	p *= rotX;
+	p *= rotY;
+	p *= rotZ;
+	
 	vec4  col;
 	noiseOctaves = 6;
 	vec3  distort = p * 2.3 + 13.5 * Fbm3D(p * 0.06);
@@ -521,15 +540,26 @@ float   HeightMapSelena(vec3 point)
 	distort += 0.005 * (1.0 - abs(RidgedMultifractalDetail(p * 132.3, _hillsFreq, _hillsMagn)));
 	vec3 pp = (point + Randomize) * (0.0005 * _hillsFreq / (_hillsMagn * _hillsMagn));
 	
-	float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
 	// noiseOctaves = 12.0;
-	float global = 1.0 - JordanTurbulence(p * _hillsMagn + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0); // Mine
+	float global;
+	if (volcanoActivity >= 1 && riftsMagn != 0.0)
+	{
+		noiseOctaves = 10.0;
+		noiseLacunarity = 2.3;
+		noiseOffset = inv2montesSpiky;
+		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * _hillsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * mainFreq); // Mine
+	}
+	else
+	{
+		global = 1.0 - JordanTurbulence(p * _hillsMagn + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0); // Mine
+	}
+	float fr = 0.20 * (1.5 - RidgedMultifractal(pp, 2.0));
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 	
 	// GlobalModifier // Venus
 	float venus = 0.0;
 	noiseOctaves = 4.0;
-	distort = JordanTurbulence3D(p + (point + Randomize) * 0.07, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1.5 + venusMagn);
+	distort = JordanTurbulence3D(point + (point + Randomize) * 0.07, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1.5 + venusMagn);
 	noiseOctaves = 6.0;
 	venus = Fbm((point + distort + Randomize) * venusFreq + 0.1) * (venusMagn + 0.1);
 

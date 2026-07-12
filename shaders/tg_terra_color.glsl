@@ -322,8 +322,10 @@ vec4 ColorMapTerra(vec3 point, float height, float slope, in BiomeData biomeData
 	// Ice Belts for High Axial tilt custom planets. ~ TPE
 	if(eqridgeMagn > 0.0 && biomeData.height > seaLevel)
 	{
+		noiseOctaves	= 12.0;
+		noiseLacunarity = 2.218281828459;
 		float x = (point.y + 0.1 * Fbm(pp + Randomize)) / eqridgeWidth;
-		// float ridgeHeight = exp(-0.75 * pow(abs(x), 5));
+		float ridgeHeight = exp(-0.75 * pow(abs(x), 5));
 		// float eqridgeHeight = pow(eqridgeMagn, 1.25);
 		// if((climate > 0.9))
 		// {

@@ -318,14 +318,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	{
 		if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)
 		{
-			if (oceanType != 0.0)
-			{
-				_hillsFreq = hillsFreq * 8;
-			}
-			else
-			{
-				_hillsFreq = hillsFreq;
-			}
+			_hillsFreq = hillsFreq * 8;
 		}
 		else if (riversMagn == 0.0 && cracksOctaves > 0 && oceanType < 0.5)
 		{
@@ -338,7 +331,14 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	}
 	else
 	{
-		_hillsFreq = hillsFreq;
+		if (oceanType != 0.0)
+		{
+			_hillsFreq = hillsFreq * 8;
+		}
+		else
+		{
+			_hillsFreq = hillsFreq;
+		}
 	}
 	
 	float _montesFreq = montesFreq;
@@ -419,29 +419,24 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 
 	// Replace old baseline terrain with more complex features.
 	noiseOctaves = 5;
-	// noiseH is not used on JordanTurbulence and iqTurbulence
-	if (volcanoMagn == 0.0)
-	{
-		noiseLacunarity = 2.5 + smoothstep(0.1, 0.0, colorDistMagn) * 0.5;
-	}
 	
 	vec3 distort = 0.35 * Fbm3D(p * 0.73);
 	noiseOctaves = 4;
 	distort += 0.005 * (1.0 - abs(smoothstep(0.2, 0.01, JordanTurbulence3D(p * 132.3, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0))));
-	float global = 1.0 - smoothstep(0.0, 1.0, iqTurbulence(p + distort + Randomize, smoothstep(0.1, 0.0, _colorDistMagn) * mainFreq));
-	// float global = 1.0 - RidgedMultifractal(p + distort + Randomize, 1.0);
-	// float global = 1.0 - JordanTurbulence(p * _hillsMagn + distort + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0); 
-	noiseOctaves = 12;
-	
-	// Custom Planets using volcanoes for "city lights" are extremely crinkly.
-	// Exclude special volcanism code when volcanoMagn is 0 for city lights generation.
-	float globalVolcanic;
-
-	if (volcanoMagn != 0.0)
+	float global;
+	if (volcanoActivity >= 1.5 && venusMagn >= 1.5 && volcanoMagn != 0.0)
 	{
-		globalVolcanic = 1.0 - smoothstep(0.0, 1.0, iqTurbulence(p + distort, 0.5 + smoothstep(0.1, 0.0, _colorDistMagn) * 0.2));
-		global = mix(global, globalVolcanic, smoothstep(1.0, 2.0, volcanoActivity));
+		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * _hillsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, _colorDistMagn) * mainFreq);
 	}
+	else if (volcanoActivity >= 1 && volcanoMagn != 0.0)
+	{
+		global = 1.0 - smoothstep(0.0, 1.0, iqTurbulence(p + distort + Randomize, smoothstep(0.1, 0.0, _colorDistMagn) * mainFreq));
+	}
+	else
+	{
+		global = 1.0 - RidgedMultifractal(p + distort + Randomize, 1.0);
+	}
+	noiseOctaves = 12;
 
 	// Make sea bottom more flat; shallow seas resembles those on Titan;
 	// but this shrinks out continents, so value larger than 1.5 is unwanted
@@ -459,12 +454,22 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 
 	// Venus-like structure
 	float venus = 0.0;
-	
-	noiseOctaves = 4;
-	distort = JordanTurbulence3D(p * _hillsMagn + (point + Randomize) * 0.07, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1.5 + venusMagn);
-	// distort = Fbm3D(point * 0.3) * 1.5;
-	noiseOctaves = 6;
-	venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
+	if (oceanType > 0.0)
+	{
+		noiseOctaves = 4;
+		distort = JordanTurbulence3D(p * _hillsMagn + (point + Randomize) * 0.07, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1.5 + venusMagn);
+		// distort = Fbm3D(point * 0.3) * 1.5;
+		noiseOctaves = 6;
+		venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
+	}
+	else
+	{
+		noiseOctaves = 4;
+		distort = JordanTurbulence3D(point * _hillsMagn + (point + Randomize) * 0.07, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1.5 + venusMagn);
+		// distort = Fbm3D(point * 0.3) * 1.5;
+		noiseOctaves = 6;
+		venus = Fbm((point + distort + Randomize) * venusFreq) * (venusMagn + 0.3);
+	}
 
 	global = (global + venus - _seaLevel) * 0.5 + _seaLevel;
 	global = clamp(global, _seaLevel - 0.1, _seaLevel + 0.1);
@@ -578,20 +583,16 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	else if (biome < hillsFraction)
 	{
 		// Mountains
+		noiseOctaves = 10.0;
+		noiseH	   = 1.0;
+		noiseLacunarity = 2.0;
+		noiseOffset  = montesSpiky * 1.2;
 		if (oceanType != 0.0)
 		{
-			noiseOctaves = 10.0;
-			noiseH	   = 1.0;
-			noiseLacunarity = 2.0;
-			noiseOffset  = montesSpiky * 1.2;
 			height = hillsMagn * 2.4 * ((1.25 + iqTurbulence(point * 0.5 * _hillsFreq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * _hillsFreq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
 		}
 		else
 		{
-			noiseOctaves = 10.0;
-			noiseH	   = 1.0;
-			noiseLacunarity = 2.0;
-			noiseOffset  = montesSpiky * 1.2;
 			height = hillsMagn * 7.5 * ((1.25 + iqTurbulence(point * 0.5 * (_hillsFreq / 2) * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalDetail(point * 1.0 * (_hillsFreq / 2) * inv2montesSpiky * 1.5 + Randomize, 1.0, montBiomeScale)));
 		}
 	}
@@ -883,7 +884,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	height = height * oceaniaFade + icecapHeight * 5.0 * smoothstep(0.0, snowLevel, iceCap) * ((RidgedMultifractalErodedDetail(point * (venusFreq + dunesFreq) + Randomize, 2.0, (erosion * 1.5), iceCap) * icecapHeight + 9.2) * 0.1);  // TPE Version
 
 	// Ice Belts for High Axial tilt custom planets. ~ TPE
-	if(eqridgeMagn > 0.0)
+	if(eqridgeMagn > 0.0 && eqridgeWidth > 0.05)
 	{
 		/*
 		float prevHeight = height;
@@ -912,8 +913,8 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 		noiseH		  = 0.9;
 		noiseOffset	 = 0.5;
 		float x = (point.y + 0.1 * Fbm(pp + Randomize)) / eqridgeWidth;
-		float ridgeHeight = exp(-0.75 * pow(abs(x), hillsFreq));
 		float eqridgeHeight = pow(eqridgeMagn, 1.25);
+		float ridgeHeight = exp(-0.75 * pow(abs(x), eqridgeModFreq));
 		//height = max(height + (eqridgeMagn * ridgeHeight * iqTurbulence(point * 1.0 * eqridgeModFreq + Randomize, eqridgeModMagn)), height);
 		//eqridgeModMagn 0.7 - 1.2
 		//eqridgeModFreq 4

@@ -519,8 +519,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 			noiseH = 0.9;
 			noiseOffset = 0.5;
 			p = point * 0.5 * mainFreq + Randomize;
-			distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5;
-			Fbm3D(point * 0.1) * 12.5;
+			distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5 + Fbm3D(point * 0.1) * 12.5;
 			cell = Cell3Noise2(canyonsFreq * 0.05 * p + distort);
 			float rima2 = 2 - saturate(abs(cell.y - cell.x) * 250.0 * canyonsMagn);
 			rima2 = biomeScale * smoothstep(0.0, 1.0, rima2);
