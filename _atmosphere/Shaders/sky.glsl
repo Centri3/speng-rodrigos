@@ -252,11 +252,12 @@ void main()
                 Shadow *= RingsShadow(texU, cosPhi);
             #endif
 
-            // Calculate eclipse shadow
+            // Calculate eclipse shadow & atmospheric refraction tinting
             #ifdef ECL
                 vec3  lightVecSN = normalize(lightPos * Ellipsoid);
                 float lightAngularRadius = asin(LightParams[i].x * inversesqrt(dot(LightPos[i], LightPos[i])));
-                Shadow *= 1.0 - AmbientColor.a * EclipseShadowFar(i, MAX_ECLIPSES, FragPosS, lightVecSN, lightAngularRadius);
+                vec3  skyEclColor = EclipseShadowColoredAuto(i, MAX_ECLIPSES, FragPosS, lightVecSN, lightAngularRadius);
+                Shadow *= mix(1.0, (skyEclColor.r + skyEclColor.g + skyEclColor.b) * 0.33333, AmbientColor.a);
             #endif
 
         #endif // SHADOW
@@ -314,7 +315,33 @@ void main()
 
             
             float ringIntensity = abs(ringNormalL) * latSine * nightShadow;  //horizonVisibility
-            float ringIllum = mix(0.05, 0.25, sameSide) * ringIntensity;
+            
+			 
+			// Eclipse on rings  Todo.... fix vectors.... Dims fully when only half the rings are covered lol
+            #ifdef ECL
+
+                vec3 sunDir = normalize(LightPos[i]);
+                vec3 ringSunDir = normalize(sunDir - vec3(0.0, sunDir.y, 0.0));
+                
+                float ringRadiusOS = (RingsParams.x + 1.0 / (RingsParams.w * 2.0)) / Radiuses.y;
+                vec3 ringPos = ringSunDir * ringRadiusOS;
+               
+				vec3 ringPosEll = ringPos * Ellipsoid;
+                vec3 ringLightPos = LightPos[i] - ringPos;
+                vec3 ringLightVecSN = normalize(ringLightPos * Ellipsoid);
+                float invLightDist = inversesqrt(dot(LightPos[i], LightPos[i]));
+                float ringLightAngRad = asin(clamp(LightParams[i].x * invLightDist, 0.0, 1.0));
+                
+                float ringEclipse = EclipseShadowFar(i, MAX_ECLIPSES, ringPosEll, ringLightVecSN, ringLightAngRad);
+                
+             
+                ringIntensity *= (1.0 - ringEclipse);
+                
+                //ringIntensity *= max(Shadow, 0.0);  //broken lol probably not needed?
+            #endif
+            
+			
+			float ringIllum = mix(0.05, 0.25, sameSide) * ringIntensity;
             
             // Calculate the ring light color
             vec3 ringShine = LightColor[i].rgb * ringIllum * RingsParams.z;

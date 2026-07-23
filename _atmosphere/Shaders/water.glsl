@@ -621,6 +621,27 @@ void main()
             // Intensity depends on how much ring area is lit, visible, AND above the horizon
             float ringIntensity = abs(ringNormalL) * latSine  * horizonVisibility * nightShadow;
             
+			
+			// ==============================================
+            // Eclipse on rings  Todo.... fix vectors.... Dims fully when only half the rings are covered lol
+            #ifdef ECL
+                vec3 ringPlaneNorm = (SurfParams3.x == 0.0) ? vec3(0.0, 1.0, 0.0) : vec3(0.0, 0.0, 1.0);
+                vec3 ringSunDir = normalize(lightVec - ringPlaneNorm * dot(lightVec, ringPlaneNorm));
+                
+                float ringRadiusOS = (RingsParams.x + 1.0 / RingsParams.w) / EyePosLocal.w;
+                vec3 ringPos = ringSunDir * ringRadiusOS;
+                
+                vec3 ringPosEll = ringPos * EllipsGrav.xyz;
+                float ringLightAngRad = asin(clamp(LightParams[i].x * invLightDist, 0.0, 1.0));
+                float ringEclipse = EclipseShadowFar(i, MAX_ECLIPSES, ringPosEll, lightPosEll * invLightDist, ringLightAngRad);
+                
+                ringIntensity *= (1.0 - ringEclipse);
+                
+
+                //ringIntensity *= EclipseMask; //broken lol probably not needed?
+            #endif
+			
+			
             // 0.25 for reflected light (same side), 0.05 for transmitted light (opposite side)
             float ringIllum = mix(0.05, 0.25, sameSide) * ringIntensity;
             

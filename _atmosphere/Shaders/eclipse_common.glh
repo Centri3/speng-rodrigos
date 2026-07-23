@@ -1,0 +1,336 @@
+// The include file for SpaceEngine's planetary surface shaders
+
+#ifdef _FRAGMENT_
+
+//-----------------------------------------------------------------------------
+// Eclipse shadow gamma
+
+#define ECLIPSE_SHADOW_GAMMA         1.0/1.6
+#define ECLIPSE_SHADOW_GAMMA_RINGS3D 1.0/1.6
+
+//-----------------------------------------------------------------------------
+
+float   asinFast(float x)
+{
+    return (0.69813170079773212 * x * x + 0.87266462599716477) * x;
+}
+
+//-----------------------------------------------------------------------------
+
+float   acosFast(float x)
+{
+    return 1.5707963267948966 - (0.69813170079773212 * x * x + 0.87266462599716477) * x;
+}
+
+//-----------------------------------------------------------------------------
+
+float   EclipseValue(float lightAngularRadius, float casterAngularRadius, float angularDistance)
+{
+    float sumRadius = lightAngularRadius + casterAngularRadius;
+
+    // No intersection
+    if (angularDistance >= sumRadius) return 0.0;
+
+    float minRadius;
+    float maxPhase;
+    if (lightAngularRadius < casterAngularRadius)
+    {
+        minRadius = lightAngularRadius;
+        maxPhase = 1.0;
+    }
+    else
+    {
+        minRadius = casterAngularRadius;
+        if (lightAngularRadius < 0.001)
+            maxPhase = (casterAngularRadius * casterAngularRadius) / (lightAngularRadius * lightAngularRadius);
+        else
+            maxPhase = (1.0 - cos(casterAngularRadius)) / (1.0 - cos(lightAngularRadius));
+    }
+
+    // Full intersection
+    if (angularDistance <= max(lightAngularRadius, casterAngularRadius) - minRadius) return maxPhase;
+
+    float Diff = abs(lightAngularRadius - casterAngularRadius);
+
+    // Partial intersection
+    return maxPhase * smoothstep(1.0, 0.0, clamp((angularDistance - Diff) / (sumRadius - Diff), 0.0, 1.0));
+}
+
+//-----------------------------------------------------------------------------
+
+#ifdef ECL
+//-----------------------------------------------------------------------------
+// This function is more precise for near shadow caster (moon inside the rings)
+
+float   EclipseShadowNear(int lightIndex, int castersPerLight, vec3 FragPosS, vec3 lightVec, float lightAngularRadius)
+{
+    float  Shadow = 1.0;
+
+    for (int i=0; i<castersPerLight; ++i)
+    {
+        float casterRadius = EclipseCasters[lightIndex * castersPerLight + i].w;
+        if (casterRadius <= 0.0) break;
+        vec3  lightCasterPos = EclipseCasters[lightIndex * castersPerLight + i].xyz - FragPosS;
+        float lightCasterInvDist  = inversesqrt(dot(lightCasterPos, lightCasterPos));
+        float casterAngularRadius = asin(clamp(casterRadius * lightCasterInvDist, 0.0, 1.0));
+
+        // acos(dot()) is more precise than asin(), when vectors are far collinearity
+        float lightToCasterAngle  = acos(clamp(dot(lightVec, lightCasterPos * lightCasterInvDist), 0.0, 1.0));
+
+        Shadow *= clamp(1.0 - EclipseValue(lightAngularRadius, casterAngularRadius, lightToCasterAngle), 0.0, 1.0);
+    }
+
+    // Correct the shadow gamma
+    return 1.0 - pow(Shadow, ECLIPSE_SHADOW_GAMMA);
+}
+
+//-----------------------------------------------------------------------------
+// This function is more precise for far shadow caster (binary star, hot gas giant eclipsing the sun, etc)
+
+float   EclipseShadowFar(int lightIndex, int castersPerLight, vec3 FragPosS, vec3 lightVec, float lightAngularRadius)
+{
+    float  Shadow = 1.0;
+
+    for (int i=0; i<castersPerLight; ++i)
+    {
+        float casterRadius = EclipseCasters[lightIndex * castersPerLight + i].w;
+        if (casterRadius <= 0.0) break;
+        vec3  lightCasterPos = EclipseCasters[lightIndex * castersPerLight + i].xyz - FragPosS;
+        float lightCasterInvDist  = inversesqrt(dot(lightCasterPos, lightCasterPos));
+        float casterAngularRadius = asin(clamp(casterRadius * lightCasterInvDist, 0.0, 1.0));
+
+        // asin() is more precise than acos(dot()), when vectors are almost collinear
+        float lightToCasterAngle  = asin(clamp(length(cross(lightVec, lightCasterPos * lightCasterInvDist)), 0.0, 1.0));
+
+        Shadow *= clamp(1.0 - EclipseValue(lightAngularRadius, casterAngularRadius, lightToCasterAngle), 0.0, 1.0);
+    }
+
+    // Correct the shadow gamma
+    return 1.0 - pow(Shadow, ECLIPSE_SHADOW_GAMMA);
+}
+
+//-----------------------------------------------------------------------------
+// Automatic switch to far/near mode
+
+float   EclipseShadowAuto(int lightIndex, int castersPerLight, vec3 FragPosS, vec3 lightVec, float lightAngularRadius)
+{
+    float  Shadow = 1.0;
+    float  lightToCasterAngle;
+
+    for (int i=0; i<castersPerLight; ++i)
+    {
+        float casterRadius = EclipseCasters[lightIndex * castersPerLight + i].w;
+        if (casterRadius <= 0.0) break;
+        vec3  lightCasterPos = EclipseCasters[lightIndex * castersPerLight + i].xyz - FragPosS;
+        float lightCasterInvDist  = inversesqrt(dot(lightCasterPos, lightCasterPos));
+        float casterAngularRadius = asin(clamp(casterRadius * lightCasterInvDist, 0.0, 1.0));
+
+        vec3 lightCasterVec = lightCasterPos * lightCasterInvDist;
+        float cosa = dot(lightVec, lightCasterVec);
+
+        // asin() is more precise than acos(dot()), when vectors are almost collinear
+        if (cosa < 0.95)
+            lightToCasterAngle = acos(clamp(cosa, 0.0, 1.0));
+        else
+            lightToCasterAngle = asin(clamp(length(cross(lightVec, lightCasterVec)), 0.0, 1.0));
+
+        Shadow *= clamp(1.0 - EclipseValue(lightAngularRadius, casterAngularRadius, lightToCasterAngle), 0.0, 1.0);
+    }
+
+    // Correct the shadow gamma
+    return 1.0 - pow(Shadow, ECLIPSE_SHADOW_GAMMA);
+}
+
+//-----------------------------------------------------------------------------
+float getCasterAtmoDensity(float casterRadius)
+{
+    float R_km = (casterRadius > 100000.0) ? (casterRadius * 0.001) : casterRadius;
+    
+    // Airless moons / asteroids (R < 2500 km, e.g. Luna R=1737 km, Mercury R=2439 km, Io, Europa, Ganymede, Callisto)
+    if (R_km < 2500.0) return 0.0;
+    
+    // Thin atmospheres (Mars R ~ 3389 km, pressure 0.6% of Earth -> 0.006x bending)
+    if (R_km < 4800.0) return 0.006;
+    
+    // Terrestrial atmospheres (Earth R ~ 6371 km, Venus R ~ 6051 km)
+    if (R_km < 15000.0) return 1.0;
+    
+    // Gas Giants & Ice Giants (Jupiter, Saturn, Uranus, Neptune R > 20000 km)
+    return 1.3;
+}
+
+//-----------------------------------------------------------------------------
+// Colored eclipse shadow with atmospheric refraction tinting
+// Fixes geometric penumbra curve via pow(1 - eclipseVal, 2.2) and provides smooth C1 umbral refraction falloff to max_bend.
+
+vec3 EclipseShadowColoredAuto(int lightIndex, int castersPerLight, vec3 FragPosS, vec3 lightVec, float lightAngularRadius)
+{
+    vec3 shadowColor = vec3(1.0);
+    float lightToCasterAngle;
+
+    for (int i = 0; i < castersPerLight; ++i)
+    {
+        float casterRadius = EclipseCasters[lightIndex * castersPerLight + i].w;
+        if (casterRadius <= 0.0) break;
+
+        vec3  casterPos = EclipseCasters[lightIndex * castersPerLight + i].xyz - FragPosS;
+        float casterInvDist = inversesqrt(dot(casterPos, casterPos));
+        float casterAngRadius = asin(clamp(casterRadius * casterInvDist, 0.0, 1.0));
+
+        vec3  casterVec = casterPos * casterInvDist;
+        float cosa = dot(lightVec, casterVec);
+
+        if (cosa < 0.95)
+            lightToCasterAngle = acos(clamp(cosa, 0.0, 1.0));
+        else
+            lightToCasterAngle = asin(clamp(length(cross(lightVec, casterVec)), 0.0, 1.0));
+
+        float penumbra_outer = lightAngularRadius + casterAngRadius;
+        float penumbra_inner = max(0.0, casterAngRadius - lightAngularRadius);
+
+        // Exact geometric occlusion (using SE's EclipseValue)
+        float eclipseVal = EclipseValue(lightAngularRadius, casterAngRadius, lightToCasterAngle);
+        float occ = clamp(eclipseVal, 0.0, 1.0);
+
+        // Correct SE geometric shadow curve: (1 - eclipseVal)^GAMMA
+        float geoShadow = pow(clamp(1.0 - occ, 0.0, 1.0), ECLIPSE_SHADOW_GAMMA);
+        vec3 caster_shadow = vec3(geoShadow);
+
+        // --- Physical Atmospheric Lens Optics ---
+        // Atmospheric density factor computed from caster radius
+        float atmo_density = getCasterAtmoDensity(casterRadius);
+
+        // Maximum physical refraction deflection angle at sea level (~1.15 deg for Earth, ~0.007 deg for Mars, 0 for Luna)
+        float max_bend = 0.0201 * atmo_density;
+
+        if (max_bend > 1e-6 && lightToCasterAngle < penumbra_outer)
+        {
+            // Required bend angle for light to reach inside the planet's geometric shadow
+            float req_bend = casterAngRadius - lightToCasterAngle;
+
+            // Rays requiring bend > max_bend pass below altitude h = 0 and hit the solid planet body (100% blocked).
+            if (req_bend <= max_bend)
+            {
+                // Normalized penetration depth in atmosphere (0 = top of atmosphere, 1 = surface level)
+                float atmo_depth = clamp(max(0.0, req_bend) / max_bend, 0.0, 1.0);
+
+                // Extinction scales with atmospheric density (thick atmospheres become opaque at lower altitudes)
+                #ifdef ATMO
+                    vec3 rayleigh_rgb = normalize(AtmoRayleigh + vec3(1e-6));
+                    vec3 atmo_ext_exp = vec3(3.5) * (rayleigh_rgb / max(1e-4, rayleigh_rgb.r)) * atmo_density;
+                #else
+                    vec3 atmo_ext_exp = vec3(3.5, 10.0, 22.0) * atmo_density; // Earth Rayleigh extinction baseline
+                #endif
+
+                vec3 atmo_transmittance = vec3(
+                    exp(-atmo_ext_exp.r * pow(atmo_depth, 1.5)),
+                    exp(-atmo_ext_exp.g * pow(atmo_depth, 1.5)),
+                    exp(-atmo_ext_exp.b * pow(atmo_depth, 1.5))
+                );
+
+                // Spherical lens focal distance: D_focal = R_caster / max_bend
+                float caster_dist = 1.0 / max(1e-6, casterInvDist);
+                float focal_dist = casterRadius / max_bend;
+                float focal_ratio = caster_dist / max(1e-6, focal_dist);
+
+                // Inverse-square beam divergence beyond focal plane: (D_focal / caster_dist)^2
+                float distance_divergence = min(1.0, (focal_dist * focal_dist) / max(1e-6, caster_dist * caster_dist));
+
+                // Spherical lens caustic amplification near focal plane
+                float lens_amplification = clamp(1.0 / (abs(1.0 - focal_ratio) + 0.3), 0.5, 3.0);
+
+                float atmo_blend = smoothstep(penumbra_outer, penumbra_inner, lightToCasterAngle);
+                
+                // Smooth surface grazing falloff to zero at solid body boundary (h = 0, atmo_depth = 1)
+                float body_surface_fade = smoothstep(1.0, 0.8, atmo_depth);
+
+                // Physical Danjon Lunar Eclipse Scale: ~0.001% to 0.005% of direct sun (10^-5 intensity)
+                float atmo_base_intensity = 0.00005;
+                float refraction_intensity = atmo_base_intensity * distance_divergence * lens_amplification * (1.0 - atmo_depth * 0.7) * body_surface_fade;
+
+                caster_shadow += atmo_transmittance * refraction_intensity * atmo_blend;
+            }
+        }
+
+        shadowColor *= clamp(caster_shadow, vec3(0.0), vec3(1.0));
+    }
+
+    return shadowColor;
+}
+
+//-----------------------------------------------------------------------------
+#endif
+
+#ifdef ECLSTONES
+//-----------------------------------------------------------------------------
+// Automatic switch to far/near mode
+
+float   EclipseShadowRingStonesAuto(int lightIndex, int castersPerLight, vec3 FragPosS, vec3 lightVec, float lightAngularRadius)
+{
+    float  Shadow = 1.0;
+    float  lightToCasterAngle;
+
+    for (int i=0; i<castersPerLight; ++i)
+    {
+        float casterRadius = EclipseCastersStones[lightIndex * castersPerLight + i].w;
+        if (casterRadius <= 0.0) break;
+        vec3  lightCasterPos = EclipseCastersStones[lightIndex * castersPerLight + i].xyz - FragPosS;
+        float lightCasterInvDist  = inversesqrt(dot(lightCasterPos, lightCasterPos));
+        float casterAngularRadius = asin(clamp(casterRadius * lightCasterInvDist, 0.0, 1.0));
+
+        vec3 lightCasterVec = lightCasterPos * lightCasterInvDist;
+        float cosa = dot(lightVec, lightCasterVec);
+
+        // asin() is more precise than acos(dot()), when vectors are almost collinear
+        if (cosa < 0.95)
+            lightToCasterAngle = acos(clamp(cosa, 0.0, 1.0));
+        else
+            lightToCasterAngle = asin(clamp(length(cross(lightVec, lightCasterVec)), 0.0, 1.0));
+
+        Shadow *= clamp(1.0 - EclipseValue(lightAngularRadius, casterAngularRadius, lightToCasterAngle), 0.0, 1.0);
+    }
+
+    // Correct the shadow gamma
+    return 1.0 - pow(Shadow, ECLIPSE_SHADOW_GAMMA_RINGS3D);
+}
+
+//-----------------------------------------------------------------------------
+#endif
+
+#ifdef ECLDUST
+//-----------------------------------------------------------------------------
+// Automatic switch to far/near mode
+
+float   EclipseShadowRingDustAuto(int lightIndex, int castersPerLight, vec3 FragPosS, vec3 lightVec, float lightAngularRadius)
+{
+    float  Shadow = 1.0;
+    float  lightToCasterAngle;
+
+    for (int i=0; i<castersPerLight; ++i)
+    {
+        float casterRadius = EclipseCastersDust[lightIndex * castersPerLight + i].w;
+        if (casterRadius <= 0.0) break;
+        vec3  lightCasterPos = EclipseCastersDust[lightIndex * castersPerLight + i].xyz - FragPosS;
+        float lightCasterInvDist  = inversesqrt(dot(lightCasterPos, lightCasterPos));
+        float casterAngularRadius = asin(clamp(casterRadius * lightCasterInvDist, 0.0, 1.0));
+
+        vec3 lightCasterVec = lightCasterPos * lightCasterInvDist;
+        float cosa = dot(lightVec, lightCasterVec);
+
+        // asin() is more precise than acos(dot()), when vectors are almost collinear
+        if (cosa < 0.95)
+            lightToCasterAngle = acos(clamp(cosa, 0.0, 1.0));
+        else
+            lightToCasterAngle = asin(clamp(length(cross(lightVec, lightCasterVec)), 0.0, 1.0));
+
+        Shadow *= clamp(1.0 - EclipseValue(lightAngularRadius, casterAngularRadius, lightToCasterAngle), 0.0, 1.0);
+    }
+
+    // Correct the shadow gamma
+    return 1.0 - pow(Shadow, ECLIPSE_SHADOW_GAMMA_RINGS3D);
+}
+
+//-----------------------------------------------------------------------------
+#endif
+
+#endif
