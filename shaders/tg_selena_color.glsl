@@ -323,7 +323,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	else
 	{
 		_hillsMagn = hillsMagn;
-	}	
+	}
 	
 	// Fetch variables // Colors
 	vec4 iceColorHSL = texelFetch(BiomeDataTable, ivec2(0, BIOME_ICE), 0);
@@ -338,6 +338,17 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	bool aquaria = (bottomAlpha == 0.001);
 
 	float _cracksOctaves = cracksOctaves;
+	
+	float _colorDistMagn = colorDistMagn;
+	float colorDistMin = 0.065;
+	if (_cracksOctaves > 0) // Prevent some planets from becoming chaos
+	{
+		colorDistMin = 0.058;
+	}
+	if (colorDistMagn <= colorDistMin) // Prevent some planets from becoming chaos
+	{
+		_colorDistMagn = colorDistMin;
+	}
 	
 	// Fetch variables // Planet types
 		// 21-10-2024 by Sp_ce // Added europaLikeness
@@ -415,9 +426,9 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	*/
 	
 	// GlobalModifier // Flatland climate distortion
-	noiseOctaves = 15.0;
+	// noiseOctaves = 15.0;
 	dist = 1.5 * floor(2.0 * DistFbm(point * 0.002 * colorDistFreq, 2.0));
-	climate += colorDistMagn * dist;
+	climate += _colorDistMagn * dist;
 	
 	// GlobalModifier // Biome domains
 	vec3  p = point * mainFreq + Randomize;
@@ -427,11 +438,6 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	vec2  cell = Cell3Noise2Color(distort, col);
 	float biome = col.r;
 	float biomeScale = saturate(2.0 * (pow(abs(cell.y - cell.x), 0.7) - 0.05));
-	
-	// Non-functional? // Color texture variation
-	noiseOctaves = 5;
-	p = point * colorDistFreq * 2.3;
-	p += Fbm3D(p * 0.5) * 1.2;
 	float vary = saturate((Fbm(p) + 0.7) * 0.7);
 	
 	// TerrainFeature // Shield volcano lava
@@ -665,7 +671,7 @@ vec4  ColorMapSelena(vec3 point, in BiomeData biomeData)
 	p = point * 600.0 + Randomize;
     //vec2 cell = Cell3Noise2(p + dist);
 	noiseOctaves = 5;
-	dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
+	dist = 10.0 * _colorDistMagn * Fbm(p * 0.2);
     noiseOctaves = 3;
 	float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
 	noiseOctaves = 8;

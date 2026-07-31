@@ -455,6 +455,17 @@ float   HeightMapSelena(vec3 point)
 	bool aquaria = (bottomAlpha == 0.001);
 	
 	float _cracksOctaves = cracksOctaves;
+	
+	float _colorDistMagn = colorDistMagn;
+	float colorDistMin = 0.065;
+	if (_cracksOctaves > 0) // Prevent some planets from becoming chaos
+	{
+		colorDistMin = 0.058;
+	}
+	if (colorDistMagn <= colorDistMin) // Prevent some planets from becoming chaos
+	{
+		_colorDistMagn = colorDistMin;
+	}
 
 	if (_cracksOctaves > 0)
 	{
@@ -513,7 +524,8 @@ float   HeightMapSelena(vec3 point)
 	p *= rotX;
 	p *= rotY;
 	p *= rotZ;
-	
+
+	// Biome Domains
 	vec4  col;
 	noiseOctaves = 6;
 	vec3  distort = p * 2.3 + 13.5 * Fbm3D(p * 0.06);
@@ -527,25 +539,22 @@ float   HeightMapSelena(vec3 point)
 	float inv2montesSpiky = 1.0 / (montesSpiky * montesSpiky);
 	
 	// GlobalModifier // Global landscape
-	noiseOctaves = 5;
-	p = point * mainFreq + Randomize;
-	distort = 0.35 * Fbm3D(p * 0.73);
-	noiseOctaves = 10.0;
+	noiseOctaves = 4.0;
 	noiseH = 1.0;
 	// noiseLacunarity = 2.3;  // Caused offset
 	noiseOffset = montesSpiky;
-	float rocks = -0.005 * iqTurbulence(point * 80.0, 1.0);  // * smoothstep(2, 1, volcanoActivity); 
+	p = point * mainFreq + Randomize;
+	distort = 0.35 * Fbm3D(p * 0.73);
+	float rocks = -0.005 * iqTurbulence(point * 80.0, 1.0) * smoothstep(2.0, 1.0, volcanoActivity); 
 
-	noiseOctaves = 4.0;
-	distort += 0.005 * (1.0 - abs(RidgedMultifractalDetail(p * 132.3, _hillsFreq, _hillsMagn)));
+	distort += 0.005 * (1.0 - abs(RidgedMultifractalDetail(p * montesFreq, _hillsFreq, _hillsMagn)));
 	vec3 pp = (point + Randomize) * (0.0005 * _hillsFreq / (_hillsMagn * _hillsMagn));
 	
-	// noiseOctaves = 12.0;
 	float global;
 	if (volcanoActivity >= 1 && riftsMagn != 0.0)
 	{
 		noiseOctaves = 10.0;
-		noiseLacunarity = 2.3;
+		noiseLacunarity = 2.1;
 		noiseOffset = inv2montesSpiky;
 		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * _hillsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * mainFreq); // Mine
 	}
@@ -558,12 +567,9 @@ float   HeightMapSelena(vec3 point)
 	
 	// GlobalModifier // Venus
 	float venus = 0.0;
-	noiseOctaves = 4.0;
-	distort = JordanTurbulence3D(point + (point + Randomize) * 0.07, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1.5 + venusMagn);
 	noiseOctaves = 6.0;
+	distort = JordanTurbulence3D(point + (point + Randomize) * 0.07, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1.5 + venusMagn);
 	venus = Fbm((point + distort + Randomize) * venusFreq + 0.1) * (venusMagn + 0.1);
-
-	noiseOctaves = 8;
 	global = (global + 0.8 * venus + (0.000006 * ((_hillsFreq + 1500) / _hillsMagn)) * fr - seaLevel) * 0.5 + seaLevel;
 
 	float mr = 1.0 + 2 * Fbm(point + distort) + 7 * (1.5 - RidgedMultifractalEroded(pp * 0.8, 8.0, erosion)) - 6 * (1.5 - RidgedMultifractalEroded(pp * 0.1, 8.0, erosion));
@@ -659,7 +665,7 @@ float   HeightMapSelena(vec3 point)
 		{
 			// TerrainFeature // Europa freckles
 			noiseOctaves	= 10.0;
-			noiseLacunarity = 2.0;
+			noiseLacunarity = 2.1;
 			height += 0.2 * _hillsMagn * mask * biomeScale * JordanTurbulence(point * _hillsFreq + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
 		}
 		else if (biome < canyonsFraction)
@@ -680,7 +686,9 @@ float   HeightMapSelena(vec3 point)
 		{
 			// TerrainFeature // Mountains
 			noiseOctaves	= 10.0;
-			noiseLacunarity = 2.0;
+			noiseH	        = 1.0;
+			noiseLacunarity = 2.3;
+			noiseOffset  = montesSpiky;
 			height += mareSuppress * montesMagn * montBiomeScale * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.45);
 		}
 	}
@@ -810,18 +818,6 @@ float   HeightMapSelena(vec3 point)
 	}
 
 	// GlobalModifier // Terrain noise match colorvary
-	float _colorDistMagn = colorDistMagn;
-	float colorDistMin = 0.065;
-	if (_cracksOctaves > 0) // Prevent some planets from becoming chaos
-	{
-		colorDistMin = 0.058;
-	}
-
-	if (colorDistMagn <= colorDistMin) // Prevent some planets from becoming chaos
-	{
-		_colorDistMagn = colorDistMin;
-	}
-	
 	noiseOctaves	= 14.0;
 	noiseLacunarity = 2.218281828459;
 	noiseH = 0.55 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.7;

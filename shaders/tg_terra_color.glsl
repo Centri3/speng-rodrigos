@@ -45,6 +45,19 @@ vec4 ColorMapTerra(vec3 point, float height, float slope, in BiomeData biomeData
 		_hillsFreq = hillsFreq;
 	}
 	
+	float _cracksOctaves = cracksOctaves;
+	
+	float _colorDistMagn = colorDistMagn;
+	float colorDistMin = 0.065;
+	if (_cracksOctaves > 0) // Prevent some planets from becoming chaos
+	{
+		colorDistMin = 0.058;
+	}
+	if (colorDistMagn <= colorDistMin) // Prevent some planets from becoming chaos
+	{
+		_colorDistMagn = colorDistMin;
+	}
+	
 	// Biome domains
 	vec3  p = point * mainFreq + Randomize;
 	vec4  col;
@@ -169,23 +182,23 @@ vec4 ColorMapTerra(vec3 point, float height, float slope, in BiomeData biomeData
 	// Global albedo variations
 	// RODRIGO - modify albedo noise
 	noiseOctaves = 14.0;
-	noiseH = 0.2 + smoothstep(0.0, 0.1, colorDistMagn) * 0.5;
-	noiseOctaves = 14.0;
+	noiseH = 0.2 + smoothstep(0.0, 0.1, _colorDistMagn) * 0.5;
+	// noiseOctaves = 14.0;
 	distort = Fbm3D((point + Randomize) * 0.07) * 1.5;
 	
 	if (volcanoMagn != 0.0)
 	{
-		if (cracksOctaves == 0 && volcanoActivity >= 1.0)
+		if (cracksOctaves == 0.0 && volcanoActivity >= 1.0)
 		{
-			distort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2 * (volcanoActivity - 1))) + saturate(iqTurbulence(point + Randomize, 0.75) * (2 * (volcanoActivity - 1)))) * (volcanoActivity - 1) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2 - volcanoActivity);  //Io like on atmosphered planets
+			distort = (saturate(iqTurbulence(point + Randomize, 0.55) * (2.0 * (volcanoActivity - 1.0))) + saturate(iqTurbulence(point + Randomize, 0.75) * (2.0 * (volcanoActivity - 1.0)))) * (volcanoActivity - 1.0) + (Fbm3D((point + Randomize) * 0.07) * 1.5) * (2.0 - volcanoActivity);  //Io like on atmosphered planets
 		}
-		else if (cracksOctaves == 0 && volcanoActivity < 1.0)
+		else if (cracksOctaves == 0.0 && volcanoActivity < 1.0)
 		{
 			distort = Fbm3D((point + Randomize) * 0.07) * 1.5;  //For less Volcanic planets
 		}
-		else if (cracksOctaves > 0)  // Test Ice planets later
+		else if (cracksOctaves > 0.0)  // Test Ice planets later
 		{
-			distort =Fbm3D((point * 0.26 + Randomize) * (volcanoActivity/2+1)) * (1.5 + venusMagn ) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
+			distort = Fbm3D((point * 0.26 + Randomize) * (volcanoActivity / 2.0 + 1.0)) * (1.5 + venusMagn) + saturate(iqTurbulence(point + Randomize, 0.15) * volcanoActivity);  //albedoVaryDistort =Fbm3D((point * volcanoActivity + Randomize) * volcanoActivity) * (1.5 + venusMagn );
 		}
 	}
 	
@@ -346,7 +359,7 @@ vec4 ColorMapTerra(vec3 point, float height, float slope, in BiomeData biomeData
 	p = point * 600.0 + Randomize;
     cell = Cell3Noise2(p + dist);
 	noiseOctaves = 5;
-	dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
+	dist = 10.0 * _colorDistMagn * Fbm(p * 0.2);
     noiseOctaves = 3;
 	float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
 	noiseOctaves = 8;
