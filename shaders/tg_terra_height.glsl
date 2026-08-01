@@ -60,100 +60,6 @@ void _PseudoCracks(vec3 point, float damping, inout float height)
 }
 
 //-----------------------------------------------------------------------------
-// Alternate Rodrigo's rivers
-
-void RmPseudoRivers(vec3 point, float global, float rocks, float damping, inout float height)
-{
-	float _hillsFreq = hillsFreq;
-	if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)
-	{
-		_hillsFreq = hillsFreq * 8;
-	}
-	else
-	{
-		_hillsFreq = hillsFreq;
-	}
-	
-	noiseOctaves = 8.0;
-	noiseH	   = 1.0;
-	noiseLacunarity = 2.1;
-
-	// FIX: Don't apply this separately in each octave (like before) so that
-	// rivers don't become cutoff when intersecting each other at different
-	// octaves.
-	float valleys = 1.0;
-	float rivers = 1.0;
-
-	for (int i = 0; i < 3; i++)
-	{
-		vec3 p = point * mainFreq + Randomize;
-		vec3 distort = 0.325 * Fbm3D(p * riversSin);
-		distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01 * RidgedMultifractalErodedDetail(point * 0.3 * (global - (0.000000008 * (_hillsFreq * _hillsFreq + 900000) * rocks) - seaLevel) + Randomize, 8.0, erosion, 2);
-
-		vec2 cell = 2.5 * Cell3Noise2(riversFreq * 3.0 * p + 0.5 * distort);
-		
-		valleys = saturate(1.36 * abs(cell.y - cell.x) * riversMagn);
-		// valleys = smoothstep(0.0, 1.0, valleys) * damping;
-		
-		rivers = saturate(6.5 * abs(cell.y - cell.x) * riversMagn);
-		// rivers = smoothstep(0.0, 1.0, rivers) * damping;
-	}
-	
-	float errorcor = pow(0.992, (1 / seaLevel));  //Correct Rivers on marine planets
-		
-	height = min(mix(height, seaLevel + 0.03 + errorcor * 0.042, (1.0 - valleys) * damping), height);
-
-	height = min(mix(height, seaLevel + 0.015 + errorcor * 0.052, (1.0 - rivers) * damping * smoothstep(0.7, 0.68, seaLevel)), height);
-}
-
-//-----------------------------------------------------------------------------
-// Alternate Rodrigo's rivers 2
-
-void pseudoRivers2(vec3 point, float global, float rocks, float damping, inout float height)
-{
-	float _hillsFreq = hillsFreq;
-	if (riversMagn > 0.0 && cracksOctaves == 0 && texScale > 8200)
-	{
-		_hillsFreq = hillsFreq * 8;
-	}
-	else
-	{
-		_hillsFreq = hillsFreq;
-	}
-	
-	noiseOctaves = 12.0;
-	noiseH	   = 0.8;
-	noiseLacunarity = 2.3;
-
-	// FIX: Don't apply this separately in each octave (like before) so that
-	// rivers don't become cutoff when intersecting each other at different
-	// octaves.
-	float valleys = 1.0;
-	float rivers = 1.0;
-
-	for (int i = 0; i < 3; i++)
-	{
-		vec3 p = point * 2.0 * mainFreq + Randomize;
-		vec3 distort = 0.325 * Fbm3D(p * riversSin);
-		distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01 * RidgedMultifractalErodedDetail(point * 0.3 * (global - (0.000000008 * (_hillsFreq * _hillsFreq + 900000) * rocks) - seaLevel) + Randomize, 8.0, erosion, 2);
-
-		vec2 cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
-		
-		valleys = saturate(0.36 * abs(cell.y - cell.x) * riversMagn);
-		// valleys = smoothstep(0.0, 1.0, valleys) * damping;
-		
-		rivers = saturate(6.5 * abs(cell.y - cell.x) * riversMagn);
-		// rivers = smoothstep(0.0, 1.0, rivers) * damping;
-	}
-	
-	float errorcor = pow(0.992, (1 / seaLevel));  //Correct Rivers on marine planets
-		
-	height = min(mix(height, seaLevel + 0.03 + errorcor * 0.042, (1.0 - valleys) * damping), height);
-
-	height = min(mix(height, seaLevel + 0.015 + errorcor * 0.052, (1.0 - rivers) * damping * smoothstep(0.7, 0.68, seaLevel)), height);
-}
-
-//-----------------------------------------------------------------------------
 // Modified Rodrigo's rifts
 
 void    _Rifts(vec3 point, float damping, inout float height)
@@ -323,6 +229,10 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 		{
 			_hillsFreq = hillsFreq * (1 - volcanoActivity / 4);
 		}
+		else
+		{
+			_hillsFreq = hillsFreq;
+		}
 	}
 	else
 	{
@@ -410,7 +320,10 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	
 	// Replace old baseline terrain with more complex features.
 	noiseOctaves = 5;
-	// noiseH = 1.0;  // Causes blobby continents
+	
+	if (oceanType == 0.0)
+		noiseH = 1.0;
+	
 	vec3 distort = 0.35 * Fbm3D(p * 0.73);
 	float rocks = -0.005 * iqTurbulence(point * 200.0, 1.0) * smoothstep(2.0, 1.0, volcanoActivity);
 	// float rocks = -0.013 * iqTurbulence(point * 80 , 1);
@@ -796,107 +709,47 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	}
 
 	// Pseudo rivers
-	/*
-	if ((riversMagn > 0.0) && (climateSteppeMax > 0) && (climateForestMax > 0) && (climateGrassMax > 0))
+	if (riversMagn > 0.0)
 	{
-		if (erosion >= 0.101)
+		if ((climateSteppeMax > -1.0) && (climateForestMax > -1.0) && (climateGrassMax > -1.0))
 		{
-			noiseOctaves = 12.0;
-			noiseH	   = 0.8;
-			noiseLacunarity = 2.3;
+			noiseOctaves = 14.0;
+			noiseH       = 1.0;
+			noiseLacunarity = 2.1;
 			p = point * 2.0 * mainFreq + Randomize;
-			distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01* RidgedMultifractalErodedDetail(point * 0.3 * (canyonsFreq + 1000) * (0.5 * (inv2montesSpiky + 1)) + Randomize, 8.0, erosion, montBiomeScale * 2);
+			distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01 * RidgedMultifractalErodedDetail(point * 0.3 * (canyonsFreq + 1000) * (0.5 * (inv2montesSpiky + 1)) + Randomize, 8.0, erosion, montBiomeScale * 2);
 			cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
-			/*
 			float pseudoRivers2 = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
 				pseudoRivers2 = smoothstep(0.25, 0.99, pseudoRivers2); 
-				pseudoRivers2 *= 1.0 - smoothstep(0.075, 0.085, rodrigoDamping); // disable rivers inside continents
+				pseudoRivers2 *= 1.0 - smoothstep(0.055, 0.365, global - seaLevel); // disable rivers inside continents
 				pseudoRivers2 *= 1.0 - smoothstep(0.000, 0.0001, seaLevel - height); // disable rivers inside oceans
-				height = mix(height, seaLevel + 0.003, pseudoRivers2);
-			float RmPseudoRivers = 1.0 - (saturate(2.8 * abs(cell.y - cell.x) * riversMagn));
-				RmPseudoRivers = smoothstep(0.0, 1.0, RmPseudoRivers); 
-				RmPseudoRivers *= 1.0 - smoothstep(0.085, 0.087, global-seaLevel);
-				RmPseudoRivers *= 1.0 - smoothstep(0.00, 0.005, seaLevel - height); // disable rivers inside oceans
-				height = mix(height, seaLevel - 0.0035, RmPseudoRivers);
-			
-			damping = (smoothstep(0.165, 0.155, rodrigoDamping)) * (smoothstep(-0.0016, -0.018, seaLevel - height));  // disable rivers inside oceans
-			
-			damping = (smoothstep(0.185, 0.135, rodrigoDamping)) *    // disable rivers inside continents smoothstep(0.145, 0.135, rodrigoDamping)  smoothstep(0.185, 0.135, rodrigoDamping)
-				(smoothstep(0.08, -0.018 - pow(0.99, (1 / seaLevel)) * 0.14, seaLevel - height));  // disable rivers inside oceans
-			_PseudoRivers(point, global, damping, height);
-			
-			// Cracks
-			damping = (smoothstep(cracksMagn * 0.5 + 0.01, cracksMagn * 0.5, rodrigoDamping)) * (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09, seaLevel - height));
-			_PseudoCracks(point, damping, height);
+				height = mix(height, seaLevel + 0.001, pseudoRivers2);
+				cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
+			float pseudoRivers = 1.0 - (saturate(3.2 * abs(cell.y - cell.x) * riversMagn));
+				pseudoRivers = smoothstep(0.0, 1.0, pseudoRivers); 
+				pseudoRivers *= 1.0 - smoothstep(0.055, 0.257, global-seaLevel); // disable rivers inside continents
+				pseudoRivers *= 1.0 - smoothstep(0.00, 0.05, seaLevel - height); // disable rivers inside oceans
+				height = mix(height, seaLevel - 0.035, pseudoRivers);
 		}
 		else
 		{
-			noiseOctaves	= riversSin;
-			noiseLacunarity = 2.218281828459;
-			noiseH		  = 0.5;
-			noiseOffset	 = 0.8;
-			p = point * mainFreq + Randomize;
-			distort = 0.350 * Fbm3D(p * riversSin) + 0.035 * Fbm3D(p * riversSin * 5.0) + 0.010 * Fbm3D(p * riversSin * 25.0);
-			cell = Cell3Noise2(riversFreq * p + distort);
-			float _PseudoRivers = 1.0 - saturate(abs(cell.y - cell.x) * riversMagn);
-				_PseudoRivers = smoothstep(0.0, 1.0, _PseudoRivers);
-				_PseudoRivers *= 1.0 - smoothstep(0.06, 0.10, rodrigoDamping); // disable rivers inside continents
-				_PseudoRivers *= 1.0 - smoothstep(0.00, 0.01, seaLevel - height); // disable rivers inside oceans
-				height = mix(height, seaLevel-0.02, _PseudoRivers);
-				
-				damping = (smoothstep(0.145, 0.135, rodrigoDamping)) *	// disable rivers inside continents
-						(smoothstep(-0.0016, -0.018, seaLevel - height));  // disable rivers inside oceans
-				PseudoRivers(point, global, damping, height);
-				
-			// Cracks
-			damping = (smoothstep(cracksMagn * 0.5 + 0.01, cracksMagn * 0.5, rodrigoDamping)) * (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09, seaLevel - height));
-			_PseudoCracks(point, damping, height);
+			noiseOctaves = 12.0;
+			noiseH = 0.8;
+			noiseLacunarity = 2.3;
+			p = point * 2.0 * mainFreq + Randomize;
+			distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01 * RidgedMultifractalErodedDetail(point * 0.3 * (canyonsFreq + 1000) * (0.5 * (inv2montesSpiky + 1)) + Randomize, 8.0, erosion, montBiomeScale * 2);
+			cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
+			
+			damping = (smoothstep(0.01, 0.0, seaLevel - height)) * // disable rivers inside continents
+					  (smoothstep(-0.0016, -0.018, seaLevel - height)); // disable rivers inside oceans
+			_PseudoRivers(point, damping, height);
 		}
-	}
-	else if (riversMagn > 0.0)
-	{
-		noiseOctaves = 12.0;
-		noiseH	   = 0.8;
-		noiseLacunarity = 2.3;
-		p = point * 2.0 * mainFreq + Randomize;
-		distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01 * RidgedMultifractalErodedDetail(point * 0.3 * (canyonsFreq + 1000) * (0.5 * (inv2montesSpiky + 1)) + Randomize, 8.0, erosion, montBiomeScale * 2);
-		cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
-		damping = (smoothstep(0.145, 0.135, rodrigoDamping)) *	// disable rivers inside continents
-			(smoothstep(-0.0016, -0.018, seaLevel - height));  // disable rivers inside oceans
-		_PseudoRivers(point, global, damping, height);
-
+		
 		// Cracks
 		damping = (smoothstep(cracksMagn * 0.5 + 0.01, cracksMagn * 0.5, rodrigoDamping)) * (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09, seaLevel - height));
 		_PseudoCracks(point, damping, height);
 	}
-	*/
-	if (riversMagn > 0.0)
-	{
-		noiseOctaves = 12.0;
-		noiseH = 0.8;
-		noiseLacunarity = 2.3;
-		p = point * 2.0 * mainFreq + Randomize;
-		distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01 * RidgedMultifractalErodedDetail(point * 0.3 * (canyonsFreq + 1000) * (0.5 * (inv2montesSpiky + 1)) + Randomize, 8.0, erosion, montBiomeScale * 2);
-		cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
-		/*
-		float pseudoRivers2 = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn)); pseudoRivers2 = smoothstep(0.25, 0.99, pseudoRivers2);
-        pseudoRivers2 *= 1.0 - smoothstep(0.135, 0.145, rodrigoDamping);  // disable rivers inside continents pseudoRivers2 *= 1.0 - smoothstep(0.000, 0.0001, seaLevel - height); // disable rivers inside oceans
-		height = mix(height, seaLevel+0.003, pseudoRivers2);
-		cell = 2.5* Cell3Noise2(riversFreq * p + 0.5*distort);
-		float PseudoRivers = 1.0 - (saturate(2.8 * abs(cell.y - cell.x) * riversMagn));
-		PseudoRivers = smoothstep(0.0, 1.0, PseudoRivers);
-		PseudoRivers *= 1.0 - smoothstep(0.055, 0.057, global-seaLevel);
-		PseudoRivers *= 1.0 - smoothstep(0.00, 0.005, seaLevel - height); // disable rivers inside oceans
-		height = mix(height, seaLevel-0.0035, PseudoRivers);
-		*/
-		damping = (smoothstep(0.01, 0.0, seaLevel - height)) * // disable rivers inside continents
-				  (smoothstep(-0.0016, -0.018, seaLevel - height)); // disable rivers inside oceans
-		_PseudoRivers(point, damping, height);
 
-		// Cracks
-		damping = (smoothstep(cracksMagn * 0.5 + 0.01, cracksMagn * 0.5, rodrigoDamping)) * (smoothstep(-0.0016, -0.018 - pow(0.992, (1 / seaLevel)) * 0.09, seaLevel - height));
-		_PseudoCracks(point, damping, height);
-	}
 	// Shield volcano
 	if (volcanoOctaves > 0)
 		height = _VolcanoNoise(point, global, height);
@@ -988,16 +841,14 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 			height = mix(height, max(height, _seaLevel + 0.0595), h);
 		}
 	}
-
 	if ((cracksOctaves == 0 || volcanoTemp >= 0.75) && lavaCoverage > 0 && oceanType == 0)   //((volcanoTemp > 0.7 || hillsMagn <=0.05) && lavaCoverage > 0 && oceanType == 0)
 	{
-		height = height-log(1.2*lavaCoverage+1);  //log(9*lavaCoverage+1)
-		if (height <0.0002)
+		height = height - log(0.55 * lavaCoverage + 1);  // log(9 * lavaCoverage + 1)
+		if (height < 0.0002)
 		{
 			height = 0;
 		}
 	}
-	
 	// Centri Super-Oceanic Fix
 	if (oceanType > 0.5)  
     {
@@ -1013,7 +864,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 
 	if (riversMagn > 0.0)
 	{
-		HeightBiomeMap = vec4(height-0.06);
+		HeightBiomeMap = vec4(height - 0.06);
 	}
 	else
 	{
