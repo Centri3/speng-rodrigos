@@ -667,16 +667,15 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	else if (biome < hillsFraction)
 	{
 		// Mountains
-		noiseOctaves = 8.0;
+		noiseOctaves = 12.0;
 		noiseH	   = 1.0;
-		noiseLacunarity = 2.0;
+		noiseLacunarity = 2.3;
 		noiseOffset  = montesSpiky;
 		if (oceanType != 0.0)
 		{
-			
 			height = hillsMagn * 2.4 * ((1.25 + iqTurbulence(point * 0.5 * _hillsFreq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * _hillsFreq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
-			
-			// height = hillsMagn * swissTurbulence(point * hillsFreq, 1.0, 1.0, 1.0);
+
+			// height = hillsMagn * swissTurbulence(p * hillsFreq * inv2montesSpiky * Randomize, 0.3, 0.4) * montBiomeScale;
 		}
 		else
 		{

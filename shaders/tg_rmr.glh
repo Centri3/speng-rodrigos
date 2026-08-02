@@ -70,7 +70,7 @@ float swissTurbulence(float2 p, float seed, int octaves,
 }
 */
 
-float swissTurbulence(vec3 point, float rnd, float gain, float warp)
+float swissTurbulence(vec3 point, float gain, float warp)
 {
 	float summ = 0.0;
 	float freq = 1.0;
@@ -80,7 +80,7 @@ float swissTurbulence(vec3 point, float rnd, float gain, float warp)
 	{
 		vec4 n = NoiseDeriv((point + warp * dsum) * freq);//, rnd + i);
 		summ += amp * (1 - abs(n.x));
-		dsum += amp * n.yz * -n.x;
+		dsum += amp * n.yzw * -n.x;
 		freq *= noiseLacunarity;
 		amp  *= gain * saturate(summ);
 	}
