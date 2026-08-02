@@ -673,7 +673,10 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 		noiseOffset  = montesSpiky;
 		if (oceanType != 0.0)
 		{
+			
 			height = hillsMagn * 2.4 * ((1.25 + iqTurbulence(point * 0.5 * _hillsFreq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * _hillsFreq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
+			
+			// height = hillsMagn * swissTurbulence(point * hillsFreq, 1.0, 1.0, 1.0);
 		}
 		else
 		{
@@ -898,7 +901,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 			noiseH       = 1.0;
 			noiseLacunarity = 2.1;
 			p = point * 2.0 * riversFreq + Randomize;
-			distort = 0.65 * Fbm3D(p * riversSin) + _colorDistMagn * JordanTurbulence(p * riversSin * Randomize, 0.7, 0.5, 0.6, 0.35, 1.0, 0.8, rodrigoDamping) + 0.01 * RidgedMultifractalErodedDetail(p * 0.3 * (canyonsFreq + 1000) * (0.5 * (inv2montesSpiky + 1.0)) + Randomize, 8.0, erosion, montBiomeScale * 2);
+			distort = 0.65 * Fbm3D(p * riversSin) + _colorDistMagn * JordanTurbulence(p * riversSin * Randomize, 0.7, 0.5, 0.6, 0.35, 1.0, 0.8, rodrigoDamping) + 0.01 * RidgedMultifractalErodedDetail(p * 0.3 * (canyonsFreq + 1000) * (0.5 * (inv2montesSpiky + 1.0)) + Randomize, 8.0, erosion, rodrigoDamping);
 			cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5 * distort);
 			float pseudoRivers2 = 1.0 - (saturate(0.36 * abs(cell.y - cell.x) * riversMagn));
 				pseudoRivers2 = smoothstep(0.25, 0.99, pseudoRivers2); 

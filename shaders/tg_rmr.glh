@@ -50,6 +50,43 @@ vec3 JordanTurbulence3D(vec3 point, float gain0, float gain, float warp0,
                                damp, dampScale));
 }
 
+/* // For reference, leave commented out
+float swissTurbulence(float2 p, float seed, int octaves,
+                      float lacunarity = 2.0, float gain = 0.5,
+                      float warp = 0.15>)
+{
+     float sum = 0;
+     float freq = 1.0, amp = 1.0;
+     float2 dsum = float2(0,0);
+     for(int i=0; i < octaves; i++)
+     {
+         float3 n = perlinNoiseDeriv((p + warp * dsum)*freq, seed + i);
+         sum += amp * (1 - abs(n.x));
+         dsum += amp * n.yz * -n.x;
+         freq *= lacunarity;
+         amp *= gain * saturate(sum);
+    }
+    return sum;
+}
+*/
+
+float swissTurbulence(vec3 point, float rnd, float gain, float warp)
+{
+	float summ = 0.0;
+	float freq = 1.0;
+	float amp  = 1.0;
+	vec3  dsum = vec3(0.0);
+	for(int i=0; i<noiseOctaves; i++)
+	{
+		vec4 n = NoiseDeriv((point + warp * dsum) * freq);//, rnd + i);
+		summ += amp * (1 - abs(n.x));
+		dsum += amp * n.yz * -n.x;
+		freq *= noiseLacunarity;
+		amp  *= gain * saturate(summ);
+	}
+	return summ;
+}
+
 float _VolcanoNoise(vec3 point, float globalLand, float localLand) {
   noiseLacunarity = 2.218281828459;
   noiseH = 0.5;
