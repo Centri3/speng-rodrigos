@@ -343,12 +343,334 @@ float   HeightMapCloudsTerraKham2(vec3 point)
 
 //-----------------------------------------------------------------------------
 
+// Smallest Clouds 
+
+float   Gmail99_HeightMapCloudsTerra(vec3 point)
+{
+    float zones = cos(point.y *stripeZones* 0.20);
+    float ang = -zones * (stripeTwist + 0.03/(stripeTwist + 0.08));
+;
+    vec3  twistedPoint = point;
+    float coverage = cloudsCoverage;
+    float weight = 0.8;
+noiseH       = 0.75;
+
+    // Compute the cyclons
+    if (tidalLock > 0.0)
+    {
+        vec3  cycloneCenter = vec3(0.0, 1.0, 0.0);
+        float r = length(cycloneCenter - point);
+        float mag = -tidalLock * cycloneMagn;
+        if (r < 1.0)
+        {
+            float dist = 1.0 - r;
+            float fi = mix(log(r), dist*dist*dist, r);
+            twistedPoint = Rotate(mag * fi, cycloneCenter, point);
+            weight = saturate(r * 40.0 - 0.05);
+            weight = weight * weight;
+            coverage = mix(coverage, 1.0, dist);
+        }
+        weight *= smoothstep(-0.2, 0.0, point.y);   // surpress clouds on a night side
+    }
+    else
+        twistedPoint = CycloneNoiseTerra(point, weight, coverage);
+
+    // Compute turbulence
+    twistedPoint = TurbulenceTerra(twistedPoint);
+
+    // Compute the Coriolis effect
+    float sina = sin(ang);
+    float cosa = -cos(ang);
+    twistedPoint = vec3(cosa*twistedPoint.x - sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x + cosa*twistedPoint.z);
+    twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+    // Compute the flow-like distortion
+noiseLacunarity = 9.6;
+    noiseOctaves = 11;
+
+vec3 distort = Fbm3D(twistedPoint * 9.8) * 3;
+   
+vec3 p = ( 0.1 * twistedPoint) * cloudsFreq * 4000;
+    vec3 q = p + FbmClouds3D(p);
+    vec3 r = p + FbmClouds3D(q);
+    float f = FbmClouds(r) * 4 + coverage - 1.75;
+    float global = saturate(f) * weight * (Fbm(twistedPoint + distort) +  0.5 * cloudsCoverage);
+
+
+
+    // Compute turb//ulence features
+    //noiseOctaves = cloudsOctaves;
+    //float turbulence = (Fbm(point * 900.0 * cloudsFreq + Randomize) + 1.5);// * smoothstep(3.0, 0.05, global);
+
+    return global;
+}
+
+//-----------------------------------------------------------------------------
+
+// Big Clouds (main clouds)
+
+float   Gmail99_HeightMapCloudsTerra2(vec3 point)
+{
+    float zones = cos(point.y * 1.75);
+    float ang = zones * 2; 
+    vec3  twistedPoint = point;
+    float coverage = cloudsCoverage * 3.5;
+    float weight = 1.15;
+noiseH       = 1;
+
+    // Compute the cyclons
+    if (tidalLock > 0.0)
+    {
+        vec3  cycloneCenter = vec3(0.0, 1.0, 0.0);
+        float r = length(cycloneCenter - point);
+        float mag = -tidalLock * cycloneMagn;
+        if (r < 1.0)
+        {
+            float dist = 1.0 - r;
+            float fi = mix(log(r), dist*dist*dist, r);
+            twistedPoint = Rotate(mag * fi, cycloneCenter, point);
+            weight = saturate(r * 40.0 - 0.05);
+            weight = weight * weight;
+            coverage = mix(coverage, 1.0, dist);
+        }
+        weight *= smoothstep(-0.2, 0.0, point.y);   // surpress clouds on a night side
+    }
+    else
+        twistedPoint = CycloneNoiseTerra(point, weight, coverage);
+
+    // Compute turbulence
+    twistedPoint = TurbulenceTerra(twistedPoint);
+
+    // Compute the Coriolis effect
+    float sina = sin(ang);
+    float cosa = -cos(ang+11.7);
+    twistedPoint = vec3(cosa*twistedPoint.x - sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x + cosa*twistedPoint.z);
+    twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+    // Compute the flow-like distortion
+noiseLacunarity = 9.9;
+    noiseOctaves = 13;
+vec3 distort = Fbm3D(twistedPoint) * 2;
+   
+vec3 p = twistedPoint * cloudsFreq * 3.5;
+    vec3 q = p + FbmClouds3D(p);
+    vec3 r = p + FbmClouds3D(q);
+    float f = FbmClouds(r) * 4 + coverage - 0.045;
+    float global = saturate(f) * weight * (Fbm(twistedPoint + distort)+ cloudsCoverage);
+
+
+
+    return global;
+}
+
+//-----------------------------------------------------------------------------
+
+// Medium Clouds
+float   Gmail99_HeightMapCloudsTerra3(vec3 point)
+{
+    float zones = cos(point.y *stripeZones* 0.20);
+    float ang = -zones * (stripeTwist + 0.03/(stripeTwist + 0.08));
+;
+    vec3  twistedPoint = point;
+    float coverage = cloudsCoverage;
+    float weight = 1;
+noiseH       = 0.75;
+
+    // Compute the cyclons
+    if (tidalLock > 0.0)
+    {
+        vec3  cycloneCenter = vec3(0.0, 1.0, 0.0);
+        float r = length(cycloneCenter - point);
+        float mag = -tidalLock * cycloneMagn;
+        if (r < 1.0)
+        {
+            float dist = 1.0 - r;
+            float fi = mix(log(r), dist*dist*dist, r);
+            twistedPoint = Rotate(mag * fi, cycloneCenter, point);
+            weight = saturate(r * 40.0 - 0.05);
+            weight = weight * weight;
+            coverage = mix(coverage, 1.0, dist);
+        }
+        weight *= smoothstep(-0.2, 0.0, point.y);   // surpress clouds on a night side
+    }
+    else
+        twistedPoint = CycloneNoiseTerra(point, weight, coverage);
+
+    // Compute turbulence
+    twistedPoint = TurbulenceTerra(twistedPoint);
+
+    // Compute the Coriolis effect
+    float sina = sin(ang);
+    float cosa = -cos(ang+12);
+    twistedPoint = vec3(cosa*twistedPoint.x - sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x + cosa*twistedPoint.z);
+    twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+    // Compute the flow-like distortion
+noiseLacunarity = 8.6;
+    noiseOctaves = 12;
+
+vec3 distort = Fbm3D(twistedPoint * 2.8) * 3;
+   
+vec3 p = ( 0.1 * twistedPoint) * cloudsFreq * 745;
+    vec3 q = p + FbmClouds3D(p);
+    vec3 r = p + FbmClouds3D(q);
+    float f = FbmClouds(r) * 4 + coverage - 1.4;
+    float global = saturate(f) * weight * (Fbm(twistedPoint + distort) +  0.9 * cloudsCoverage);
+
+
+
+    // Compute turb//ulence features
+    //noiseOctaves = cloudsOctaves;
+    //float turbulence = (Fbm(point * 400.0 * cloudsFreq + Randomize) + 1.5);// * smoothstep(3.0, 0.05, global);
+
+    return global;
+}
+
+//-----------------------------------------------------------------------------
+
+// Thunderstorms
+float   Gmail99_HeightMapCloudsTerra4(vec3 point)
+{
+    float zones = cos(point.y *stripeZones* 0.000);
+    float ang = -zones * (stripeTwist + 0.000/(stripeTwist + 0.00));
+;
+    vec3  twistedPoint = point;
+    float coverage = cloudsCoverage;
+	float height = 10.1;
+    float weight = 5.5;
+noiseH       = 0.75;
+
+    // Compute turbulence
+    twistedPoint = TurbulenceTerra(twistedPoint);
+
+    // Compute the Coriolis effect
+    float sina = sin(ang);
+    float cosa = -cos(ang);
+    twistedPoint = vec3(cosa*twistedPoint.x - sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x + cosa*twistedPoint.z);
+    twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+    // Compute the flow-like distortion
+noiseLacunarity = 0.3;
+    noiseOctaves = 3;
+
+vec3 distort = Fbm3D(twistedPoint * 16.8) * 1;
+   
+vec3 p = ( 0.1 * twistedPoint) * cloudsFreq * 100;
+    vec3 q = p + FbmClouds3D(p);
+    vec3 r = p + FbmClouds3D(q);
+    float f = FbmClouds(r) * 6.3 + coverage - 4.4;
+   float global = saturate(f) * weight;
+
+
+
+    // Compute turb//ulence features
+    //noiseOctaves = 0.1;
+    //float turbulence = (Fbm(point * 41.0 * cloudsFreq + Randomize) + 0.3);// * smoothstep(2.0, 0.35, global);
+
+    return global;
+}
+
+//-----------------------------------------------------------------------------
+
+// Fog clouds
+
+float   Gmail99_HeightMapCloudsTerra5(vec3 point)
+{
+    float zones = cos(point.y * 0.65);
+    float ang = zones * 2; 
+    vec3  twistedPoint = point;
+    float coverage = cloudsCoverage * 3.5;
+    float weight = 1.15;
+noiseH       = 1;
+
+
+    // Compute turbulence
+    twistedPoint = TurbulenceTerra(twistedPoint);
+
+    // Compute the Coriolis effect
+    float sina = sin(ang);
+    float cosa = -cos(ang);
+    twistedPoint = vec3(cosa*twistedPoint.x - sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x + cosa*twistedPoint.z);
+    twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+    // Compute the flow-like distortion
+noiseLacunarity = 20.9;
+    noiseOctaves = 13;
+vec3 distort = Fbm3D(twistedPoint) * 2;
+   
+vec3 p = twistedPoint * cloudsFreq * 1.6;
+    vec3 q = p + FbmClouds3D(p);
+    vec3 r = p + FbmClouds3D(q);
+    float f = FbmClouds(r) * 4 + coverage - 0.02;
+    float global = saturate(f) * weight * (Fbm(twistedPoint + distort)+ cloudsCoverage);
+
+
+
+    return global;
+}
+
+//-----------------------------------------------------------------------------
+
+// Volent Thunderstorms
+float   Gmail99_HeightMapCloudsTerra6(vec3 point)
+{
+    float zones = cos(point.y *stripeZones* 0.000);
+    float ang = -zones * (stripeTwist + 0.000/(stripeTwist + 0.00));
+;
+    vec3  twistedPoint = point;
+    float coverage = cloudsCoverage;
+	float height = 20.1;
+    float weight = 10.5;
+noiseH       = 0.75;
+
+    // Compute turbulence
+    twistedPoint = TurbulenceTerra(twistedPoint);
+
+    // Compute the Coriolis effect
+    float sina = sin(ang);
+    float cosa = -cos(ang);
+    twistedPoint = vec3(cosa*twistedPoint.x - sina*twistedPoint.z, twistedPoint.y, sina*twistedPoint.x + cosa*twistedPoint.z);
+    twistedPoint = twistedPoint * cloudsFreq + Randomize;
+
+    // Compute the flow-like distortion
+noiseLacunarity = 0.3;
+    noiseOctaves = 3;
+
+vec3 distort = Fbm3D(twistedPoint * 16.8) * 1;
+   
+vec3 p = ( 0.1 * twistedPoint) * cloudsFreq * 80;
+    vec3 q = p + FbmClouds3D(p);
+    vec3 r = p + FbmClouds3D(q);
+    float f = FbmClouds(r) * 6.3 + coverage - 4.6;
+   float global = saturate(f) * weight;
+
+
+
+    // Compute turb//ulence features
+    //noiseOctaves = 0.1;
+    //float turbulence = (Fbm(point * 41.0 * cloudsFreq + Randomize) + 0.3);// * smoothstep(2.0, 0.35, global);
+
+    return global;
+}
+
+//-----------------------------------------------------------------------------
+
 
 void main()
 {
 	vec3  point  = GetSurfacePoint();
 	float height = 0.0;
 	
+	
+	if (CloudStyle == 1){
+	height = 0.65 * (Gmail99_HeightMapCloudsTerra(point) + Gmail99_HeightMapCloudsTerra2(point) + Gmail99_HeightMapCloudsTerra3(point) + Gmail99_HeightMapCloudsTerra4(point) + Gmail99_HeightMapCloudsTerra5(point) + Gmail99_HeightMapCloudsTerra6(point));
+	if (cloudsCoverage == 1.0) {
+    height = 1.0 * HeightMapCloudsVenusAli(point) +
+            0.65 * HeightMapCloudsVenusAli2(point);
+	}
+	}
+	
+	else {
 	if (cloudsCoverage == 1.0) {
     height = 1.0 * HeightMapCloudsVenusAli(point) +
             0.65 * HeightMapCloudsVenusAli2(point);
@@ -362,6 +684,7 @@ void main()
 	else
 	{
 		height = 3 * (HeightMapCloudsTerraA(point));
+	}
 	}
 	}
 	OutColor = vec4(height);

@@ -1,10 +1,17 @@
 // Configuration for RDH
+//Please clear the cache for settings to take effect. Or use the debug menue to reload shaders.
+//If you have set "IgnoreShaderBinary      true" in the main_user.cfg you can change the settings in-game using the debug menu.  To access the debug menu hit Shift+8（or * on numpad).  Once in the debug menu you can alter the RDH_Config.glh as desired, hit save and then hit Ctrl+F5 to reload the shaders.
 
-//Gas Giant/Brown Dwarf Color method
+
+// Gas Giant/Brown Dwarf Color method
 const float GasGiantColor = 1;   // 0 is for blended colors, 1 is for harsh colors
 
-//Gas Giant/Brown Dwarf Color Vibrance
-const float GasGiantVibe = 0;		//0 is for vibrant colors, 1 is for muted colors (more realistic)
+// Gas Giant/Brown Dwarf Color Vibrance
+const float GasGiantVibe = 0;		// 0 is for vibrant colors, 1 is for muted colors (more realistic)
+
+// Terra Cloud Style  (RDH or Gmail99)
+const float CloudStyle = 0;  // 0 is for default RDH clouds, 1 is for Gmail99 clouds
+
 
 // 0.991 Hills Freq Boost
 const float SEversion = 1;		//0 is for 0.990, 1 is for 0.991
@@ -15,4 +22,8 @@ const float SEversion = 1;		//0 is for 0.990, 1 is for 0.991
 //Sp_ce Craters
 const float Sp_ce = 0;		// 0 is for default stable craters, 1 is for experimental Sp_ce craters.  Note Sp_ce craters have worse performance than default
 
+//New Mountains
+const float NewMount = 0;		// 0 is for default stable mountains, 1 is for experimental Mountains
+
+const float NewRift = 0;        // 0 is for default stable mountains, 1 is for experimental Mountains
 

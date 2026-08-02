@@ -62,10 +62,11 @@ vec4 GlowMapTerra(vec3 point, float height, float slope) {
     //float varyTemp = 0.5 * sqrt(abs(cell.y - cell.x));
     float varyTemp = 1.0 - 5.0 * smoothstep(0.1, 1.0, sqrt(abs(cell.y - cell.x)));
     float flow  = saturate(varyTemp * 0.2 * lavaCoverage);*/
-    noiseOctaves = 3;
-    float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
     noiseOctaves = 8;
-    float varyTemp = abs(Fbm(p + dist));
+    float globTemp = 0.95 - pow(abs((-JordanTurbulence(point * 10.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, 1.7) * 1.5) - JordanTurbulence(point * 3.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, -1.7) * 0.3) * 0.28, 1.5);
+    noiseLacunarity = 1.5;
+    vec3 d = Fbm3D(p + dist) * 0.2;
+    float varyTemp = iqTurbulence(d, 0.0) * 0.5;
     //globTemp *= 1.0 - lithoCells;
 
     float surfTemp = surfTemperature *

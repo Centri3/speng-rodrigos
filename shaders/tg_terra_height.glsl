@@ -14,11 +14,21 @@ void    _PseudoRivers(vec3 point, float global, float damping, inout float heigh
         noiseLacunarity = 2.1;
 	float _seaLevel = seaLevel;
        
+    float _colorDistMagn = colorDistMagn;
+	float colorDistMin = 0.065;
+	if (cracksOctaves > 0) // Prevent some planets from becoming chaos
+	{
+		colorDistMin = 0.058;
+	}
+	if (colorDistMagn <= colorDistMin) // Prevent some planets from becoming chaos
+	{
+		_colorDistMagn = colorDistMin;
+	}
+
     vec3 p = point * 2.0* mainFreq + Randomize;
     vec3 distort = 0.325 * Fbm3D(p * riversSin);
-    distort = 0.65 * Fbm3D(p * riversSin) +
-                  0.03 * Fbm3D(p * riversSin * 5.0) + 0.01* RidgedMultifractalErodedDetail(point * 0.3* (canyonsFreq+1000)*(0.5*(1/montesSpiky+1))  + Randomize, 8.0, erosion, 2);
-
+    distort = 0.65 * Fbm3D(p * riversSin) + 0.03 * Fbm3D(p * riversSin * 5.0) + 0.01* RidgedMultifractalErodedDetail(point * 0.3* (canyonsFreq+1000)*(0.5*(1/montesSpiky+1))  + Randomize, 8.0, erosion, 2);
+//	distort = 0.65 * Fbm3D(p * riversSin) + _colorDistMagn * JordanTurbulence(p * riversSin * 5.0,0.7, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0) + 0.01 * RidgedMultifractalErodedDetail(p * 0.3 * (canyonsFreq + 1000) * (0.5 * (1 / montesSpiky + 1)) + Randomize, 8.0, erosion, 2);  //New?
 
     vec2 cell = 2.5 * Cell3Noise2(riversFreq * p + 0.5*distort); //(2.5*height) * Cell3Noise2(riversFreq * p + 0.5*distort);
      
@@ -76,6 +86,50 @@ void    _Rifts(vec3 point, float damping, inout float height)
 
     height = mix(height, riftsBottom, rifts);
 
+    // Slope modulation
+    if (rifts > 0.0)
+    {
+        float slope = smoothstep(0.1, 0.9, 1.0 - 2.0 * abs(rifts * 0.35 - 0.5));
+        float slopeMod = 0.5*slope * RidgedMultifractalErodedDetail(point * 5.0 * canyonsFreq + Randomize, 8.0, erosion, 8.0);
+        slopeMod *= 0.05*riftsModulate;
+        height = softExpMaxMin(height - slopeMod, riftsBottom, 75.0);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// New Rifts  Unused/abandoned?
+
+void   Real_Rifts(vec3 point, float damping, inout float height)
+{
+    float _seaLevel = seaLevel;
+	float riftsBottom = _seaLevel;   //float riftsBottom = _seaLevel;
+
+    noiseOctaves    = 6.6;
+    noiseH          = 1.0;
+    noiseLacunarity = 4.0;
+    noiseOffset     = 0.95;
+
+
+    // 2 slightly different octaves to make ridges inside rifts
+    vec3 p = point * 0.12;
+    vec3  distort = 0.5 * Fbm3D(p * riftsSin)+ 0.1 * Fbm3D(p*3 * riftsSin);
+	float rifts = 0.0;
+    for (int i=0; i<2; i++)
+    {
+        
+        vec2  cell = Cell3Noise2(riftsFreq * p + distort);
+        float width = 0.8*riftsMagn * abs(cell.y - cell.x);
+        rifts = softExpMaxMin(rifts, 1.0 - 2.75 * width, 32.0);
+        p *= 1.02;
+    }
+
+    float riftsModulate = smoothstep(-0.1, 0.2, Fbm(point * 2.3 + Randomize));
+    rifts = smoothstep(0.0,1.0, rifts * riftsModulate) * damping;
+
+    height = mix(height, riftsBottom, rifts);
+ 
+//	height = height - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * 0.1* riftsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * mainFreq*5);
+ 
     // Slope modulation
     if (rifts > 0.0)
     {
@@ -186,7 +240,14 @@ float   Sp_ceCraterNoise(vec3 point, float cratMagn, float cratFreq, float cratS
 }
 
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+float RuneVisionErosion(vec3 point, float magnitude, float frequency, float erosionAmount)
+{
+    float erodedHeight = 2.0; 
+    
+    return erodedHeight;
+}
+// -----------------------------------------------------------------------------
 
 
 void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
@@ -226,7 +287,18 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
     noiseOctaves = 4;
     distort += 0.005 * (1.0 - abs(Fbm3D(p * 132.3)));
     float global = 1- Cell3Noise(p + distort);
+
+   float inv2montesSpiky = 1.0 / (montesSpiky * montesSpiky);
 	
+	
+	
+    if (riftsMagn > 0 && NewRift ==1)
+	{
+		noiseOctaves = 12.0;
+		noiseLacunarity = 2.1;
+		noiseOffset = inv2montesSpiky;
+		global = 1.0 - smoothstep(0.01, 0.0, JordanTurbulence(p + distort * 0.03*riftsMagn + Randomize, 0.8, 0.5, 0.4, 0.35, 1.0, 0.8, 1.0) * riftsFreq*0.5); // Big Rifts
+	}
 
 //	float global =
 //      1.0 - smoothstep(0.0, 1.0,
@@ -286,7 +358,7 @@ if (oceanType > 0)
     montRange *= montRange;
     float montBiomeScale = min(pow(2.2 * biomeScale, 3.5), 1.0) * montRange;
 
-    float inv2montesSpiky = 1.0 / (montesSpiky * montesSpiky);
+    
     float heightD  = 0.0;
     float height   = 0.0;
     float landform = 0.0;
@@ -391,7 +463,7 @@ global += rr;
     else if (biome < hillsFraction)
     {
 		// Mountains
-		if (erosion > 0.0)
+		if (erosion > 0.0 && NewMount == 0)
 		{
 			noiseOctaves = 10.0;
 			noiseH       = 0.90;  // Going to tweak some
@@ -399,6 +471,20 @@ global += rr;
 			noiseOffset  = montesSpiky;    // Also caused offset
 			height = hillsMagnn * 2.88 * ((1.25 + iqTurbulence(point * 0.5 * _hillsFreqq * inv2montesSpiky * 1.25 + Randomize, 0.55)) * (0.05 * RidgedMultifractalErodedDetail(point * 1.0 * _hillsFreqq * inv2montesSpiky * 1.5 + Randomize, 1.0, erosion, montBiomeScale)));
 		}
+
+		// New Mountains
+		else if (erosion > 0.0 && NewMount == 1)
+		{
+			noiseOctaves = 10.0;
+            noiseH       = 0.90;
+            noiseLacunarity = 2.0;
+            noiseOffset  = montesSpiky;
+            
+            float baseTurbulence = 1.25 + iqTurbulence(point * 0.5 * _hillsFreqq * inv2montesSpiky * 1.25 + Randomize, 0.55);
+            
+            height = hillsMagnn * 2.88 * (baseTurbulence * (0.05 * RuneVisionErosion(point * 1.0 * _hillsFreqq * inv2montesSpiky * 1.5 + Randomize, 1.0, 1.0, erosion)));
+		}
+
 		else
 		{
 			noiseOctaves = 10.0;
@@ -463,7 +549,7 @@ global += rr;
     else
     {
 		// Mountains
-		if (erosion > 0.0)
+		if (erosion > 0.0 && NewMount == 0)
 		{
 			noiseOctaves = 10.0;
 			noiseH       = 1.0;
@@ -472,6 +558,20 @@ global += rr;
 			// height = montesMagn * 5.0 * (0.5 + 0.4 * iqTurbulence(point * 0.5 * montesFreq + Randomize, 0.55))* 0.7* montesMagn * montRange * RidgedMultifractalErodedDetail(point * montesFreq * inv2montesSpiky + Randomize, 2.0, erosion, montBiomeScale)+ 0.6 * biomeScale * hillsMagnn * JordanTurbulence(point/4 * _hillsFreqq/4 + Randomize, 0.8, 0.5, 0.6, 0.35, 1.0, 0.8, 1.0);
 			height = (0.5 + 0.4 * iqTurbulence(point * 0.5 * (montesFreq * 3) + Randomize, 0.55)) * 0.4 * montesMagn * 0.8* montRange * RidgedMultifractalErodedDetail(point * (montesFreq * 3) * inv2montesSpiky + Randomize, 2, erosion, montBiomeScale);
 		}
+		
+	 // New Mountains
+		else if (erosion > 0.0 && NewMount == 1)
+		{
+		noiseOctaves = 10.0;
+            noiseH       = 1.0;
+            noiseLacunarity = 2.1;
+            noiseOffset  = montesSpiky;
+            
+            float baseTurbulence = 0.5 + 0.4 * iqTurbulence(point * 0.5 * (montesFreq * 3.0) + Randomize, 0.55);
+            
+            height = baseTurbulence * 0.4 * montesMagn * 0.8 * montRange * RuneVisionErosion(point * (montesFreq * 3.0) * inv2montesSpiky + Randomize, 2.0, 1.0, erosion);
+		}
+		
 		else
 		{
 			noiseOctaves = 10.0;
@@ -596,7 +696,7 @@ float _rodrigoDamping = rodrigoDamping;
     
 
     // Rifts
-    if (riftsMagn > 0.0)
+    if (riftsMagn > 0.0 && NewRift ==0)
 {
 damping =    (smoothstep(1.0, 0.1, height - _seaLevel)) *
                         (smoothstep(-0.1, -0.2, _seaLevel - height));

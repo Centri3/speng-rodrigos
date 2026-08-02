@@ -10,10 +10,11 @@ vec4  GlowMapSelena(vec3 point, float height, float slope)
     noiseOctaves = 5;
     vec3  p = point * 600.0 + Randomize;
     float dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
-    noiseOctaves = 3;
-	float globTemp = 0.95 - abs(Fbm((p + dist) * 0.01)) * 0.08;
     noiseOctaves = 8;
-	float varyTemp = abs(Fbm(p + dist));  //surfTemperature
+    float globTemp = 1.0 - pow(abs((-JordanTurbulence(point * 10.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, 1.7) * 1.5) - JordanTurbulence(point * 3.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, -1.7) * 0.3) * 0.28, 1.5);
+    noiseLacunarity = 1.5;
+    vec3 d = Fbm3D(p + dist) * 0.2;
+    float varyTemp = iqTurbulence(d, 0.0) * 0.5;
 
 	// Global surface melting
 	float surfTemp = surfTemperature *

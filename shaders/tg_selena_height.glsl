@@ -490,8 +490,15 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
     float global = 1 - Cell3Noise(p + distort);
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 
-
-
+    float Mega = 0;
+	
+    if (Mega == 1)
+	{
+		noiseOctaves = 10.0;
+		noiseLacunarity = 2.1;
+		noiseOffset = inv2montesSpiky;
+		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * _hillsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * mainFreq); // Big Rifts
+	}
     // GlobalModifier // Venus
     float venus = 0.0;
 	noiseOctaves = 4;
@@ -891,7 +898,11 @@ if (_cracksOctaves > 0)
   {
   height = mix(height, height + 0.05, vary) - 0.05;    //0.0015
   }
-	
+//	float lavlon = pow(point.x+1, 1);
+//	if (lavlon <=0)
+//	{
+//	lavlon =0;
+//	}
 	// TerrainFeature // Shield volcano
     if (volcanoOctaves > 0)
 	{
@@ -905,7 +916,7 @@ if (_cracksOctaves > 0)
     height = softPolyMax(height, 0.00, 0.3);
 	if ((cracksOctaves == 0 || volcanoTemp >= 0.75) && lavaCoverage > 0) //((volcanoTemp > 0.7 || hillsMagn <=0.09) && lavaCoverage > 0)
 	{
-	height = height-log(1.2*lavaCoverage+1);  //log(9*lavaCoverage+1)
+	height = height-log(1.2*lavaCoverage+1);  //log(9*lavaCoverage+1)  height-lavaCoverage*lavlon
 	if (height <0.0002)
 	{
 		height = 0;
