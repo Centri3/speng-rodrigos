@@ -667,9 +667,9 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 	else if (biome < hillsFraction)
 	{
 		// Mountains
-		noiseOctaves = 12.0;
+		noiseOctaves = 8.0;
 		noiseH	   = 1.0;
-		noiseLacunarity = 2.3;
+		noiseLacunarity = 2.0;
 		noiseOffset  = montesSpiky;
 		if (oceanType != 0.0)
 		{
