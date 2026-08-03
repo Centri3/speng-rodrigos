@@ -490,14 +490,14 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
     float global = 1 - Cell3Noise(p + distort);
 	fr *= 1.0 - smoothstep(0.04, 0.01, global - seaLevel);
 
-    float Mega = 0;
+ 
 	
-    if (Mega == 1)
+    if (riftsMagn > 0 && NewRift ==1)
 	{
-		noiseOctaves = 10.0;
+		noiseOctaves = 12.0;
 		noiseLacunarity = 2.1;
 		noiseOffset = inv2montesSpiky;
-		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * _hillsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * mainFreq); // Big Rifts
+		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * 0.01*riftsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1+riftsFreq*0.5)); // Big Rifts
 	}
     // GlobalModifier // Venus
     float venus = 0.0;

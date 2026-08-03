@@ -11,7 +11,8 @@ vec4  GlowMapSelena(vec3 point, float height, float slope)
     vec3  p = point * 600.0 + Randomize;
     float dist = 10.0 * colorDistMagn * Fbm(p * 0.2);
     noiseOctaves = 8;
-    float globTemp = 1.0 - pow(abs((-JordanTurbulence(point * 10.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, 1.7) * 1.5) - JordanTurbulence(point * 3.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, -1.7) * 0.3) * 0.28, 1.5);
+    float globTemp = 0.95 - pow(abs((-JordanTurbulence(point * 10000.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, 1.7) * 1.5) - JordanTurbulence(point * 3.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, -1.7) * 0.3) * 0.28, 1.5);
+	float globTemp2 = 0.95 - pow(abs( - JordanTurbulence(point * 3.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, -1.7) * 0.3) * 0.28, 1.5);
     noiseLacunarity = 1.5;
     vec3 d = Fbm3D(p + dist) * 0.2;
     float varyTemp = iqTurbulence(d, 0.0) * 0.5;
@@ -40,7 +41,7 @@ if (lavaCoverage >0.24)
 if (lavaCoverage > 0)
 {
      surfTemp = lavaTemp  *
-        (globTemp + varyTemp * 0.08) *
+        (globTemp2 + varyTemp * 0.08) *
         saturate(2 * (tempratio*_lavaCoverage * 0.4 + 0.4 - 5 * height)) *
 		saturate((tempratio*lavaCoverage - 0.01) * 25.0);
 }

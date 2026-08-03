@@ -23,7 +23,7 @@ const float SEversion = 1;		//0 is for 0.990, 1 is for 0.991
 const float Sp_ce = 0;		// 0 is for default stable craters, 1 is for experimental Sp_ce craters.  Note Sp_ce craters have worse performance than default
 
 //New Mountains
-const float NewMount = 0;		// 0 is for default stable mountains, 1 is for experimental Mountains
+const float NewMount = 0;		// 0 is for default stable mountains, 1 is for experimental Mountains (not even close to working)
 
-const float NewRift = 0;        // 0 is for default stable mountains, 1 is for experimental Mountains
+const float NewRift = 0;        // 0 is for default stable mountains, 1 is for experimental Rifts
 

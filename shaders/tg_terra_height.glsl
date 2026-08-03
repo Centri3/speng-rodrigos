@@ -297,7 +297,7 @@ void    HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 		noiseOctaves = 12.0;
 		noiseLacunarity = 2.1;
 		noiseOffset = inv2montesSpiky;
-		global = 1.0 - smoothstep(0.01, 0.0, JordanTurbulence(p + distort * 0.03*riftsMagn + Randomize, 0.8, 0.5, 0.4, 0.35, 1.0, 0.8, 1.0) * riftsFreq*0.5); // Big Rifts
+		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * 0.01*riftsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * (1+riftsFreq*0.5)); // Big Rifts
 	}
 
 //	float global =
