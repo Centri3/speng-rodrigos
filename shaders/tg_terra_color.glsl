@@ -254,7 +254,7 @@ void ColorMapTerra(vec3 point, in BiomeData biomeData, out vec4 ColorMap) {
 	if(lavaCoverage > 0.0 && (cracksOctaves == 0 || volcanoTemp >= 0.75) && oceanType == 0.0 && biomeData.height == 0)  //(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
 	{
         surf = obsidian;
-		vary = -(globTemp + varyTemp * 0.0)+0.5;
+		vary = 1 - 20* pow(abs((-JordanTurbulence(point * 10000.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, 1.7) * 1.5) - JordanTurbulence(point * 3.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, -1.7) * 0.3) * 0.28, 1.5);  //-(globTemp + varyTemp * 0.0)+0.5;
 	}
 
 	if(biomeData.height < 0.00019 && biomeData.height > 0 && lavaCoverage > 0 && cracksOctaves == 0 && oceanType == 0.0)  
