@@ -386,7 +386,7 @@ float HeightMapCloudsGasGiantGmail3(vec3 point) {
 void main()
 {
     vec3  point   = GetSurfacePoint();
-    float heightS = HeightMapSun(point);
+    float heightS = _HeightMapSun(point);
     float heightB = 0.95*(HeightMapCloudsGasGiantGmail(point, true, stripeZones) + 0.5 * HeightMapCloudsGasGiantGmail2(point) + 0.5* HeightMapCloudsGasGiantGmail3(point));
     float height  = mix(heightB, heightS, erosion);
     height = softPolyMax(height, 0.0, 0.2);

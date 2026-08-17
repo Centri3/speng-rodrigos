@@ -114,6 +114,44 @@ float SlopedIceCaps(float slope, float latitude) {
 
 //-----------------------------------------------------------------------------
 
+float EnceladusColorNoise(in vec3 point, float europaLikeness) {
+  noiseOctaves = 2;
+  noiseH = 1.0;
+  noiseLacunarity = 2.0;
+
+  vec2 cracks = vec2(0.0);
+  vec3 p = point * 0.1 + Randomize;
+  vec3 distort = 0.3 * Fbm3D(p * 3.0) + 0.05 * Fbm3D(p * 6.0);
+
+  noiseOctaves = 8.0;
+  noiseLacunarity = 2.3;
+
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
+    distort += Fbm3D(p * 3.0) * 0.3;
+
+    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
+    float width = (0.35 + i * 0.01) *
+                  (unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) * 4.0) *
+                  europaLikeness * abs(cell.y - cell.x);
+    cracks.x += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 2));
+
+    p *= 1.1;
+  }
+
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
+    distort += Fbm3D(p * 3.0) * 0.3;
+
+    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
+    float width = (0.35 + i * 0.01) *
+                  (unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) * 4.0) *
+                  europaLikeness * abs(cell.y - cell.x);
+    cracks.y += saturate(1.0 - 0.75 * width) * (1.0 / max(i, 2));
+
+    p *= 1.1;
+  }
+
+  return max(cracks.x, cracks.y);
+}
 
 // Function // Europa Crack Formula
 float   EuropaCrackColorFunc(float lastLand, float lastlastLand, float height, float r, vec3 p)
@@ -507,9 +545,34 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	}
 
 
+  if (enceladusLike && RMREnceladus == 1) {
+    if (europaLikeness == 0.0) {
+      // Old algorithm
+      noiseOctaves = 6.0;
+      noiseLacunarity = 2.218281828459;
+      noiseH = 0.9;
+      noiseOffset = 0.5;
+      p = point * 0.5 * mainFreq + Randomize;
+      distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5;
+      Fbm3D(point * 0.1) * 12.5;
+      cell = Cell3Noise2(canyonsFreq * 0.05 * p + distort);
+      float rima2 = 2 - saturate(abs(cell.y - cell.x) * 250.0 * canyonsMagn);
+      rima2 = biomeScale * smoothstep(0.0, 1.0, rima2);
+      vary -= 1 - rima2;
+      surf.color = mix(vec4(0.75, 0.9, 1.0, 0.00), vec4(1.0), vary);
+    } else {
+      // New algorithm
+      float enceladus = saturate(EnceladusColorNoise(point, europaLikeness));
+      surf.color.rgb = mix(surf.color.rgb, vec3(1.0), 0.9);
+      surf.color.rgb =
+          mix(surf.color.rgb, iceColor, enceladus * europaLikeness);
+
+      vary *= 0.3;
+    }
+  }
 
 	// PlanetTypes // Enceladuslike terrain
-	if (enceladusLike)
+	else if (enceladusLike && RMREnceladus != 1)
 	{
 		vary /= CrackColorNoise(point, mask);
 		noiseOctaves     = 6.0;
@@ -534,7 +597,42 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 		// 23-10-2024 by Sp_ce // Changed vec3(1.0) to iceColor
 		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
 		// 07-12-2025 Donatelo200 // perfomance still rough but a bit better by reducing _cracksOctaves
-  else if (europaLike) 
+
+  else if (europaLike && EuropaCrackLevel == 1) {
+    vec3 europaP = (point + Randomize) * cracksFreq * 0.5;
+    europaP.x *= 0.3;
+
+    // Rim height and shape distortion
+    noiseH = 0.5;
+    noiseLacunarity = 2.218281828459;
+    noiseOffset = 0.8;
+    noiseOctaves = 5.0;
+
+    // We share this among all octaves as a speedup.
+    vec3 europaDistort = Fbm3D(1.8 * europaP) +
+                         Fbm3D(1.8 * europaP * 8.0) * 0.4 +
+                         Fbm3D(1.8 * europaP * 32.0) * 0.1;
+
+    float europaCracksOctaves = cracksOctaves + 12;
+    vary *= EuropaCrackColorNoise(europaP, europaCracksOctaves + 1, mask,
+                                  europaDistort) *
+            (0.2 * EuropaCrackColorNoise(europaP * 2.0, europaCracksOctaves,
+                                         mask, europaDistort) +
+             0.2 * EuropaCrackColorNoise(europaP * 4.0, europaCracksOctaves,
+                                         mask, europaDistort));
+    vary *= (0.2 * EuropaCrackColorNoise(europaP * 16.0, europaCracksOctaves,
+                                         mask, europaDistort)) +
+            (0.2 * EuropaCrackColorNoise(europaP * 32.0, europaCracksOctaves,
+                                         mask, europaDistort));
+    surf.color.rgb = mix(surf.color.rgb, iceColor, pow(vary, 0.4));
+
+    float whiteCracks =
+        0.3 * EuropaCrackColorNoise(europaP * 3.0, europaCracksOctaves, mask,
+                                    europaDistort);
+    surf.color.rgb = mix(surf.color.rgb, iceColor, 0.3 - whiteCracks);
+  }
+
+  else if (europaLike && EuropaCrackLevel != 1) 
   {
     vec3 europaP = (point + Randomize) * cracksFreq * 0.5;
     europaP.x *= 0.3;
@@ -698,7 +796,7 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	if(lavaCoverage > 0.0 && (cracksOctaves == 0 || volcanoTemp >= 0.75) && biomeData.height ==0) //(lavaCoverage > 0.0 && (volcanoTemp > 0.7 || hillsMagn <=0.09) && oceanType == 0.0 && biomeData.height <=0.00001)
 	{
         surf = obsidian;
-		vary = 1 - 20* pow(abs((-JordanTurbulence(point * 10000.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, 1.7) * 1.5) - JordanTurbulence(point * 3.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, -1.7) * 0.3) * 0.28, 1.5);//-(globTemp + varyTemp * 0.08)+0.5;
+		vary = 0 - 20* pow(abs((-JordanTurbulence(point * 10000.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, 1.7) * 1.5) - JordanTurbulence(point * 3.0 + Randomize, 1.1, 0.9, 0.9, 0.8, 0.3, 0.3, -1.7) * 0.3) * 0.28, 1.5);//-(globTemp + varyTemp * 0.08)+0.5;
 	}
 
 	if(biomeData.height < 0.00019 && biomeData.height > 0 && lavaCoverage > 0 && cracksOctaves == 0 && oceanType == 0.0)  

@@ -78,7 +78,58 @@ void    _RiftsNoise(vec3 point, float damping, inout float height)
 
 
 //-----------------------------------------------------------------------------
+void EnceladusNoise(in vec3 point, inout float height, float europaLikeness) {
+  noiseOctaves = 2;
+  noiseH = 1.0;
+  noiseLacunarity = 2.0;
 
+  vec2 cracks = vec2(0.0);
+  vec3 p = point * 0.1 + Randomize;
+  vec3 distort = 0.3 * Fbm3D(p * 3.0) + 0.05 * Fbm3D(p * 6.0);
+
+  noiseOctaves = 8.0;
+  noiseLacunarity = 2.3;
+
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
+    distort += Fbm3D(p * 3.0) * 0.3;
+
+    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
+    float width = (0.35 + i * 0.01) *
+                  unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) *
+                  europaLikeness * abs(cell.y - cell.x);
+    cracks.x += saturate(1.0 - 2.75 * width) / ((i + 2) * 0.5);
+
+    p *= 1.1;
+  }
+
+  p = point * 0.1 + Randomize;
+
+  for (int i = 0; i < 16 + cracksOctaves; i++) {
+    distort += Fbm3D(p * 3.0) * 0.3;
+
+    vec2 cell = Cell3Noise2(p * 0.5 * riftsFreq + distort);
+    float width = (0.35 + i * 0.01) *
+                  unwrap_or_with_sentinel(riftsMagn, 20.0, 0.0) *
+                  europaLikeness * abs(cell.y - cell.x);
+    cracks.y += saturate(1.0 - 2.75 * width) / ((i + 2) * 0.5);
+
+    p *= 1.1;
+  }
+
+  height = mix(height, height + (0.13 * europaLikeness), cracks.x);
+  height = mix(height, height - (0.13 * europaLikeness), cracks.y);
+}
+
+float EuropaCrackHeightFunc(float land, float height, float r, vec3 p) {
+  p.x += 0.05 * r;
+  float inner = smoothstep(0.0, 0.5, r);
+  float outer = smoothstep(0.5, 1.0, r);
+  float cracks =
+      height * (.4 * Noise(p * 625.7) * (1.0 - inner) + inner * (1.0 - outer));
+  return mix(cracks, land, outer);
+}
+
+//-----------------------------------------------------------------------------
 
 // Function // Europa Cracks Noise
 	// 8-10-2024 by Sp_ce // Stretch cell x, doubled octaves
@@ -697,7 +748,37 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
  
 
 	// PlanetTypes // Enceladuslike terrain
-	if (enceladusLike)
+	
+  // PlanetTypes // RMR Enceladuslike terrain
+  if (enceladusLike && RMREnceladus == 1) {
+    if (europaLikeness == 0.0) {
+      // Old algorithm
+      height = saturate(height * 0.3);
+      noiseOctaves = 6.0;
+      noiseLacunarity = 2.218281828459;
+      noiseH = 0.9;
+      noiseOffset = 0.5;
+      p = point * 0.5 * mainFreq + Randomize;
+      distort = Fbm3D(point * 0.1) * 3.5 + Fbm3D(point * 0.1) * 6.5 +
+                Fbm3D(point * 0.1) * 12.5;
+      cell = Cell3Noise2(canyonsFreq * 0.05 * p + distort);
+      float rima2 = 2 - saturate(abs(cell.y - cell.x) * 250.0 * canyonsMagn);
+      rima2 = biomeScale * smoothstep(0.0, 1.0, rima2);
+      height = mix(height, height - 0.08, -rima2);
+
+      noiseOctaves = 1;
+      height -= 0.5 * CrackNoise(point, mask);
+      distort = Fbm3D(point * 0.1) * 3.5;
+      float venus2 = (Fbm(point + distort) * 1.5) * 0.5;
+      height = mix(height, height - 0.2, venus2);
+    } else {
+      // New algorithm
+      height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
+      EnceladusNoise(point, height, europaLikeness);
+    }
+  }
+	
+	else if (enceladusLike && RMREnceladus != 1)
 	{
 		height =  saturate (height*0.3);
 		noiseOctaves     = 6.0;
@@ -727,7 +808,39 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 		// 21-10-2024 by Sp_ce // 1.0 europaLikeness 30% height, 0.0 europaLikeness 60% height
 		// 26-10-2024 by Sp_ce // Added ice cracks section cracks here
 		// 07-12-2025 Donatelo200 // perfomance still rough but a bit better by reducing _cracksOctaves
-  else if (europaLike) 
+  
+    else if (europaLike && EuropaCrackLevel == 1) {
+    vec3 europaP = point = (point + Randomize) * cracksFreq * 0.5;
+    europaP.x *= 0.3;
+
+    // Rim height and shape distortion
+    noiseH = 0.5;
+    noiseLacunarity = 2.218281828459;
+    noiseOffset = 0.8;
+    noiseOctaves = 5.0;
+
+    // We share this among all octaves as a speedup.
+    vec3 europaDistort = Fbm3D(1.8 * europaP) +
+                         Fbm3D(1.8 * europaP * 8.0) * 0.4 +
+                         Fbm3D(1.8 * europaP * 32.0) * 0.1;
+
+    float europaCracksOctaves = cracksOctaves + 12;
+    height = saturate(height * (0.3 + 0.3 * (1.0 - europaLikeness)));
+    height += 3.5 * EuropaCrackNoise(europaP, europaCracksOctaves + 1, mask,
+                                     europaDistort);
+    height += 1.2 * EuropaCrackNoise(europaP * 2.0, europaCracksOctaves, mask,
+                                     europaDistort) +
+              1.2 * EuropaCrackNoise(europaP * 4.0, europaCracksOctaves, mask,
+                                     europaDistort);
+    height += 0.3 * EuropaCrackNoise(europaP * 16.0, europaCracksOctaves, mask,
+                                     europaDistort) +
+              0.3 * EuropaCrackNoise(europaP * 32.0, europaCracksOctaves, mask,
+                                     europaDistort);
+    height += 1.3 * EuropaCrackNoise(europaP * 3.0, europaCracksOctaves, mask,
+                                     europaDistort);
+  }
+  
+  else if (europaLike && EuropaCrackLevel != 1) 
   {
     vec3 europaP = point = (point + Randomize) * cracksFreq * 0.5;
     europaP.x *= 0.3;

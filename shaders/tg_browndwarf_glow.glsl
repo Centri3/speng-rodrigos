@@ -7,7 +7,7 @@
 void main()
 {
     vec3  point = GetSurfacePoint();
-    float surfTempS = GlowMapSun(point); // in thousand Kelvins
+    float surfTempS = _GlowMapSun(point); // in thousand Kelvins
 
     float height = GetSurfaceHeight();
     float surfTempB = mix(1.0, GetGasGiantCloudsColor(height).a, cloudsLayer);
