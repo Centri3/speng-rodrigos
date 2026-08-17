@@ -366,6 +366,18 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	//bool enceladusLike = ((volcanoActivity > 0.004) && (volcanoActivity < 0.01));
 	//bool europaLike = ((_cracksOctaves > 0.0) && (canyonsMagn > 0.52) && (mareFreq < 1.7) && (cracksFreq >= 0.6) && !enceladusLike);
 	float europaLikeness;
+	
+	if (RMREnceladus == 1){
+  if (riftsSin < 6.0) {
+    europaLikeness = 1.0;
+  } else if (riftsSin > 8.0) {
+    europaLikeness = 0.0;
+  } else {
+    europaLikeness = -(1.0 / 2.0) * riftsSin + 8.0 / 2.0;
+  }
+  }
+
+	else{
 	if (riftsSin < 6.0) {
 		europaLikeness = 1.0;
 	} 
@@ -375,7 +387,7 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	else {
 		europaLikeness = -(1.0/2.0)*riftsSin + 8.0/2.0;
 	}
-
+}
 
 
     // GlobalModifier // Assign climate

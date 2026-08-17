@@ -12,7 +12,7 @@ const float GasGiantVibe = 0;		// 0 is for vibrant colors, 1 is for muted colors
 // Terra Cloud Style  (RDH or Gmail99)
 const float CloudStyle = 0;  // 0 is for default RDH clouds, 1 is for Gmail99 clouds
 
-// Europa Crack Leve
+// Europa Crack Level
 const float EuropaCrackLevel = 0;   // 0 is for default, 1 is for extreme levels of cracks (Performance heavy)
 
 
