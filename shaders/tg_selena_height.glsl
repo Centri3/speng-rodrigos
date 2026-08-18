@@ -1013,6 +1013,11 @@ if (_hillsMagn < .1)   // Fix to spiky terrain before planet melts
 	
 	float vary = 1.0 - 5*(Fbm((point + distort + (SmallDistort * 0.015)) * (1.5 - RidgedMultifractal(pp, 8.0)+ RidgedMultifractal(pp*0.999, 8.0))));
 	
+	if (enceladusLike && RMREnceladus == 1 && europaLikeness != 0.0)
+	{
+	vary *= 0.3;
+	}
+	
 if (_cracksOctaves > 0)  
   {
     height = mix(height, height + 0.1, vary - 0.1);
