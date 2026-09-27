@@ -556,7 +556,7 @@ float   HeightMapSelena(vec3 point)
 		noiseOctaves = 10.0;
 		noiseLacunarity = 2.1;
 		noiseOffset = inv2montesSpiky;
-		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * _hillsMagn + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * mainFreq); // Mine
+		global = 1.0 - smoothstep(0.1, 0.0, JordanTurbulence(p + distort * (riftsMagn / 50) + Randomize, 0.8, 0.5, 0.6, 0.35, 0.0, 1.8, 1.0) * riftsSin); // Mine
 	}
 	else
 	{
@@ -870,7 +870,7 @@ float   HeightMapSelena(vec3 point)
 		height = height-log(1.2 * lavaCoverage + 1);  //log(9*lavaCoverage+1)
 		if (height <0.0002)
 		{
-			height = 0;
+			height = 0.0;
 		}
 	}
 	else

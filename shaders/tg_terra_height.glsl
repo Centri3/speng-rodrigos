@@ -420,6 +420,16 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 		}
 	}
 	
+	float _canyonsMagn = canyonsMagn;
+	if (oceanType == 0.0)
+	{
+		_canyonsMagn = canyonsMagn / 8;
+	}
+	else
+	{
+		_canyonsMagn = canyonsMagn;
+	}
+	
 	float _montesFreq = montesFreq;
 	if (oceanType != 0.0 && texScale < 4200)
 	{
@@ -602,23 +612,26 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 		global = mix(global,global+0.2,fr);
 		*/
 		float fr = 0.40 * (1.0 - RidgedMultifractal(pp, 2.0)) + 0.85 * (1.0 - RidgedMultifractal(pp * 10.0, 2.0)) + rocks;
-		fr *= 1 - smoothstep(-0.005, 0.01, _seaLevel - global);
+		fr *= 1.0 - smoothstep(-0.005, 0.01, _seaLevel - global);
 		global = global + (0.00000001 * (_hillsFreq * _hillsFreq + 900000) * fr);
 		
 	//Mesas		
-		float zr = 1.0 + 2 * Fbm(point + landform) + 7 * (1.5 - RidgedMultifractalEroded(pp * 0.8, 8.0, erosion)) - 6 * (1.5 - RidgedMultifractalEroded(pp * 0.1, 8.0, erosion)) - 0.01 * (1.5 - RidgedMultifractalEroded(pp * 4, 8.0, erosion));
-		zr = smoothstep(0.0, 1.0, 0.2 * zr * zr);
-		zr *= 1 - smoothstep(0.0, 0.02, _seaLevel - global);
-		zr = 0.1 * _hillsFreq * smoothstep(0.0, 1.0, zr);
-		global =  mix(global, global + 0.0006, zr);
+		float zr = 1.0 + 2.0 * Fbm(point + landform) + 7.0 * (1.5 - RidgedMultifractalEroded(pp * 0.8, 8.0, erosion)) - 6.0 * (1.5 - RidgedMultifractalEroded(pp * 0.1, 8.0, erosion)) - 0.01 * (1.5 - RidgedMultifractalEroded(pp * 4.0, 8.0, erosion));
+		zr = smoothstep(0.0, 1.0, canyonsMagn * zr * zr);
+		zr *= 1.0 - smoothstep(0.0, 0.02, _seaLevel - global);
+		zr = canyonsMagn * (canyonsFreq * 10) * smoothstep(0.0, 1.0, zr);
+		global = mix(global, global + beachWidth, zr);
 
-		float rr  = 0.3 * ((0.15 * iqTurbulence(point * 0.4 * _montesFreq + Randomize, 0.45)) * (RidgedMultifractalDetail(point * _montesFreq * 0.8 + venus + Randomize, 1.0, montBiomeScale)));
+		float rr  = montesMagn * ((0.15 * iqTurbulence(p * 0.4 * _montesFreq + Randomize, 0.45)) * (RidgedMultifractalDetail(p * _montesFreq * 0.8 + venus + Randomize, 1.0, montBiomeScale)));
 		rr *= 1 - smoothstep(0.0, 0.02, _seaLevel - global);
 		global += rr;
+		
+		float fr1 = mod(fr, 0.1);
+        float zr1 = mod(zr, 0.1);
+        float rr1 = mod(rr, 0.1);
 
-	// global = saturate(0.99 * global);
-	global = global + 0.06 * saturate((fr * zr * rr) * _hillsMagn);
-	// global = 0.9 * global + 0.06 * fr;
+	global = global + _canyonsMagn * saturate((fr1 * zr1 * rr1) * _hillsMagn);
+	
 	/*
 	//Eroded terrain & Mesas no rocks
 		float t1 = 1.0; 
@@ -710,7 +723,7 @@ void HeightMapTerra(vec3 point, out vec4 HeightBiomeMap)
 			// noiseLacunarity = 3.0;
 			noiseOffset  = montesSpiky;
 			// height = -canyonsMagn * 0.015 * (5 + 0.2 * iqTurbulence(point * 0.5 * canyonsFreq + Randomize, 0.55)) * (5 * RidgedMultifractalDetail(point * 0.7 * canyonsFreq + Randomize, 1.0, montBiomeScale));
-			height = -canyonsMagn * 5 * (0.5 + 0.8 * iqTurbulence(p * 0.5 * (canyonsFreq * 3) + Randomize, 0.55)) * (_colorDistMagn * RidgedMultifractalErodedDetail(p * 0.7 * (canyonsFreq * 3) + Randomize, 1.0, erosion, montBiomeScale));
+			height = -canyonsMagn * montRange * (0.5 + 0.8 * iqTurbulence(p * 0.5 * canyonsFreq + Randomize, 0.55)) * (_colorDistMagn * RidgedMultifractalErodedDetail(p * 0.7 * canyonsFreq + Randomize, 1.0, erosion, montBiomeScale));
 			// if (terrace < terraceProb)
 			{
 				float h = height * terraceLayers * 5.0;
