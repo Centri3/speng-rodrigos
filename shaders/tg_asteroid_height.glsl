@@ -63,6 +63,7 @@ float HeightMapAsteroid(vec3 point) {
   }
 
   // GlobalModifier // Terrain noise match colorvary
+/*
   vec3 pp =
       (point + Randomize) * (0.0005 * hillsFreq / (_hillsMagn * _hillsMagn));
   noiseOctaves = 14.0;
@@ -75,6 +76,7 @@ float HeightMapAsteroid(vec3 point) {
                                      RidgedMultifractal(pp * 0.999, 8.0))))) *
       0.001;
   height += saturate(vary);
+*/
 
   // GlobalModifier // Soften max/min height
   height = softPolyMin(height, 0.99, 0.3);

@@ -30,6 +30,7 @@ vec3 JordanTurbulence3D(vec3 point, float gain0, float gain, float warp0,
                                damp, dampScale));
 }
 
+
 float _VolcanoNoise(vec3 point, float globalLand, float localLand) {
   noiseLacunarity = 2.218281828459;
   noiseH = 0.5;
